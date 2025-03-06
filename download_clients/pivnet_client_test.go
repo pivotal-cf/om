@@ -303,7 +303,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
 			Expect(stemcell.Version()).To(Equal("1.0"))
@@ -315,7 +315,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
 			Expect(stemcell.Version()).To(Equal("1"))
@@ -329,7 +329,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
 			Expect(stemcell.Version()).To(Equal("5.10"))
@@ -343,7 +343,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
 			Expect(stemcell.Version()).To(Equal("1.3"))
@@ -357,7 +357,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stemcell).ToNot(BeNil())
 			Expect(stemcell.Version()).To(Equal("97.190"))
@@ -367,7 +367,7 @@ var _ = Describe("PivnetClient", func() {
 			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{}, errors.New("stemcell not found"))
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).To(MatchError(ContainSubstring("could not fetch stemcell dependency for")))
 		})
 
@@ -377,7 +377,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency")))
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "1.0.0"))))
 		})
@@ -388,7 +388,7 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "abc1.0"))))
 		})
 
@@ -398,19 +398,55 @@ var _ = Describe("PivnetClient", func() {
 			}, nil)
 
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf(errorTemplateForStemcell, "1.0def"))))
 		})
 
-		It("returns an error when multiple stemcell types are found", func() {
+		It("returns an error when multiple stemcell types but invalid stemcell slug is provided", func() {
 			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
 				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
 				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
 			}, nil)
-		
+
 			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
-			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "")
-			Expect(err).To(MatchError(ContainSubstring("could not determine stemcell: multiple stemcell types found: stemcells-ubuntu-jammy, stemcells-windows-server")))
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "xenial")
+			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency: provided \"xenial\" stemcell slug is invalid, please provide the correct one")))
+		})
+
+		It("when multiple stemcell types, downloads the stemcell when valid stemcell slug is provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "ubuntu")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stemcell).ToNot(BeNil())
+			Expect(stemcell.Version()).To(Equal("1.0"))
+		})
+
+		It("when single stemcell type, downloads the stemcell when valid stemcell slug is provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			stemcell, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "ubuntu")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stemcell).ToNot(BeNil())
+			Expect(stemcell.Version()).To(Equal("1.0"))
+		})
+
+		It("returns an error when multiple stemcell types but stemcell slug is not provided", func() {
+			fakePivnetDownloader.ReleaseDependenciesReturns([]pivnet.ReleaseDependency{
+				createReleaseDependency(789, "1.0", "stemcells-ubuntu-jammy"),
+				createReleaseDependency(789, "1.0", "stemcells-windows-server"),
+			}, nil)
+
+			client := download_clients.NewPivnetClient(stdout, stderr, fakePivnetFactory, "", true, "")
+			_, err := client.GetLatestStemcellForProduct(createPivnetFileArtifact(), "", "")
+			Expect(err).To(MatchError(ContainSubstring("could not sort stemcell dependency: multiple stemcell types found:")))
 		})
 	})
 

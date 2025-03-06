@@ -49,11 +49,12 @@ type ProductDownloader struct {
 		result1 download_clients.FileArtifacter
 		result2 error
 	}
-	GetLatestStemcellForProductStub        func(download_clients.FileArtifacter, string) (download_clients.StemcellArtifacter, error)
+	GetLatestStemcellForProductStub        func(download_clients.FileArtifacter, string, string) (download_clients.StemcellArtifacter, error)
 	getLatestStemcellForProductMutex       sync.RWMutex
 	getLatestStemcellForProductArgsForCall []struct {
 		arg1 download_clients.FileArtifacter
 		arg2 string
+		arg3 string
 	}
 	getLatestStemcellForProductReturns struct {
 		result1 download_clients.StemcellArtifacter
@@ -266,17 +267,18 @@ func (fake *ProductDownloader) GetLatestProductFileReturnsOnCall(i int, result1 
 	}{result1, result2}
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProduct(arg1 download_clients.FileArtifacter, arg2 string) (download_clients.StemcellArtifacter, error) {
+func (fake *ProductDownloader) GetLatestStemcellForProduct(arg1 download_clients.FileArtifacter, arg2 string, arg3 string) (download_clients.StemcellArtifacter, error) {
 	fake.getLatestStemcellForProductMutex.Lock()
 	ret, specificReturn := fake.getLatestStemcellForProductReturnsOnCall[len(fake.getLatestStemcellForProductArgsForCall)]
 	fake.getLatestStemcellForProductArgsForCall = append(fake.getLatestStemcellForProductArgsForCall, struct {
 		arg1 download_clients.FileArtifacter
 		arg2 string
-	}{arg1, arg2})
+		arg3 string
+	}{arg1, arg2, arg3})
 	fake.recordInvocation("GetLatestStemcellForProduct", []interface{}{arg1, arg2})
 	fake.getLatestStemcellForProductMutex.Unlock()
 	if fake.GetLatestStemcellForProductStub != nil {
-		return fake.GetLatestStemcellForProductStub(arg1, arg2)
+		return fake.GetLatestStemcellForProductStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -291,17 +293,17 @@ func (fake *ProductDownloader) GetLatestStemcellForProductCallCount() int {
 	return len(fake.getLatestStemcellForProductArgsForCall)
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProductCalls(stub func(download_clients.FileArtifacter, string) (download_clients.StemcellArtifacter, error)) {
+func (fake *ProductDownloader) GetLatestStemcellForProductCalls(stub func(download_clients.FileArtifacter, string, string) (download_clients.StemcellArtifacter, error)) {
 	fake.getLatestStemcellForProductMutex.Lock()
 	defer fake.getLatestStemcellForProductMutex.Unlock()
 	fake.GetLatestStemcellForProductStub = stub
 }
 
-func (fake *ProductDownloader) GetLatestStemcellForProductArgsForCall(i int) (download_clients.FileArtifacter, string) {
+func (fake *ProductDownloader) GetLatestStemcellForProductArgsForCall(i int) (download_clients.FileArtifacter, string, string) {
 	fake.getLatestStemcellForProductMutex.RLock()
 	defer fake.getLatestStemcellForProductMutex.RUnlock()
 	argsForCall := fake.getLatestStemcellForProductArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *ProductDownloader) GetLatestStemcellForProductReturns(result1 download_clients.StemcellArtifacter, result2 error) {

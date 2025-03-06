@@ -41,7 +41,7 @@ jobs:
           CGO_ENABLED: 1
 
       - name: Archive Unit Test Code Coverage Output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Unit Test Code Coverage Output
           path: coverage/*.out

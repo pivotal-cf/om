@@ -304,7 +304,7 @@ var _ = Describe("stowClient", func() {
 
 				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", stemcellPath, "", "bucket")
 
-				stemcell, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				stemcell, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName, "")
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(stemcell.Version()).To(Equal("97.101"))
@@ -334,14 +334,14 @@ var _ = Describe("stowClient", func() {
 
 				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
-				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName, "")
 				Expect(err).To(MatchError("versioning of stemcell dependency in unexpected format: \"major.minor\" or \"major\". the following version could not be parsed: bad-version"))
 			})
 
 			It("errors when the product file does not have stemcell information", func() {
 				client := download_clients.NewStowClient(nil, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "", "bucket")
 
-				_, err := client.GetLatestStemcellForProduct(nil, "./fixtures/example-product.yml")
+				_, err := client.GetLatestStemcellForProduct(nil, "./fixtures/example-product.yml", "")
 				Expect(err).To(HaveOccurred())
 			})
 
@@ -358,7 +358,7 @@ var _ = Describe("stowClient", func() {
 
 				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "blobstore", "bucket")
 
-				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName, "")
 				Expect(err).To(MatchError("could not find stemcells on blobstore: bucket 'bucket' contains no files"))
 			})
 
@@ -379,7 +379,7 @@ var _ = Describe("stowClient", func() {
 
 				client := download_clients.NewStowClient(stower, nil, stow.ConfigMap{"endpoint": "endpoint"}, "", "", "blobstore", "bucket")
 
-				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName)
+				_, err := client.GetLatestStemcellForProduct(nil, exampleTileFileName, "")
 				Expect(err).To(MatchError("no versions could be found equal to or greater than 97.28"))
 			})
 		})

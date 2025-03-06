@@ -54,6 +54,7 @@ type StemcellOptions struct {
 	StemcellIaas    string `long:"stemcell-iaas"     description:"download the latest available stemcell for the product for the specified iaas. for example 'vsphere' or 'vcloud' or 'openstack' or 'google' or 'azure' or 'aws'. Can contain globbing patterns to match specific files in a stemcell release on Pivnet"`
 	StemcellVersion string `long:"stemcell-version" description:"the version number of the stemcell to download (ie 458.61)"`
 	StemcellHeavy   bool   `long:"stemcell-heavy" description:"force the downloading of a heavy stemcell, will fail if non exists"`
+	StemcellSlug    string `long:"stemcell-slug" description:"download the stemcell for the product that matches with the specified stemcell slug on Pivnet"`
 }
 
 type DownloadProductOptions struct {
@@ -147,7 +148,7 @@ func (c *DownloadProduct) Execute(args []string) error {
 		return c.writeDownloadProductOutput(productFileName, productVersion, "", "")
 	}
 
-	stemcellVersion, stemcellFileName, err := c.downloadStemcell(productFileName, productVersion, productFileArtifact)
+	stemcellVersion, stemcellFileName, err := c.downloadStemcell(productFileName, productVersion, productFileArtifact, c.Options.StemcellSlug)
 	if err != nil {
 		return err
 	}
@@ -160,10 +161,10 @@ func (c *DownloadProduct) Execute(args []string) error {
 	return c.writeAssignStemcellInput(productFileName, productFileArtifact, stemcellVersion)
 }
 
-func (c *DownloadProduct) downloadStemcell(productFileName string, productVersion string, productFileArtifact download_clients.FileArtifacter) (string, string, error) {
+func (c *DownloadProduct) downloadStemcell(productFileName string, productVersion string, productFileArtifact download_clients.FileArtifacter, stemCellSlug string) (string, string, error) {
 	c.stderr.Printf("Downloading stemcell")
 
-	stemcell, err := c.downloadClient.GetLatestStemcellForProduct(productFileArtifact, productFileName)
+	stemcell, err := c.downloadClient.GetLatestStemcellForProduct(productFileArtifact, productFileName, stemCellSlug)
 	if err != nil {
 		return "", "", fmt.Errorf("could not get information about stemcell: %s", err)
 	}
