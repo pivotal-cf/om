@@ -4,7 +4,10 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: goreleaser/goreleaser
+    repository: ((concourse-team/dev_image_registry.url))/goreleaser/goreleaser
+    tag: latest
+    username: ((concourse-team/dev_image_registry.username))
+    password: ((concourse-team/dev_image_registry.password))
 
 inputs:
 - name: om
