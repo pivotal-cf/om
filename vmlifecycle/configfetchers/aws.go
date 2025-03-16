@@ -93,6 +93,7 @@ func (a *AWSConfigFetcher) createConfig(output *ec2.DescribeInstancesOutput, vol
 				PrivateIP:              *instance.PrivateIpAddress,
 				InstanceType:           *instance.InstanceType,
 				BootDiskSize:           strconv.Itoa(int(*volumesOutput.Volumes[0].Size)),
+				BootDiskType:           *volumesOutput.Volumes[0].VolumeType,
 			},
 		},
 	}
