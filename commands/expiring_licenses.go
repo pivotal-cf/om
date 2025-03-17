@@ -7,7 +7,7 @@ import (
 
 //counterfeiter:generate -o ./fakes/expiring_licenses_service.go --fake-name ExpiringLicensesService . expiringLicensesService
 type expiringLicensesService interface {
-	ListExpiringLicenses(string) ([]api.ExpiringLicenseOutPut, error)
+	ListExpiringLicenses(string) ([]api.ExpiringLicense, error)
 }
 
 type ExpiringLicenses struct {
