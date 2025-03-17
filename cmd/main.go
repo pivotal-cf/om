@@ -438,6 +438,15 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		return err
 	}
 	_, err = parser.AddCommand(
+		"expiring-licenses",
+		"lists expiring licenses from the Ops Manager targeted",
+		"returns a list of expiring licenses from an existing Ops Manager",
+		commands.NewExpiringLicenses(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
 		"export-installation",
 		"exports the installation of the target Ops Manager",
 		"This command will export the current installation of the target Ops Manager.",

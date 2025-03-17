@@ -16,6 +16,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string) ([]ExpiringLicenseOutPut
 
 	expiredLicense := []ExpiringLicenseOutPut{}
 	expiredProducts, err := a.ListDeployedProducts()
+	layout := "2006-01-02"
 
 	if err != nil {
 		return nil, fmt.Errorf("Cannot list deployed products: %w", err)
@@ -23,8 +24,11 @@ func (a Api) ListExpiringLicenses(expiresWithin string) ([]ExpiringLicenseOutPut
 
 	for _, expiredProduct := range expiredProducts {
 
-		t, err := time.Parse(time.RFC3339, expiredProduct.LicenseMetadata.Expiry[1].ExpiresAt)
+		if len(expiredProduct.LicenseMetadata) == 0 {
+			continue
+		}
 
+		t, err := time.Parse(layout, expiredProduct.LicenseMetadata[0].ExpiresAt)
 		if err != nil {
 			return nil, fmt.Errorf("could not make convert expiry date string to time: %w", err)
 		}

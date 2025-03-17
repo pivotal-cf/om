@@ -13,13 +13,10 @@ type ExpiryInfo struct {
 	ProductVersion    string `json:"product_version"`
 	PropertyReference string `json:"property_reference"`
 }
-type LicenseMetadata struct {
-	Expiry []ExpiryInfo
-}
 type DeployedProductOutput struct {
 	Type            string
 	GUID            string
-	LicenseMetadata LicenseMetadata
+	LicenseMetadata []ExpiryInfo `json:"license_metadata"`
 }
 
 func (a Api) GetDeployedProductManifest(guid string) (string, error) {
