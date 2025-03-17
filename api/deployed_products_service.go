@@ -7,9 +7,19 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type ExpiryInfo struct {
+	ExpiresAt         string `json:"expiry"`
+	ProductName       string `json:"product_name"`
+	ProductVersion    string `json:"product_version"`
+	PropertyReference string `json:"property_reference"`
+}
+type LicenseMetadata struct {
+	Expiry []ExpiryInfo
+}
 type DeployedProductOutput struct {
-	Type string
-	GUID string
+	Type            string
+	GUID            string
+	LicenseMetadata LicenseMetadata
 }
 
 func (a Api) GetDeployedProductManifest(guid string) (string, error) {
