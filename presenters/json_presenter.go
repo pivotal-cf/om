@@ -108,6 +108,10 @@ func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
 	_, _ = j.stdout.Write([]byte(report.FullReport))
 }
 
+func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutPut) {
+	j.encodeJSON(products)
+}
+
 func (j JSONPresenter) encodeJSON(v interface{}) {
 	b, _ := json.MarshalIndent(&v, "", "  ")
 

@@ -441,7 +441,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"expiring-licenses",
 		"lists expiring licenses from the Ops Manager targeted",
 		"returns a list of expiring licenses from an existing Ops Manager",
-		commands.NewExpiringLicenses(api, stdout),
+		commands.NewExpiringLicenses(presenter, api, stdout),
 	)
 	if err != nil {
 		return err

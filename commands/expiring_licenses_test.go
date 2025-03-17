@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	presenterfakes "github.com/pivotal-cf/om/presenters/fakes"
 	"log"
 	"regexp"
 
@@ -14,20 +15,22 @@ import (
 
 var _ = Describe("ExpiringLicenses", func() {
 	var (
-		service *fakes.ExpiringLicensesService
-		stdout  *gbytes.Buffer
-		logger  *log.Logger
+		presenter *presenterfakes.FormattedPresenter
+		service   *fakes.ExpiringLicensesService
+		stdout    *gbytes.Buffer
+		logger    *log.Logger
 	)
 
 	BeforeEach(func() {
 		service = &fakes.ExpiringLicensesService{}
 		stdout = gbytes.NewBuffer()
 		logger = log.New(stdout, "", 0)
+		presenter = &presenterfakes.FormattedPresenter{}
 	})
 
 	When("there are no expiring licenses in the time range", func() {
 		It("displays a helpful message", func() {
-			command := commands.NewExpiringLicenses(service, logger)
+			command := commands.NewExpiringLicenses(presenter, service, logger)
 			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
