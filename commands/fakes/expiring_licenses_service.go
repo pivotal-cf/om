@@ -8,10 +8,12 @@ import (
 )
 
 type ExpiringLicensesService struct {
-	ListExpiringLicensesStub        func(string) ([]api.ExpiringLicenseOutPut, error)
+	ListExpiringLicensesStub        func(string, bool, bool) ([]api.ExpiringLicenseOutPut, error)
 	listExpiringLicensesMutex       sync.RWMutex
 	listExpiringLicensesArgsForCall []struct {
 		arg1 string
+		arg2 bool
+		arg3 bool
 	}
 	listExpiringLicensesReturns struct {
 		result1 []api.ExpiringLicenseOutPut
@@ -25,16 +27,18 @@ type ExpiringLicensesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicenses(arg1 string) ([]api.ExpiringLicenseOutPut, error) {
+func (fake *ExpiringLicensesService) ListExpiringLicenses(arg1 string, arg2 bool, arg3 bool) ([]api.ExpiringLicenseOutPut, error) {
 	fake.listExpiringLicensesMutex.Lock()
 	ret, specificReturn := fake.listExpiringLicensesReturnsOnCall[len(fake.listExpiringLicensesArgsForCall)]
 	fake.listExpiringLicensesArgsForCall = append(fake.listExpiringLicensesArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListExpiringLicenses", []interface{}{arg1})
+		arg2 bool
+		arg3 bool
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ListExpiringLicenses", []interface{}{arg1, arg2, arg3})
 	fake.listExpiringLicensesMutex.Unlock()
 	if fake.ListExpiringLicensesStub != nil {
-		return fake.ListExpiringLicensesStub(arg1)
+		return fake.ListExpiringLicensesStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -49,17 +53,17 @@ func (fake *ExpiringLicensesService) ListExpiringLicensesCallCount() int {
 	return len(fake.listExpiringLicensesArgsForCall)
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicensesCalls(stub func(string) ([]api.ExpiringLicenseOutPut, error)) {
+func (fake *ExpiringLicensesService) ListExpiringLicensesCalls(stub func(string, bool, bool) ([]api.ExpiringLicenseOutPut, error)) {
 	fake.listExpiringLicensesMutex.Lock()
 	defer fake.listExpiringLicensesMutex.Unlock()
 	fake.ListExpiringLicensesStub = stub
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicensesArgsForCall(i int) string {
+func (fake *ExpiringLicensesService) ListExpiringLicensesArgsForCall(i int) (string, bool, bool) {
 	fake.listExpiringLicensesMutex.RLock()
 	defer fake.listExpiringLicensesMutex.RUnlock()
 	argsForCall := fake.listExpiringLicensesArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *ExpiringLicensesService) ListExpiringLicensesReturns(result1 []api.ExpiringLicenseOutPut, result2 error) {
