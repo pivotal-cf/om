@@ -18,7 +18,6 @@ type expiringProduct struct {
 }
 
 func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutPut, error) {
-	// TODO: Implement, should call to deployed products and staged services
 
 	expiredLicense := []ExpiringLicenseOutPut{}
 
@@ -49,59 +48,68 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged bool, deployed bool) error {
 
 	if staged {
-		stagedProducts, err := a.ListStagedProducts()
-		if err != nil {
-			return fmt.Errorf("could not make a call to ListStagedProducts api: %w", err)
-		}
+		err := a.getStagedProducts(expiringProducts)
 
-		for _, stagedProduct := range stagedProducts.Products {
-			*expiringProducts = append(*expiringProducts, expiringProduct{GUID: stagedProduct.GUID,
-				Type:            stagedProduct.Type,
-				LicenseMetadata: stagedProduct.LicenseMetadata,
-			})
+		if err != nil {
+			return fmt.Errorf("could not get staged products: %w", err)
 		}
 
 	} else if deployed {
-		deployedProducts, err := a.ListDeployedProducts()
+		err := a.getDeployedProducts(expiringProducts)
 
 		if err != nil {
-			return fmt.Errorf("could not make a call to ListDeployedProducts api: %w", err)
+			return fmt.Errorf("could not get staged products: %w", err)
 		}
 
-		for _, deployedProduct := range deployedProducts {
-			*expiringProducts = append(*expiringProducts, expiringProduct{GUID: deployedProduct.GUID,
-				Type:            deployedProduct.Type,
-				LicenseMetadata: deployedProduct.LicenseMetadata,
-			})
-		}
 	} else {
-		stagedProducts, err := a.ListStagedProducts()
-		if err != nil {
-			return fmt.Errorf("could not make a call to ListStagedProducts api: %w", err)
-		}
-
-		for _, stagedProduct := range stagedProducts.Products {
-			*expiringProducts = append(*expiringProducts, expiringProduct{GUID: stagedProduct.GUID,
-				Type:            stagedProduct.Type,
-				LicenseMetadata: stagedProduct.LicenseMetadata,
-			})
-		}
-
-		deployedProducts, err := a.ListDeployedProducts()
+		err := a.getStagedProducts(expiringProducts)
 
 		if err != nil {
-			return fmt.Errorf("could not make a call to ListDeployedProducts api: %w", err)
+			return fmt.Errorf("could not get staged products: %w", err)
 		}
 
-		for _, deployedProduct := range deployedProducts {
-			*expiringProducts = append(*expiringProducts, expiringProduct{GUID: deployedProduct.GUID,
-				Type:            deployedProduct.Type,
-				LicenseMetadata: deployedProduct.LicenseMetadata,
-			})
+		err = a.getDeployedProducts(expiringProducts)
+
+		if err != nil {
+			return fmt.Errorf("could not get staged products: %w", err)
 		}
+
+	}
+	removeDuplicates(expiringProducts)
+	return nil
+}
+
+func (a Api) getStagedProducts(expiringProducts *[]expiringProduct) error {
+
+	stagedProducts, err := a.ListStagedProducts()
+
+	if err != nil {
+		return fmt.Errorf("could not make a call to ListStagedProducts api: %w", err)
 	}
 
-	removeDuplicates(expiringProducts)
+	for _, stagedProduct := range stagedProducts.Products {
+		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: stagedProduct.GUID,
+			Type:            stagedProduct.Type,
+			LicenseMetadata: stagedProduct.LicenseMetadata,
+		})
+	}
+
+	return nil
+}
+
+func (a Api) getDeployedProducts(expiringProducts *[]expiringProduct) error {
+	deployedProducts, err := a.ListDeployedProducts()
+
+	if err != nil {
+		return fmt.Errorf("could not make a call to ListDeployedProducts api: %w", err)
+	}
+
+	for _, deployedProduct := range deployedProducts {
+		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: deployedProduct.GUID,
+			Type:            deployedProduct.Type,
+			LicenseMetadata: deployedProduct.LicenseMetadata,
+		})
+	}
 
 	return nil
 }
