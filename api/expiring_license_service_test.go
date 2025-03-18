@@ -258,6 +258,81 @@ var _ = Describe("ExpiringLicenseService", func() {
 			expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
 			Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
 		})
+
+		It("returns expiring licenses from both staged and deployed products when both flags are specified", func() {
+			stagedExpiryDate := formatDate(daysFromNow(15))
+			deployedExpiryDate := formatDate(daysFromNow(25))
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-staged-guid",
+							"guid": "cf-staged-guid",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Staged Licensed Product",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Staged product",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, stagedExpiryDate)),
+				),
+			)
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-deployed-guid",
+							"guid": "cf-deployed-guid",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Deployed Licensed Product",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Deployed product",
+									"product_version": "1.2.3.4"
+								}
+							],
+							"stale": {
+								"parent_products_deployed_more_recently": []
+							}
+						}
+					]`, deployedExpiryDate)),
+				),
+			)
+
+			licenses, err := service.ListExpiringLicenses("30d", true, true)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(licenses).To(HaveLen(2))
+
+			stagedLicense := findLicenseByGUID(licenses, "cf-staged-guid")
+			Expect(stagedLicense).NotTo(BeNil())
+			Expect(stagedLicense.ProductName).To(Equal("cf"))
+			expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
+			Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
+
+			deployedLicense := findLicenseByGUID(licenses, "cf-deployed-guid")
+			Expect(deployedLicense).NotTo(BeNil())
+			Expect(deployedLicense.ProductName).To(Equal("cf"))
+			expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
+			Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
+		})
 	})
 })
 
