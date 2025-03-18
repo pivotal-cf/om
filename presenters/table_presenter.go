@@ -260,10 +260,10 @@ func (t TablePresenter) PresentStagedProducts(stagedProducts []api.DiagnosticPro
 }
 
 func (t TablePresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutPut) {
-	t.tableWriter.SetHeader([]string{"Name", "Expiry"})
+	t.tableWriter.SetHeader([]string{"Name", "GUID", "Expiry"})
 
 	for _, product := range products {
-		t.tableWriter.Append([]string{product.ProductName, product.ExpiresAt.Format(time.RFC3339Nano)})
+		t.tableWriter.Append([]string{product.ProductName, product.GUID, product.ExpiresAt.Format("2006-01-02")})
 	}
 
 	t.tableWriter.Render()

@@ -8,6 +8,7 @@ import (
 // not the acutal response, will need to be updated to match the actual response
 type ExpiringLicenseOutPut struct {
 	ProductName string    `json:"product_name"`
+	GUID        string    `json:"guid"`
 	ExpiresAt   time.Time `json:"expires_at"`
 }
 
@@ -31,16 +32,15 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 
 	for _, expiredProduct := range expiringProducts {
 
-		if len(expiredProduct.LicenseMetadata) == 0 {
-			continue
-		}
+		//handling multiple license associated with a single product
+		for _, license := range expiredProduct.LicenseMetadata {
 
-		t, err := time.Parse(layout, expiredProduct.LicenseMetadata[0].ExpiresAt)
-		if err != nil {
-			return nil, fmt.Errorf("could not make convert expiry date string to time: %w", err)
+			t, err := time.Parse(layout, license.ExpiresAt)
+			if err != nil {
+				return nil, fmt.Errorf("could not make convert expiry date string to time: %w", err)
+			}
+			expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
 		}
-		expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, ExpiresAt: t})
-
 	}
 	return expiredLicense, err
 }
