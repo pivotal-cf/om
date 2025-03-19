@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"time"
 )
 
-// not the acutal response, will need to be updated to match the actual response
 type ExpiringLicenseOutPut struct {
 	ProductName string    `json:"product_name"`
 	GUID        string    `json:"guid"`
@@ -39,7 +40,14 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 			if err != nil {
 				return nil, fmt.Errorf("could not make convert expiry date string to time: %w", err)
 			}
-			expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
+			if expiresWithin != "" {
+				if t.Before(calcEndDate(expiresWithin)) {
+					expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
+				}
+			} else {
+				expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
+			}
+
 		}
 	}
 	return expiredLicense, err
@@ -47,28 +55,17 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 
 func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged bool, deployed bool) error {
 
-	if staged {
-		err := a.getStagedProducts(expiringProducts)
+	noModifiersSelected := !staged && !deployed
+	if staged || noModifiersSelected {
+		err := a.addStagedProducts(expiringProducts)
 
 		if err != nil {
 			return fmt.Errorf("could not get staged products: %w", err)
 		}
 
-	} else if deployed {
-		err := a.getDeployedProducts(expiringProducts)
-
-		if err != nil {
-			return fmt.Errorf("could not get staged products: %w", err)
-		}
-
-	} else {
-		err := a.getStagedProducts(expiringProducts)
-
-		if err != nil {
-			return fmt.Errorf("could not get staged products: %w", err)
-		}
-
-		err = a.getDeployedProducts(expiringProducts)
+	}
+	if deployed || noModifiersSelected {
+		err := a.addDeployedProducts(expiringProducts)
 
 		if err != nil {
 			return fmt.Errorf("could not get staged products: %w", err)
@@ -79,7 +76,7 @@ func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged 
 	return nil
 }
 
-func (a Api) getStagedProducts(expiringProducts *[]expiringProduct) error {
+func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
 
 	stagedProducts, err := a.ListStagedProducts()
 
@@ -97,7 +94,7 @@ func (a Api) getStagedProducts(expiringProducts *[]expiringProduct) error {
 	return nil
 }
 
-func (a Api) getDeployedProducts(expiringProducts *[]expiringProduct) error {
+func (a Api) addDeployedProducts(expiringProducts *[]expiringProduct) error {
 	deployedProducts, err := a.ListDeployedProducts()
 
 	if err != nil {
@@ -110,7 +107,6 @@ func (a Api) getDeployedProducts(expiringProducts *[]expiringProduct) error {
 			LicenseMetadata: deployedProduct.LicenseMetadata,
 		})
 	}
-
 	return nil
 }
 
@@ -124,6 +120,32 @@ func removeDuplicates(expiringProducts *[]expiringProduct) {
 			result = append(result, expiringProduct)
 		}
 	}
-
 	*expiringProducts = result
+}
+
+func calcEndDate(expiresWithin string) time.Time {
+	exp := regexp.MustCompile("(?P<duration>^[1-9]\\d*)+(?P<type>[dwmy]$)")
+	match := exp.FindStringSubmatch(expiresWithin)
+
+	if match[2] == "d" {
+		days, _ := strconv.Atoi(match[1])
+
+		return time.Now().AddDate(0, 0, days)
+	}
+
+	if match[2] == "w" {
+		weeks, _ := strconv.Atoi(match[1])
+		t := time.Now().AddDate(0, 0, weeks*7)
+		return t
+	}
+
+	if match[2] == "m" {
+		months, _ := strconv.Atoi(match[1])
+
+		return time.Now().AddDate(0, months, 0)
+	}
+
+	years, _ := strconv.Atoi(match[1])
+	return time.Now().AddDate(years, 0, 0)
+
 }
