@@ -636,6 +636,77 @@ var _ = Describe("ExpiringLicenseService", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(0))
 		})
+
+		It("deduplicates products that appear in both staged and deployed states", func() {
+			expiryDate := formatDate(daysFromNow(20))
+
+			// First handler for staged products
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-duplicate-test",
+							"guid": "cf-duplicate-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product in both states",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Test Product",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, expiryDate)),
+				),
+			)
+
+			// Second handler for deployed products
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-duplicate-test",
+							"guid": "cf-duplicate-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product in both states",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Test Product",
+									"product_version": "1.2.3.4"
+								}
+							],
+							"stale": {
+								"parent_products_deployed_more_recently": []
+							}
+						}
+					]`, expiryDate)),
+				),
+			)
+
+			// Test with both staged and deployed flags set to true
+			licenses, err := service.ListExpiringLicenses("30d", true, true)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Should only get one license entry despite the product appearing in both states
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].ProductName).To(Equal("cf"))
+			Expect(licenses[0].GUID).To(Equal("cf-duplicate-test"))
+
+			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+		})
 	})
 })
 
