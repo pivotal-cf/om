@@ -47,13 +47,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiryDate)
 			})
 
 			It("does not return staged licenses that expire after the specified window", func() {
@@ -105,13 +99,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", false, true)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiryDate)
 			})
 
 			It("does not return deployed licenses that expire after the specified window", func() {
@@ -173,20 +161,9 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", false, false)
 				Expect(err).NotTo(HaveOccurred())
-
 				Expect(licenses).To(HaveLen(2))
-
-				stagedLicense := findLicenseByGUID(licenses, stagedGUID)
-				Expect(stagedLicense).NotTo(BeNil())
-				Expect(stagedLicense.ProductName).To(Equal("cf"))
-				expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
-				Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
-
-				deployedLicense := findLicenseByGUID(licenses, deployedGUID)
-				Expect(deployedLicense).NotTo(BeNil())
-				Expect(deployedLicense.ProductName).To(Equal("cf"))
-				expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
-				Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
+				expectLicenseDetails(findLicenseByGUID(licenses, stagedGUID), stagedGUID, stagedExpiryDate)
+				expectLicenseDetails(findLicenseByGUID(licenses, deployedGUID), deployedGUID, deployedExpiryDate)
 			})
 
 			It("returns expiring licenses from both staged and deployed products when both flags are specified", func() {
@@ -213,20 +190,9 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", true, true)
 				Expect(err).NotTo(HaveOccurred())
-
 				Expect(licenses).To(HaveLen(2))
-
-				stagedLicense := findLicenseByGUID(licenses, stagedGUID)
-				Expect(stagedLicense).NotTo(BeNil())
-				Expect(stagedLicense.ProductName).To(Equal("cf"))
-				expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
-				Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
-
-				deployedLicense := findLicenseByGUID(licenses, deployedGUID)
-				Expect(deployedLicense).NotTo(BeNil())
-				Expect(deployedLicense.ProductName).To(Equal("cf"))
-				expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
-				Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
+				expectLicenseDetails(findLicenseByGUID(licenses, stagedGUID), stagedGUID, stagedExpiryDate)
+				expectLicenseDetails(findLicenseByGUID(licenses, deployedGUID), deployedGUID, deployedExpiryDate)
 			})
 
 			It("deduplicates products that appear in both staged and deployed states", func() {
@@ -250,13 +216,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", true, true)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiryDate)
 			})
 		})
 
@@ -288,11 +248,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err = service.ListExpiringLicenses("4w", true, false)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiryDate)
 			})
 
 			It("correctly filters licenses using months as the time unit", func() {
@@ -322,11 +278,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err = service.ListExpiringLicenses("3m", true, false)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiryDate)
 			})
 
 			It("correctly filters licenses using years as the time unit", func() {
@@ -356,11 +308,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err = service.ListExpiringLicenses("1y", true, false)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiryDate)
 			})
 
 			It("correctly handles licenses expiring exactly on the boundary date", func() {
@@ -377,13 +325,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", boundaryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, boundaryDate)
 
 				client.Reset()
 				boundaryDate = formatDate(daysFromNow(14))
@@ -397,13 +339,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err = service.ListExpiringLicenses("2w", true, false)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ = time.Parse("2006-01-02", boundaryDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, boundaryDate)
 			})
 		})
 
@@ -445,13 +381,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal("cf-multiple-licenses"))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiringDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, "cf-multiple-licenses", expiringDate)
 			})
 
 			It("correctly handles products with no license metadata", func() {
@@ -492,13 +422,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err := service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ := time.Parse("2006-01-02", expiredDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiredDate)
 
 				client.Reset()
 				expiredDate = formatDate(time.Now().AddDate(-1, 0, 0))
@@ -514,13 +438,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				licenses, err = service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(licenses).To(HaveLen(1))
-				Expect(licenses[0].ProductName).To(Equal("cf"))
-				Expect(licenses[0].GUID).To(Equal(guid))
-
-				expectedTime, _ = time.Parse("2006-01-02", expiredDate)
-				Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+				expectSingleLicense(licenses, guid, expiredDate)
 			})
 		})
 	})
@@ -588,4 +506,18 @@ func findLicenseByGUID(licenses []api.ExpiringLicenseOutPut, guid string) *api.E
 		}
 	}
 	return nil
+}
+
+func expectSingleLicense(licenses []api.ExpiringLicenseOutPut, guid, expiryDate string) {
+	Expect(licenses).To(HaveLen(1))
+	expectLicenseDetails(&licenses[0], guid, expiryDate)
+}
+
+func expectLicenseDetails(license *api.ExpiringLicenseOutPut, guid, expiryDate string) {
+	Expect(license).NotTo(BeNil())
+	Expect(license.ProductName).To(Equal("cf"))
+	Expect(license.GUID).To(Equal(guid))
+
+	expectedTime, _ := time.Parse("2006-01-02", expiryDate)
+	Expect(license.ExpiresAt).To(Equal(expectedTime))
 }
