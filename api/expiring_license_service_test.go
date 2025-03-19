@@ -333,6 +333,103 @@ var _ = Describe("ExpiringLicenseService", func() {
 			expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
 			Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
 		})
+
+		It("returns an error when the API call to get staged products fails", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusInternalServerError, `{"error": "server error"}`),
+				),
+			)
+
+			_, err := service.ListExpiringLicenses("30d", true, false)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("could not get staged products"))
+			Expect(err.Error()).To(ContainSubstring("could not make a call to ListStagedProducts api"))
+		})
+
+		It("returns an error when the API call to get deployed products fails", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusInternalServerError, `{"error": "server error"}`),
+				),
+			)
+
+			_, err := service.ListExpiringLicenses("30d", false, true)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("could not get staged products"))
+			Expect(err.Error()).To(ContainSubstring("could not make a call to ListDeployedProducts api"))
+		})
+
+		It("correctly filters licenses using weeks as the time unit", func() {
+			expiryDate := formatDate(daysFromNow(21))
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-weeks-test",
+							"guid": "cf-weeks-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product expiring in 3 weeks",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Some product!",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, expiryDate)),
+				),
+			)
+		
+			licenses, err := service.ListExpiringLicenses("2w", true, false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(licenses).To(HaveLen(0))
+		
+			client.Reset()
+			
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-weeks-test",
+							"guid": "cf-weeks-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product expiring in 3 weeks",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Some product!",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, expiryDate)),
+				),
+			)
+		
+			licenses, err = service.ListExpiringLicenses("4w", true, false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].GUID).To(Equal("cf-weeks-test"))
+			
+			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+		})
 	})
 })
 
