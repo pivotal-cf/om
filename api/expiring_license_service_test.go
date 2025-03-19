@@ -390,13 +390,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 					]`, expiryDate)),
 				),
 			)
-		
+
 			licenses, err := service.ListExpiringLicenses("2w", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(0))
-		
+
 			client.Reset()
-			
+
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -421,19 +421,19 @@ var _ = Describe("ExpiringLicenseService", func() {
 					]`, expiryDate)),
 				),
 			)
-		
+
 			licenses, err = service.ListExpiringLicenses("4w", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].GUID).To(Equal("cf-weeks-test"))
-			
+
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 		})
 
 		It("correctly filters licenses using months as the time unit", func() {
 			expiryDate := formatDate(time.Now().AddDate(0, 2, 0))
-			
+
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -458,13 +458,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 					]`, expiryDate)),
 				),
 			)
-		
+
 			licenses, err := service.ListExpiringLicenses("1m", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(0))
-		
+
 			client.Reset()
-			
+
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -489,19 +489,19 @@ var _ = Describe("ExpiringLicenseService", func() {
 					]`, expiryDate)),
 				),
 			)
-		
+
 			licenses, err = service.ListExpiringLicenses("3m", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].GUID).To(Equal("cf-months-test"))
-			
+
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 		})
 
 		It("correctly filters licenses using years as the time unit", func() {
 			expiryDate := formatDate(time.Now().AddDate(0, 9, 0))
-			
+
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -526,13 +526,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 					]`, expiryDate)),
 				),
 			)
-		
+
 			licenses, err := service.ListExpiringLicenses("6m", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(0))
-		
+
 			client.Reset()
-			
+
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -557,13 +557,59 @@ var _ = Describe("ExpiringLicenseService", func() {
 					]`, expiryDate)),
 				),
 			)
-		
+
 			licenses, err = service.ListExpiringLicenses("1y", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].GUID).To(Equal("cf-years-test"))
-			
+
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+		})
+
+		It("correctly handles products with multiple licenses (some expiring, some not)", func() {
+			expiringDate := formatDate(daysFromNow(20))
+			futureDate := formatDate(daysFromNow(60))
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-multiple-licenses",
+							"guid": "cf-multiple-licenses",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product with multiple licenses",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key_1",
+									"expiry": "%s",
+									"product_name": "Expiring License",
+									"product_version": "1.2.3.4"
+								},
+								{
+									"property_reference": ".properties.license_key_2",
+									"expiry": "%s",
+									"product_name": "Future License",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, expiringDate, futureDate)),
+				),
+			)
+
+			licenses, err := service.ListExpiringLicenses("30d", true, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].ProductName).To(Equal("cf"))
+			Expect(licenses[0].GUID).To(Equal("cf-multiple-licenses"))
+
+			expectedTime, _ := time.Parse("2006-01-02", expiringDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 		})
 	})
