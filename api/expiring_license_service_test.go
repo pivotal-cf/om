@@ -360,7 +360,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 			_, err := service.ListExpiringLicenses("30d", false, true)
 
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("could not get staged products"))
+			Expect(err.Error()).To(ContainSubstring("could not get deployed products"))
 			Expect(err.Error()).To(ContainSubstring("could not make a call to ListDeployedProducts api"))
 		})
 
