@@ -25,6 +25,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 
 	expiringProducts := []expiringProduct{}
 	err := a.getProductsLicenseInfo(&expiringProducts, staged, deployed)
+	// This is golang's time format for the library not a true date
 	layout := "2006-01-02"
 
 	if err != nil {
@@ -40,11 +41,8 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 			if err != nil {
 				return nil, fmt.Errorf("could not make convert expiry date string to time: %w", err)
 			}
-			if expiresWithin != "" {
-				if t.Before(calcEndDate(expiresWithin)) {
-					expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
-				}
-			} else {
+			//expiresWithin is never null. Defaults to 3 months when nothing is passed
+			if t.Before(calcEndDate(expiresWithin)) {
 				expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
 			}
 
@@ -68,7 +66,7 @@ func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged 
 		err := a.addDeployedProducts(expiringProducts)
 
 		if err != nil {
-			return fmt.Errorf("could not get staged products: %w", err)
+			return fmt.Errorf("could not get deployed products: %w", err)
 		}
 
 	}
@@ -127,25 +125,20 @@ func calcEndDate(expiresWithin string) time.Time {
 	exp := regexp.MustCompile("(?P<duration>^[1-9]\\d*)+(?P<type>[dwmy]$)")
 	match := exp.FindStringSubmatch(expiresWithin)
 
-	if match[2] == "d" {
+	switch durationType := match[2]; durationType {
+	case "d":
 		days, _ := strconv.Atoi(match[1])
-
 		return time.Now().AddDate(0, 0, days)
-	}
-
-	if match[2] == "w" {
+	case "w":
 		weeks, _ := strconv.Atoi(match[1])
-		t := time.Now().AddDate(0, 0, weeks*7)
-		return t
-	}
-
-	if match[2] == "m" {
+		return time.Now().AddDate(0, 0, weeks*7)
+	case "m":
 		months, _ := strconv.Atoi(match[1])
-
 		return time.Now().AddDate(0, months, 0)
+	case "y":
+		years, _ := strconv.Atoi(match[1])
+		return time.Now().AddDate(years, 0, 0)
+	default:
+		return time.Now().AddDate(0, 3, 0)
 	}
-
-	years, _ := strconv.Atoi(match[1])
-	return time.Now().AddDate(years, 0, 0)
-
 }

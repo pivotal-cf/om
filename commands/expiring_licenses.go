@@ -20,7 +20,7 @@ type ExpiringLicenses struct {
 	Options   struct {
 		Staged        bool   `long:"staged" short:"s" description:"Specify to include staged products. Can be used with other options."`
 		Deployed      bool   `long:"deployed" short:"d" description:"Specify to deployed products. Can be used with other options."`
-		ExpiresWithin string `long:"expires-within"  short:"e"  description:"timeframe in which to check expiration. Default: \"90d\".\n\t\t\t\tdays(d), weeks(w), months(m) and years(y) supported."`
+		ExpiresWithin string `long:"expires-within"  short:"e"  description:"timeframe in which to check expiration. Default: \"3m\".\n\t\t\t\tdays(d), weeks(w), months(m) and years(y) supported."`
 		Format        string `long:"format" short:"f" default:"table" description:"Format to print as (options: table,json)"`
 	}
 }
@@ -48,6 +48,7 @@ func (e *ExpiringLicenses) Execute(args []string) error {
 	if len(expiringLicenses) == 0 {
 		e.logger.Printf(color.GreenString("[✓] No licenses are expiring in %s\n"), e.Options.ExpiresWithin)
 	}
+	e.presenter.SetFormat(e.Options.Format)
 	e.presenter.PresentLicensedProducts(expiringLicenses)
 	return nil
 }
