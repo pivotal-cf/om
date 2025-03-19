@@ -612,6 +612,30 @@ var _ = Describe("ExpiringLicenseService", func() {
 			expectedTime, _ := time.Parse("2006-01-02", expiringDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 		})
+
+		It("correctly handles products with no license metadata", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[
+						{
+							"installation_name": "cf-no-license",
+							"guid": "cf-no-license",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product without license",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": []
+						}
+					]`),
+				),
+			)
+
+			licenses, err := service.ListExpiringLicenses("30d", true, false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(licenses).To(HaveLen(0))
+		})
 	})
 })
 
