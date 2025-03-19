@@ -34,29 +34,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 	Describe("ListExpiringLicenses", func() {
 		It("returns expiring licenses for staged products", func() {
 			expiryDate := formatDate(daysFromNow(20))
+			guid := "cf-fa24570b6a6e8940ab57"
+			label := "Ops Manager: Example Licensed Product"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-fa24570b6a6e8940ab57",
-							"guid": "cf-fa24570b6a6e8940ab57",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Ops Manager: Example Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -65,7 +49,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-fa24570b6a6e8940ab57"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -73,29 +57,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("does not return staged licenses that expire after the specified window", func() {
 			expiryDate := formatDate(daysFromNow(60))
+			guid := "cf-fa24570b6a6e8940ab57"
+			label := "Ops Manager: Example Licensed Product"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-fa24570b6a6e8940ab57",
-							"guid": "cf-fa24570b6a6e8940ab57",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Ops Manager: Example Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -107,32 +75,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("returns expiring licenses for deployed products", func() {
 			expiryDate := formatDate(daysFromNow(20))
+			guid := "cf-fa24570b6a6e8940ab57"
+			label := "Ops Manager: Example Licensed Product"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-fa24570b6a6e8940ab57",
-							"guid": "cf-fa24570b6a6e8940ab57",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Ops Manager: Example Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							],
-							"stale": {
-								"parent_products_deployed_more_recently": []
-							}
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -141,7 +90,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-fa24570b6a6e8940ab57"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -149,32 +98,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("does not return deployed licenses that expire after the specified window", func() {
 			expiryDate := formatDate(daysFromNow(60))
+			guid := "cf-fa24570b6a6e8940ab57"
+			label := "Ops Manager: Example Licensed Product"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-fa24570b6a6e8940ab57",
-							"guid": "cf-fa24570b6a6e8940ab57",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Ops Manager: Example Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							],
-							"stale": {
-								"parent_products_deployed_more_recently": []
-							}
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -187,57 +117,22 @@ var _ = Describe("ExpiringLicenseService", func() {
 		It("returns expiring licenses from both staged and deployed products when neither flag is specified", func() {
 			stagedExpiryDate := formatDate(daysFromNow(15))
 			deployedExpiryDate := formatDate(daysFromNow(25))
+			stagedGUID := "cf-staged-guid"
+			deployedGUID := "cf-deployed-guid"
+			stagedLabel := "Staged Licensed Product"
+			deployedLabel := "Deployed Licensed Product"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-staged-guid",
-							"guid": "cf-staged-guid",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Staged Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Staged product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, stagedExpiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
 				),
 			)
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-deployed-guid",
-							"guid": "cf-deployed-guid",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Deployed Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Deployed product",
-									"product_version": "1.2.3.4"
-								}
-							],
-							"stale": {
-								"parent_products_deployed_more_recently": []
-							}
-						}
-					]`, deployedExpiryDate)),
+					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
 				),
 			)
 
@@ -246,13 +141,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(2))
 
-			stagedLicense := findLicenseByGUID(licenses, "cf-staged-guid")
+			stagedLicense := findLicenseByGUID(licenses, stagedGUID)
 			Expect(stagedLicense).NotTo(BeNil())
 			Expect(stagedLicense.ProductName).To(Equal("cf"))
 			expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
 			Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
 
-			deployedLicense := findLicenseByGUID(licenses, "cf-deployed-guid")
+			deployedLicense := findLicenseByGUID(licenses, deployedGUID)
 			Expect(deployedLicense).NotTo(BeNil())
 			Expect(deployedLicense.ProductName).To(Equal("cf"))
 			expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
@@ -262,57 +157,22 @@ var _ = Describe("ExpiringLicenseService", func() {
 		It("returns expiring licenses from both staged and deployed products when both flags are specified", func() {
 			stagedExpiryDate := formatDate(daysFromNow(15))
 			deployedExpiryDate := formatDate(daysFromNow(25))
+			stagedGUID := "cf-staged-guid"
+			deployedGUID := "cf-deployed-guid"
+			stagedLabel := "Staged Licensed Product"
+			deployedLabel := "Deployed Licensed Product"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-staged-guid",
-							"guid": "cf-staged-guid",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Staged Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Staged product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, stagedExpiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
 				),
 			)
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-deployed-guid",
-							"guid": "cf-deployed-guid",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Deployed Licensed Product",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Deployed product",
-									"product_version": "1.2.3.4"
-								}
-							],
-							"stale": {
-								"parent_products_deployed_more_recently": []
-							}
-						}
-					]`, deployedExpiryDate)),
+					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
 				),
 			)
 
@@ -321,13 +181,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(2))
 
-			stagedLicense := findLicenseByGUID(licenses, "cf-staged-guid")
+			stagedLicense := findLicenseByGUID(licenses, stagedGUID)
 			Expect(stagedLicense).NotTo(BeNil())
 			Expect(stagedLicense.ProductName).To(Equal("cf"))
 			expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
 			Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
 
-			deployedLicense := findLicenseByGUID(licenses, "cf-deployed-guid")
+			deployedLicense := findLicenseByGUID(licenses, deployedGUID)
 			Expect(deployedLicense).NotTo(BeNil())
 			Expect(deployedLicense.ProductName).To(Equal("cf"))
 			expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
@@ -366,28 +226,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("correctly filters licenses using weeks as the time unit", func() {
 			expiryDate := formatDate(daysFromNow(21))
+			guid := "cf-weeks-test"
+			label := "Product expiring in 3 weeks"
+
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-weeks-test",
-							"guid": "cf-weeks-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring in 3 weeks",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -400,32 +245,14 @@ var _ = Describe("ExpiringLicenseService", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-weeks-test",
-							"guid": "cf-weeks-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring in 3 weeks",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
 			licenses, err = service.ListExpiringLicenses("4w", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(1))
-			Expect(licenses[0].GUID).To(Equal("cf-weeks-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -433,29 +260,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("correctly filters licenses using months as the time unit", func() {
 			expiryDate := formatDate(time.Now().AddDate(0, 2, 0))
+			guid := "cf-months-test"
+			label := "Product expiring in 2 months"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-months-test",
-							"guid": "cf-months-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring in 2 months",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -468,32 +279,14 @@ var _ = Describe("ExpiringLicenseService", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-months-test",
-							"guid": "cf-months-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring in 2 months",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
 			licenses, err = service.ListExpiringLicenses("3m", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(1))
-			Expect(licenses[0].GUID).To(Equal("cf-months-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -501,29 +294,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("correctly filters licenses using years as the time unit", func() {
 			expiryDate := formatDate(time.Now().AddDate(0, 9, 0))
+			guid := "cf-years-test"
+			label := "Product expiring in 9 months"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-years-test",
-							"guid": "cf-years-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring in 9 months",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -536,32 +313,14 @@ var _ = Describe("ExpiringLicenseService", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-years-test",
-							"guid": "cf-years-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring in 9 months",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Some product!",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
 			licenses, err = service.ListExpiringLicenses("1y", true, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(licenses).To(HaveLen(1))
-			Expect(licenses[0].GUID).To(Equal("cf-years-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -639,57 +398,20 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("deduplicates products that appear in both staged and deployed states", func() {
 			expiryDate := formatDate(daysFromNow(20))
+			guid := "cf-duplicate-test"
+			label := "Product in both states"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-duplicate-test",
-							"guid": "cf-duplicate-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product in both states",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Test Product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-duplicate-test",
-							"guid": "cf-duplicate-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product in both states",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Test Product",
-									"product_version": "1.2.3.4"
-								}
-							],
-							"stale": {
-								"parent_products_deployed_more_recently": []
-							}
-						}
-					]`, expiryDate)),
+					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -698,7 +420,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-duplicate-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -706,29 +428,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("correctly handles licenses expiring exactly on the boundary date", func() {
 			boundaryDate := formatDate(daysFromNow(30))
+			guid := "cf-boundary-test"
+			label := "Product expiring exactly on boundary"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-boundary-test",
-							"guid": "cf-boundary-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring exactly on boundary",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Test Product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, boundaryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, boundaryDate, label)),
 				),
 			)
 
@@ -737,7 +443,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-boundary-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", boundaryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -748,25 +454,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-boundary-test",
-							"guid": "cf-boundary-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product expiring exactly on boundary",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Test Product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, boundaryDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, boundaryDate, label)),
 				),
 			)
 
@@ -775,7 +463,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-boundary-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ = time.Parse("2006-01-02", boundaryDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
@@ -783,29 +471,13 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 		It("correctly handles licenses that have already expired", func() {
 			expiredDate := formatDate(daysFromNow(-5))
+			guid := "cf-expired-test"
+			label := "Product with expired license"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-expired-test",
-							"guid": "cf-expired-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product with expired license",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Test Product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiredDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiredDate, label)),
 				),
 			)
 
@@ -814,36 +486,20 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-expired-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiredDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 
 			client.Reset()
 			expiredDate = formatDate(time.Now().AddDate(-1, 0, 0))
+			guid = "cf-long-expired-test"
+			label = "Product with long expired license"
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
-						{
-							"installation_name": "cf-long-expired-test",
-							"guid": "cf-long-expired-test",
-							"type": "cf",
-							"product_version": "1.0-build.0",
-							"label": "Product with long expired license",
-							"service_broker": false,
-							"bosh_read_creds": false,
-							"license_metadata": [
-								{
-									"property_reference": ".properties.license_key",
-									"expiry": "%s",
-									"product_name": "Test Product",
-									"product_version": "1.2.3.4"
-								}
-							]
-						}
-					]`, expiredDate)),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiredDate, label)),
 				),
 			)
 
@@ -852,13 +508,60 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
-			Expect(licenses[0].GUID).To(Equal("cf-long-expired-test"))
+			Expect(licenses[0].GUID).To(Equal(guid))
 
 			expectedTime, _ = time.Parse("2006-01-02", expiredDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 		})
 	})
 })
+
+func createStagedProductResponse(guid, expiryDate, label string) string {
+	return fmt.Sprintf(`[
+		{
+			"installation_name": "%s",
+			"guid": "%s",
+			"type": "cf",
+			"product_version": "1.0-build.0",
+			"label": "%s",
+			"service_broker": false,
+			"bosh_read_creds": false,
+			"license_metadata": [
+				{
+					"property_reference": ".properties.license_key",
+					"expiry": "%s",
+					"product_name": "Test Product",
+					"product_version": "1.2.3.4"
+				}
+			]
+		}
+	]`, guid, guid, label, expiryDate)
+}
+
+func createDeployedProductResponse(guid, expiryDate, label string) string {
+	return fmt.Sprintf(`[
+		{
+			"installation_name": "%s",
+			"guid": "%s",
+			"type": "cf",
+			"product_version": "1.0-build.0",
+			"label": "%s",
+			"service_broker": false,
+			"bosh_read_creds": false,
+			"license_metadata": [
+				{
+					"property_reference": ".properties.license_key",
+					"expiry": "%s",
+					"product_name": "Test Product",
+					"product_version": "1.2.3.4"
+				}
+			],
+			"stale": {
+				"parent_products_deployed_more_recently": []
+			}
+		}
+	]`, guid, guid, label, expiryDate)
+}
 
 func daysFromNow(days int) time.Time {
 	return time.Now().AddDate(0, 0, days)
