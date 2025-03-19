@@ -640,7 +640,6 @@ var _ = Describe("ExpiringLicenseService", func() {
 		It("deduplicates products that appear in both staged and deployed states", func() {
 			expiryDate := formatDate(daysFromNow(20))
 
-			// First handler for staged products
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
@@ -666,7 +665,6 @@ var _ = Describe("ExpiringLicenseService", func() {
 				),
 			)
 
-			// Second handler for deployed products
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
@@ -695,16 +693,168 @@ var _ = Describe("ExpiringLicenseService", func() {
 				),
 			)
 
-			// Test with both staged and deployed flags set to true
 			licenses, err := service.ListExpiringLicenses("30d", true, true)
 			Expect(err).NotTo(HaveOccurred())
 
-			// Should only get one license entry despite the product appearing in both states
 			Expect(licenses).To(HaveLen(1))
 			Expect(licenses[0].ProductName).To(Equal("cf"))
 			Expect(licenses[0].GUID).To(Equal("cf-duplicate-test"))
 
 			expectedTime, _ := time.Parse("2006-01-02", expiryDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+		})
+
+		It("correctly handles licenses expiring exactly on the boundary date", func() {
+			boundaryDate := formatDate(daysFromNow(30))
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-boundary-test",
+							"guid": "cf-boundary-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product expiring exactly on boundary",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Test Product",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, boundaryDate)),
+				),
+			)
+
+			licenses, err := service.ListExpiringLicenses("30d", true, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].ProductName).To(Equal("cf"))
+			Expect(licenses[0].GUID).To(Equal("cf-boundary-test"))
+
+			expectedTime, _ := time.Parse("2006-01-02", boundaryDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+
+			client.Reset()
+			boundaryDate = formatDate(daysFromNow(14))
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-boundary-test",
+							"guid": "cf-boundary-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product expiring exactly on boundary",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Test Product",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, boundaryDate)),
+				),
+			)
+
+			licenses, err = service.ListExpiringLicenses("2w", true, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].ProductName).To(Equal("cf"))
+			Expect(licenses[0].GUID).To(Equal("cf-boundary-test"))
+
+			expectedTime, _ = time.Parse("2006-01-02", boundaryDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+		})
+
+		It("correctly handles licenses that have already expired", func() {
+			expiredDate := formatDate(daysFromNow(-5))
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-expired-test",
+							"guid": "cf-expired-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product with expired license",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Test Product",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, expiredDate)),
+				),
+			)
+
+			licenses, err := service.ListExpiringLicenses("30d", true, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].ProductName).To(Equal("cf"))
+			Expect(licenses[0].GUID).To(Equal("cf-expired-test"))
+
+			expectedTime, _ := time.Parse("2006-01-02", expiredDate)
+			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
+
+			client.Reset()
+			expiredDate = formatDate(time.Now().AddDate(-1, 0, 0))
+
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`[
+						{
+							"installation_name": "cf-long-expired-test",
+							"guid": "cf-long-expired-test",
+							"type": "cf",
+							"product_version": "1.0-build.0",
+							"label": "Product with long expired license",
+							"service_broker": false,
+							"bosh_read_creds": false,
+							"license_metadata": [
+								{
+									"property_reference": ".properties.license_key",
+									"expiry": "%s",
+									"product_name": "Test Product",
+									"product_version": "1.2.3.4"
+								}
+							]
+						}
+					]`, expiredDate)),
+				),
+			)
+
+			licenses, err = service.ListExpiringLicenses("30d", true, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(licenses).To(HaveLen(1))
+			Expect(licenses[0].ProductName).To(Equal("cf"))
+			Expect(licenses[0].GUID).To(Equal("cf-long-expired-test"))
+
+			expectedTime, _ = time.Parse("2006-01-02", expiredDate)
 			Expect(licenses[0].ExpiresAt).To(Equal(expectedTime))
 		})
 	})
