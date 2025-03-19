@@ -22,15 +22,16 @@ type expiringProduct struct {
 func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutPut, error) {
 
 	expiredLicense := []ExpiringLicenseOutPut{}
-
 	expiringProducts := []expiringProduct{}
+
 	err := a.getProductsLicenseInfo(&expiringProducts, staged, deployed)
-	// This is golang's time format for the library not a true date
-	layout := "2006-01-02"
 
 	if err != nil {
-		return nil, fmt.Errorf("Cannot list deployed products: %w", err)
+		return nil, fmt.Errorf("Cannot list licensed products: %w", err)
 	}
+
+	// This is golang's time format for the library not a true date
+	layout := "2006-01-02"
 
 	for _, expiredProduct := range expiringProducts {
 
@@ -39,7 +40,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 
 			t, err := time.Parse(layout, license.ExpiresAt)
 			if err != nil {
-				return nil, fmt.Errorf("could not make convert expiry date string to time: %w", err)
+				return nil, fmt.Errorf("could not convert expiry date string to time: %w", err)
 			}
 			//expiresWithin is never null. Defaults to 3 months when nothing is passed
 			if t.Before(calcEndDate(expiresWithin)) {
