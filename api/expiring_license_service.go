@@ -21,6 +21,12 @@ type expiringProduct struct {
 	ProductState    string
 }
 
+const (
+	ProductStateStaged   = "staged"
+	ProductStateDeployed = "deployed"
+	layout               = "2006-01-02" // golang's time format for the library not a true date
+)
+
 func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutput, error) {
 	expiredLicense := []ExpiringLicenseOutput{}
 	expiringProducts := []expiringProduct{}
@@ -31,15 +37,13 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 		return nil, fmt.Errorf("could not list licensed products: %w", err)
 	}
 
-	// This is golang's time format for the library not a true date
-	layout := "2006-01-02"
-
 	for _, expiredProduct := range expiringProducts {
 		for _, license := range expiredProduct.LicenseMetadata {
 			t, err := time.Parse(layout, license.ExpiresAt)
 			if err != nil {
 				return nil, fmt.Errorf("could not convert expiry date string to time: %w", err)
 			}
+			
 			//expiresWithin is never null. Defaults to 3 months when nothing is passed
 			if t.Before(calcEndDate(expiresWithin)) {
 				expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
@@ -77,7 +81,6 @@ func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged 
 }
 
 func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
-
 	stagedProducts, err := a.ListStagedProducts()
 
 	if err != nil {
@@ -88,7 +91,7 @@ func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
 		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: stagedProduct.GUID,
 			Type:            stagedProduct.Type,
 			LicenseMetadata: stagedProduct.LicenseMetadata,
-			ProductState:    "staged",
+			ProductState:    ProductStateStaged,
 		})
 	}
 
@@ -106,7 +109,7 @@ func (a Api) addDeployedProducts(expiringProducts *[]expiringProduct) error {
 		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: deployedProduct.GUID,
 			Type:            deployedProduct.Type,
 			LicenseMetadata: deployedProduct.LicenseMetadata,
-			ProductState:    "deployed",
+			ProductState:    ProductStateDeployed,
 		})
 	}
 	return nil

@@ -25,6 +25,10 @@ type ExpiringLicenses struct {
 	}
 }
 
+const (
+	DefaultExpiresWithin = "3m"
+)
+
 func NewExpiringLicenses(presenter presenters.FormattedPresenter, service expiringLicensesService, logger logger) *ExpiringLicenses {
 	return &ExpiringLicenses{
 		presenter: presenter,
@@ -35,7 +39,7 @@ func NewExpiringLicenses(presenter presenters.FormattedPresenter, service expiri
 
 func (e *ExpiringLicenses) Execute(args []string) error {
 	if e.Options.ExpiresWithin == "" {
-		e.Options.ExpiresWithin = "3m"
+		e.Options.ExpiresWithin = DefaultExpiresWithin
 	}
 	err := e.validateConfig()
 	if err != nil {
