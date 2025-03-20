@@ -74,4 +74,60 @@ var _ = Describe("ExpiringLicenses", func() {
 			Expect(presenter.PresentLicensedProductsArgsForCall(0)).To(Equal(expiringLicenses))
 		})
 	})
+
+	When("validating timeframe formats", func() {
+		It("accepts valid formats", func() {
+			validFormats := []string{"1d", "2w", "3m", "1y", "10d", "20w", "30m", "5y"}
+			for _, format := range validFormats {
+				command := commands.NewExpiringLicenses(presenter, service, logger)
+				err := executeCommand(command, []string{"--expires-within", format})
+				Expect(err).ToNot(HaveOccurred(), "format %s should be valid", format)
+			}
+		})
+
+		It("rejects invalid formats", func() {
+			invalidFormats := []string{"0d", "0w", "0m", "0y", "1", "d", "w", "m", "y", "1x", "1.5d", "abc"}
+			for _, format := range invalidFormats {
+				command := commands.NewExpiringLicenses(presenter, service, logger)
+				err := executeCommand(command, []string{"--expires-within", format})
+				Expect(err).To(MatchError("only d,w,m, or y are supported. Default is \"3m\""), "format %s should be invalid", format)
+			}
+		})
+	})
+
+	When("different format options are specified", func() {
+		var expiringLicenses []api.ExpiringLicenseOutPut
+
+		BeforeEach(func() {
+			expiringLicenses = []api.ExpiringLicenseOutPut{
+				{
+					ProductName: "pivotal-container-service",
+					GUID:        "pks-guid-123",
+					ExpiresAt:   time.Now().AddDate(0, 1, 0),
+				},
+			}
+			service.ListExpiringLicensesReturns(expiringLicenses, nil)
+		})
+
+		It("defaults to table format", func() {
+			command := commands.NewExpiringLicenses(presenter, service, logger)
+			err := executeCommand(command, []string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(presenter.SetFormatCallCount()).To(Equal(1))
+			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
+		})
+
+		It("can output in JSON format", func() {
+			command := commands.NewExpiringLicenses(presenter, service, logger)
+			err := executeCommand(command, []string{"--format", "json"})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(presenter.SetFormatCallCount()).To(Equal(1))
+			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("json"))
+
+			Expect(presenter.PresentLicensedProductsCallCount()).To(Equal(1))
+			Expect(presenter.PresentLicensedProductsArgsForCall(0)).To(Equal(expiringLicenses))
+		})
+	})
 })
