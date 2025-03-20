@@ -8,52 +8,54 @@ import (
 )
 
 type ExpiringLicenseOutPut struct {
-	ProductName string    `json:"product_name"`
-	GUID        string    `json:"guid"`
-	ExpiresAt   time.Time `json:"expires_at"`
+	ProductName  string    `json:"product_name"`
+	GUID         string    `json:"guid"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	ProductState string    `json:"product_state"`
 }
 
 type expiringProduct struct {
 	Type            string
 	GUID            string
 	LicenseMetadata []ExpiryInfo `json:"license_metadata"`
+	ProductState    string
 }
 
 func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutPut, error) {
-
 	expiredLicense := []ExpiringLicenseOutPut{}
 	expiringProducts := []expiringProduct{}
 
 	err := a.getProductsLicenseInfo(&expiringProducts, staged, deployed)
 
 	if err != nil {
-		return nil, fmt.Errorf("Cannot list licensed products: %w", err)
+		return nil, fmt.Errorf("could not list licensed products: %w", err)
 	}
 
 	// This is golang's time format for the library not a true date
 	layout := "2006-01-02"
 
 	for _, expiredProduct := range expiringProducts {
-
 		//handling multiple license associated with a single product
 		for _, license := range expiredProduct.LicenseMetadata {
-
 			t, err := time.Parse(layout, license.ExpiresAt)
 			if err != nil {
 				return nil, fmt.Errorf("could not convert expiry date string to time: %w", err)
 			}
 			//expiresWithin is never null. Defaults to 3 months when nothing is passed
 			if t.Before(calcEndDate(expiresWithin)) {
-				expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{ProductName: expiredProduct.Type, GUID: expiredProduct.GUID, ExpiresAt: t})
+				expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{
+					ProductName:  expiredProduct.Type,
+					GUID:         expiredProduct.GUID,
+					ExpiresAt:    t,
+					ProductState: expiredProduct.ProductState,
+				})
 			}
-
 		}
 	}
 	return expiredLicense, err
 }
 
 func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged bool, deployed bool) error {
-
 	noModifiersSelected := !staged && !deployed
 	if staged || noModifiersSelected {
 		err := a.addStagedProducts(expiringProducts)
@@ -87,6 +89,7 @@ func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
 		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: stagedProduct.GUID,
 			Type:            stagedProduct.Type,
 			LicenseMetadata: stagedProduct.LicenseMetadata,
+			ProductState:    "staged",
 		})
 	}
 
@@ -104,6 +107,7 @@ func (a Api) addDeployedProducts(expiringProducts *[]expiringProduct) error {
 		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: deployedProduct.GUID,
 			Type:            deployedProduct.Type,
 			LicenseMetadata: deployedProduct.LicenseMetadata,
+			ProductState:    "deployed",
 		})
 	}
 	return nil

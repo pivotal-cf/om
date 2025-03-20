@@ -130,4 +130,91 @@ var _ = Describe("ExpiringLicenses", func() {
 			Expect(presenter.PresentLicensedProductsArgsForCall(0)).To(Equal(expiringLicenses))
 		})
 	})
+
+	When("there are expiring licenses with different product states", func() {
+		It("displays staged and deployed licenses correctly", func() {
+			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
+			expiringLicenses := []api.ExpiringLicenseOutPut{
+				{
+					ProductName:  "cf",
+					GUID:         "cf-staged",
+					ExpiresAt:    expiryDate,
+					ProductState: "staged",
+				},
+				{
+					ProductName:  "p-bosh",
+					GUID:         "p-bosh-deployed",
+					ExpiresAt:    expiryDate,
+					ProductState: "deployed",
+				},
+			}
+			service.ListExpiringLicensesReturns(expiringLicenses, nil)
+
+			command := commands.NewExpiringLicenses(presenter, service, logger)
+			err := executeCommand(command, []string{"--expires-within", "3y"})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(service.ListExpiringLicensesCallCount()).To(Equal(1))
+			timeWindow, staged, deployed := service.ListExpiringLicensesArgsForCall(0)
+			Expect(timeWindow).To(Equal("3y"))
+			Expect(staged).To(BeFalse())
+			Expect(deployed).To(BeFalse())
+
+			Expect(presenter.PresentLicensedProductsCallCount()).To(Equal(1))
+			presentedLicenses := presenter.PresentLicensedProductsArgsForCall(0)
+			Expect(presentedLicenses).To(Equal(expiringLicenses))
+		})
+
+		It("filters by staged products when --staged flag is used", func() {
+			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
+			expiringLicenses := []api.ExpiringLicenseOutPut{
+				{
+					ProductName:  "cf",
+					GUID:         "cf-staged",
+					ExpiresAt:    expiryDate,
+					ProductState: "staged",
+				},
+			}
+			service.ListExpiringLicensesReturns(expiringLicenses, nil)
+
+			command := commands.NewExpiringLicenses(presenter, service, logger)
+			err := executeCommand(command, []string{"--staged"})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(service.ListExpiringLicensesCallCount()).To(Equal(1))
+			_, staged, deployed := service.ListExpiringLicensesArgsForCall(0)
+			Expect(staged).To(BeTrue())
+			Expect(deployed).To(BeFalse())
+
+			Expect(presenter.PresentLicensedProductsCallCount()).To(Equal(1))
+			presentedLicenses := presenter.PresentLicensedProductsArgsForCall(0)
+			Expect(presentedLicenses).To(Equal(expiringLicenses))
+		})
+
+		It("filters by deployed products when --deployed flag is used", func() {
+			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
+			expiringLicenses := []api.ExpiringLicenseOutPut{
+				{
+					ProductName:  "p-bosh",
+					GUID:         "p-bosh-deployed",
+					ExpiresAt:    expiryDate,
+					ProductState: "deployed",
+				},
+			}
+			service.ListExpiringLicensesReturns(expiringLicenses, nil)
+
+			command := commands.NewExpiringLicenses(presenter, service, logger)
+			err := executeCommand(command, []string{"--deployed"})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(service.ListExpiringLicensesCallCount()).To(Equal(1))
+			_, staged, deployed := service.ListExpiringLicensesArgsForCall(0)
+			Expect(staged).To(BeFalse())
+			Expect(deployed).To(BeTrue())
+
+			Expect(presenter.PresentLicensedProductsCallCount()).To(Equal(1))
+			presentedLicenses := presenter.PresentLicensedProductsArgsForCall(0)
+			Expect(presentedLicenses).To(Equal(expiringLicenses))
+		})
+	})
 })
