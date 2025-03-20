@@ -60,6 +60,11 @@ type FormattedPresenter struct {
 	presentInstallationsArgsForCall []struct {
 		arg1 []models.Installation
 	}
+	PresentLicensedProductsStub        func([]api.ExpiringLicenseOutput)
+	presentLicensedProductsMutex       sync.RWMutex
+	presentLicensedProductsArgsForCall []struct {
+		arg1 []api.ExpiringLicenseOutput
+	}
 	PresentPendingChangesStub        func(api.PendingChangesOutput)
 	presentPendingChangesMutex       sync.RWMutex
 	presentPendingChangesArgsForCall []struct {
@@ -429,6 +434,42 @@ func (fake *FormattedPresenter) PresentInstallationsArgsForCall(i int) []models.
 	return argsForCall.arg1
 }
 
+func (fake *FormattedPresenter) PresentLicensedProducts(arg1 []api.ExpiringLicenseOutput) {
+	var arg1Copy []api.ExpiringLicenseOutput
+	if arg1 != nil {
+		arg1Copy = make([]api.ExpiringLicenseOutput, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.presentLicensedProductsMutex.Lock()
+	fake.presentLicensedProductsArgsForCall = append(fake.presentLicensedProductsArgsForCall, struct {
+		arg1 []api.ExpiringLicenseOutput
+	}{arg1Copy})
+	fake.recordInvocation("PresentLicensedProducts", []interface{}{arg1Copy})
+	fake.presentLicensedProductsMutex.Unlock()
+	if fake.PresentLicensedProductsStub != nil {
+		fake.PresentLicensedProductsStub(arg1)
+	}
+}
+
+func (fake *FormattedPresenter) PresentLicensedProductsCallCount() int {
+	fake.presentLicensedProductsMutex.RLock()
+	defer fake.presentLicensedProductsMutex.RUnlock()
+	return len(fake.presentLicensedProductsArgsForCall)
+}
+
+func (fake *FormattedPresenter) PresentLicensedProductsCalls(stub func([]api.ExpiringLicenseOutput)) {
+	fake.presentLicensedProductsMutex.Lock()
+	defer fake.presentLicensedProductsMutex.Unlock()
+	fake.PresentLicensedProductsStub = stub
+}
+
+func (fake *FormattedPresenter) PresentLicensedProductsArgsForCall(i int) []api.ExpiringLicenseOutput {
+	fake.presentLicensedProductsMutex.RLock()
+	defer fake.presentLicensedProductsMutex.RUnlock()
+	argsForCall := fake.presentLicensedProductsArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FormattedPresenter) PresentPendingChanges(arg1 api.PendingChangesOutput) {
 	fake.presentPendingChangesMutex.Lock()
 	fake.presentPendingChangesArgsForCall = append(fake.presentPendingChangesArgsForCall, struct {
@@ -612,6 +653,8 @@ func (fake *FormattedPresenter) Invocations() map[string][][]interface{} {
 	defer fake.presentGenerateCAResponseMutex.RUnlock()
 	fake.presentInstallationsMutex.RLock()
 	defer fake.presentInstallationsMutex.RUnlock()
+	fake.presentLicensedProductsMutex.RLock()
+	defer fake.presentLicensedProductsMutex.RUnlock()
 	fake.presentPendingChangesMutex.RLock()
 	defer fake.presentPendingChangesMutex.RUnlock()
 	fake.presentProductsMutex.RLock()
