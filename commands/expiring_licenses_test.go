@@ -32,7 +32,7 @@ var _ = Describe("ExpiringLicenses", func() {
 
 	When("there are no expiring licenses", func() {
 		It("presents empty list", func() {
-			service.ListExpiringLicensesReturns([]api.ExpiringLicenseOutPut{}, nil)
+			service.ListExpiringLicensesReturns([]api.ExpiringLicenseOutput{}, nil)
 
 			command := commands.NewExpiringLicenses(presenter, service, logger)
 			err := executeCommand(command, []string{})
@@ -42,13 +42,13 @@ var _ = Describe("ExpiringLicenses", func() {
 			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
 
 			Expect(presenter.PresentLicensedProductsCallCount()).To(Equal(1))
-			Expect(presenter.PresentLicensedProductsArgsForCall(0)).To(Equal([]api.ExpiringLicenseOutPut{}))
+			Expect(presenter.PresentLicensedProductsArgsForCall(0)).To(Equal([]api.ExpiringLicenseOutput{}))
 		})
 	})
 
 	When("there are expiring licenses", func() {
 		It("displays the licenses correctly", func() {
-			expiringLicenses := []api.ExpiringLicenseOutPut{
+			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
 					ProductName: "pivotal-container-service",
 					GUID:        "pks-guid-123",
@@ -96,10 +96,10 @@ var _ = Describe("ExpiringLicenses", func() {
 	})
 
 	When("different format options are specified", func() {
-		var expiringLicenses []api.ExpiringLicenseOutPut
+		var expiringLicenses []api.ExpiringLicenseOutput
 
 		BeforeEach(func() {
-			expiringLicenses = []api.ExpiringLicenseOutPut{
+			expiringLicenses = []api.ExpiringLicenseOutput{
 				{
 					ProductName: "pivotal-container-service",
 					GUID:        "pks-guid-123",
@@ -134,7 +134,7 @@ var _ = Describe("ExpiringLicenses", func() {
 	When("there are expiring licenses with different product states", func() {
 		It("displays staged and deployed licenses correctly", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
-			expiringLicenses := []api.ExpiringLicenseOutPut{
+			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
 					ProductName:  "cf",
 					GUID:         "cf-staged",
@@ -167,7 +167,7 @@ var _ = Describe("ExpiringLicenses", func() {
 
 		It("filters by staged products when --staged flag is used", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
-			expiringLicenses := []api.ExpiringLicenseOutPut{
+			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
 					ProductName:  "cf",
 					GUID:         "cf-staged",
@@ -193,7 +193,7 @@ var _ = Describe("ExpiringLicenses", func() {
 
 		It("filters by deployed products when --deployed flag is used", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
-			expiringLicenses := []api.ExpiringLicenseOutPut{
+			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
 					ProductName:  "p-bosh",
 					GUID:         "p-bosh-deployed",

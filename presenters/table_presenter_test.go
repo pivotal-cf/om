@@ -535,11 +535,11 @@ var _ = Describe("TablePresenter", func() {
 	})
 
 	Describe("PresentLicensedProducts", func() {
-		var products []api.ExpiringLicenseOutPut
+		var products []api.ExpiringLicenseOutput
 
 		BeforeEach(func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
-			products = []api.ExpiringLicenseOutPut{
+			products = []api.ExpiringLicenseOutput{
 				{
 					ProductName:  "cf",
 					GUID:         "cf-fa24570b6a6e8940ab57",

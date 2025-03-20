@@ -8,7 +8,7 @@ import (
 )
 
 type ExpiringLicensesService struct {
-	ListExpiringLicensesStub        func(string, bool, bool) ([]api.ExpiringLicenseOutPut, error)
+	ListExpiringLicensesStub        func(string, bool, bool) ([]api.ExpiringLicenseOutput, error)
 	listExpiringLicensesMutex       sync.RWMutex
 	listExpiringLicensesArgsForCall []struct {
 		arg1 string
@@ -16,18 +16,18 @@ type ExpiringLicensesService struct {
 		arg3 bool
 	}
 	listExpiringLicensesReturns struct {
-		result1 []api.ExpiringLicenseOutPut
+		result1 []api.ExpiringLicenseOutput
 		result2 error
 	}
 	listExpiringLicensesReturnsOnCall map[int]struct {
-		result1 []api.ExpiringLicenseOutPut
+		result1 []api.ExpiringLicenseOutput
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicenses(arg1 string, arg2 bool, arg3 bool) ([]api.ExpiringLicenseOutPut, error) {
+func (fake *ExpiringLicensesService) ListExpiringLicenses(arg1 string, arg2 bool, arg3 bool) ([]api.ExpiringLicenseOutput, error) {
 	fake.listExpiringLicensesMutex.Lock()
 	ret, specificReturn := fake.listExpiringLicensesReturnsOnCall[len(fake.listExpiringLicensesArgsForCall)]
 	fake.listExpiringLicensesArgsForCall = append(fake.listExpiringLicensesArgsForCall, struct {
@@ -53,7 +53,7 @@ func (fake *ExpiringLicensesService) ListExpiringLicensesCallCount() int {
 	return len(fake.listExpiringLicensesArgsForCall)
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicensesCalls(stub func(string, bool, bool) ([]api.ExpiringLicenseOutPut, error)) {
+func (fake *ExpiringLicensesService) ListExpiringLicensesCalls(stub func(string, bool, bool) ([]api.ExpiringLicenseOutput, error)) {
 	fake.listExpiringLicensesMutex.Lock()
 	defer fake.listExpiringLicensesMutex.Unlock()
 	fake.ListExpiringLicensesStub = stub
@@ -66,28 +66,28 @@ func (fake *ExpiringLicensesService) ListExpiringLicensesArgsForCall(i int) (str
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicensesReturns(result1 []api.ExpiringLicenseOutPut, result2 error) {
+func (fake *ExpiringLicensesService) ListExpiringLicensesReturns(result1 []api.ExpiringLicenseOutput, result2 error) {
 	fake.listExpiringLicensesMutex.Lock()
 	defer fake.listExpiringLicensesMutex.Unlock()
 	fake.ListExpiringLicensesStub = nil
 	fake.listExpiringLicensesReturns = struct {
-		result1 []api.ExpiringLicenseOutPut
+		result1 []api.ExpiringLicenseOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ExpiringLicensesService) ListExpiringLicensesReturnsOnCall(i int, result1 []api.ExpiringLicenseOutPut, result2 error) {
+func (fake *ExpiringLicensesService) ListExpiringLicensesReturnsOnCall(i int, result1 []api.ExpiringLicenseOutput, result2 error) {
 	fake.listExpiringLicensesMutex.Lock()
 	defer fake.listExpiringLicensesMutex.Unlock()
 	fake.ListExpiringLicensesStub = nil
 	if fake.listExpiringLicensesReturnsOnCall == nil {
 		fake.listExpiringLicensesReturnsOnCall = make(map[int]struct {
-			result1 []api.ExpiringLicenseOutPut
+			result1 []api.ExpiringLicenseOutput
 			result2 error
 		})
 	}
 	fake.listExpiringLicensesReturnsOnCall[i] = struct {
-		result1 []api.ExpiringLicenseOutPut
+		result1 []api.ExpiringLicenseOutput
 		result2 error
 	}{result1, result2}
 }

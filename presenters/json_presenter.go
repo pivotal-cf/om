@@ -108,7 +108,7 @@ func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
 	_, _ = j.stdout.Write([]byte(report.FullReport))
 }
 
-func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutPut) {
+func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutput) {
 	j.encodeJSON(products)
 }
 

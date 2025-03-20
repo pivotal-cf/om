@@ -499,7 +499,7 @@ func formatDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
 
-func findLicenseByGUID(licenses []api.ExpiringLicenseOutPut, guid string) *api.ExpiringLicenseOutPut {
+func findLicenseByGUID(licenses []api.ExpiringLicenseOutput, guid string) *api.ExpiringLicenseOutput {
 	for _, license := range licenses {
 		if license.GUID == guid {
 			return &license
@@ -508,12 +508,12 @@ func findLicenseByGUID(licenses []api.ExpiringLicenseOutPut, guid string) *api.E
 	return nil
 }
 
-func expectSingleLicense(licenses []api.ExpiringLicenseOutPut, guid, expiryDate string, productState string) {
+func expectSingleLicense(licenses []api.ExpiringLicenseOutput, guid, expiryDate string, productState string) {
 	Expect(licenses).To(HaveLen(1))
 	expectLicenseDetails(&licenses[0], guid, expiryDate, productState)
 }
 
-func expectLicenseDetails(license *api.ExpiringLicenseOutPut, guid, expiryDate string, productState string) {
+func expectLicenseDetails(license *api.ExpiringLicenseOutput, guid, expiryDate string, productState string) {
 	Expect(license).NotTo(BeNil())
 	Expect(license.ProductName).To(Equal("cf"))
 	Expect(license.GUID).To(Equal(guid))

@@ -60,10 +60,10 @@ type Presenter struct {
 	presentInstallationsArgsForCall []struct {
 		arg1 []models.Installation
 	}
-	PresentLicensedProductsStub        func([]api.ExpiringLicenseOutPut)
+	PresentLicensedProductsStub        func([]api.ExpiringLicenseOutput)
 	presentLicensedProductsMutex       sync.RWMutex
 	presentLicensedProductsArgsForCall []struct {
-		arg1 []api.ExpiringLicenseOutPut
+		arg1 []api.ExpiringLicenseOutput
 	}
 	PresentPendingChangesStub        func(api.PendingChangesOutput)
 	presentPendingChangesMutex       sync.RWMutex
@@ -429,15 +429,15 @@ func (fake *Presenter) PresentInstallationsArgsForCall(i int) []models.Installat
 	return argsForCall.arg1
 }
 
-func (fake *Presenter) PresentLicensedProducts(arg1 []api.ExpiringLicenseOutPut) {
-	var arg1Copy []api.ExpiringLicenseOutPut
+func (fake *Presenter) PresentLicensedProducts(arg1 []api.ExpiringLicenseOutput) {
+	var arg1Copy []api.ExpiringLicenseOutput
 	if arg1 != nil {
-		arg1Copy = make([]api.ExpiringLicenseOutPut, len(arg1))
+		arg1Copy = make([]api.ExpiringLicenseOutput, len(arg1))
 		copy(arg1Copy, arg1)
 	}
 	fake.presentLicensedProductsMutex.Lock()
 	fake.presentLicensedProductsArgsForCall = append(fake.presentLicensedProductsArgsForCall, struct {
-		arg1 []api.ExpiringLicenseOutPut
+		arg1 []api.ExpiringLicenseOutput
 	}{arg1Copy})
 	fake.recordInvocation("PresentLicensedProducts", []interface{}{arg1Copy})
 	fake.presentLicensedProductsMutex.Unlock()
@@ -452,13 +452,13 @@ func (fake *Presenter) PresentLicensedProductsCallCount() int {
 	return len(fake.presentLicensedProductsArgsForCall)
 }
 
-func (fake *Presenter) PresentLicensedProductsCalls(stub func([]api.ExpiringLicenseOutPut)) {
+func (fake *Presenter) PresentLicensedProductsCalls(stub func([]api.ExpiringLicenseOutput)) {
 	fake.presentLicensedProductsMutex.Lock()
 	defer fake.presentLicensedProductsMutex.Unlock()
 	fake.PresentLicensedProductsStub = stub
 }
 
-func (fake *Presenter) PresentLicensedProductsArgsForCall(i int) []api.ExpiringLicenseOutPut {
+func (fake *Presenter) PresentLicensedProductsArgsForCall(i int) []api.ExpiringLicenseOutput {
 	fake.presentLicensedProductsMutex.RLock()
 	defer fake.presentLicensedProductsMutex.RUnlock()
 	argsForCall := fake.presentLicensedProductsArgsForCall[i]

@@ -10,7 +10,7 @@ import (
 
 //counterfeiter:generate -o ./fakes/expiring_licenses_service.go --fake-name ExpiringLicensesService . expiringLicensesService
 type expiringLicensesService interface {
-	ListExpiringLicenses(string, bool, bool) ([]api.ExpiringLicenseOutPut, error)
+	ListExpiringLicenses(string, bool, bool) ([]api.ExpiringLicenseOutput, error)
 }
 
 type ExpiringLicenses struct {
@@ -42,7 +42,10 @@ func (e *ExpiringLicenses) Execute(args []string) error {
 		return err
 	}
 
-	expiringLicenses, _ := e.api.ListExpiringLicenses(e.Options.ExpiresWithin, e.Options.Staged, e.Options.Deployed)
+	expiringLicenses, err := e.api.ListExpiringLicenses(e.Options.ExpiresWithin, e.Options.Staged, e.Options.Deployed)
+	if err != nil {
+		return err
+	}
 
 	e.presenter.SetFormat(e.Options.Format)
 	e.presenter.PresentLicensedProducts(expiringLicenses)

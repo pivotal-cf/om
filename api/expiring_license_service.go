@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type ExpiringLicenseOutPut struct {
+type ExpiringLicenseOutput struct {
 	ProductName  string    `json:"product_name"`
 	GUID         string    `json:"guid"`
 	ExpiresAt    time.Time `json:"expires_at"`
@@ -21,8 +21,8 @@ type expiringProduct struct {
 	ProductState    string
 }
 
-func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutPut, error) {
-	expiredLicense := []ExpiringLicenseOutPut{}
+func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutput, error) {
+	expiredLicense := []ExpiringLicenseOutput{}
 	expiringProducts := []expiringProduct{}
 
 	err := a.getProductsLicenseInfo(&expiringProducts, staged, deployed)
@@ -43,7 +43,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 			}
 			//expiresWithin is never null. Defaults to 3 months when nothing is passed
 			if t.Before(calcEndDate(expiresWithin)) {
-				expiredLicense = append(expiredLicense, ExpiringLicenseOutPut{
+				expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
 					ProductName:  expiredProduct.Type,
 					GUID:         expiredProduct.GUID,
 					ExpiresAt:    t,
