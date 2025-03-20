@@ -35,7 +35,6 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 	layout := "2006-01-02"
 
 	for _, expiredProduct := range expiringProducts {
-		//handling multiple license associated with a single product
 		for _, license := range expiredProduct.LicenseMetadata {
 			t, err := time.Parse(layout, license.ExpiresAt)
 			if err != nil {
@@ -127,7 +126,7 @@ func removeDuplicates(expiringProducts *[]expiringProduct) {
 }
 
 func calcEndDate(expiresWithin string) time.Time {
-	exp := regexp.MustCompile("(?P<duration>^[1-9]\\d*)+(?P<type>[dwmy]$)")
+	exp := regexp.MustCompile(`(?P<duration>^[1-9]\d*)+(?P<type>[dwmy]$)`)
 	match := exp.FindStringSubmatch(expiresWithin)
 
 	switch durationType := match[2]; durationType {
