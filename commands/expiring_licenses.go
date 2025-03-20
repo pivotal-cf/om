@@ -2,10 +2,10 @@ package commands
 
 import (
 	"errors"
-	"github.com/fatih/color"
+	"regexp"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/presenters"
-	"regexp"
 )
 
 //counterfeiter:generate -o ./fakes/expiring_licenses_service.go --fake-name ExpiringLicensesService . expiringLicensesService
@@ -42,12 +42,8 @@ func (e *ExpiringLicenses) Execute(args []string) error {
 		return err
 	}
 
-	e.logger.Println("Getting expiring licenses...")
 	expiringLicenses, _ := e.api.ListExpiringLicenses(e.Options.ExpiresWithin, e.Options.Staged, e.Options.Deployed)
 
-	if len(expiringLicenses) == 0 {
-		e.logger.Printf(color.GreenString("[✓] No licenses are expiring in %s\n"), e.Options.ExpiresWithin)
-	}
 	e.presenter.SetFormat(e.Options.Format)
 	e.presenter.PresentLicensedProducts(expiringLicenses)
 	return nil
