@@ -77,7 +77,7 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]expiringProdu
 		}
 
 	}
-	removeDuplicates(&expiringProducts)
+	removeDuplicateProducts(&expiringProducts)
 	return expiringProducts, nil
 }
 
@@ -116,7 +116,7 @@ func (a Api) addDeployedProducts(expiringProducts *[]expiringProduct) error {
 	return nil
 }
 
-func removeDuplicates(expiringProducts *[]expiringProduct) {
+func removeDuplicateProducts(expiringProducts *[]expiringProduct) {
 	seen := make(map[string]bool)
 	result := []expiringProduct{}
 
