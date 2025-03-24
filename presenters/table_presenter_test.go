@@ -541,16 +541,18 @@ var _ = Describe("TablePresenter", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
 			products = []api.ExpiringLicenseOutput{
 				{
-					ProductName:  "cf",
-					GUID:         "cf-fa24570b6a6e8940ab57",
-					ExpiresAt:    expiryDate,
-					ProductState: "staged",
+					ProductName:    "cf",
+					GUID:           "cf-fa24570b6a6e8940ab57",
+					ExpiresAt:      expiryDate,
+					ProductState:   "staged",
+					ProductVersion: "2.10.1",
 				},
 				{
-					ProductName:  "p-bosh",
-					GUID:         "p-bosh-123456789",
-					ExpiresAt:    expiryDate.AddDate(0, 1, 0),
-					ProductState: "deployed",
+					ProductName:    "p-bosh",
+					GUID:           "p-bosh-123456789",
+					ExpiresAt:      expiryDate.AddDate(0, 1, 0),
+					ProductState:   "deployed",
+					ProductVersion: "3.0.0",
 				},
 			}
 		})
@@ -560,13 +562,14 @@ var _ = Describe("TablePresenter", func() {
 
 			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
 			headers := fakeTableWriter.SetHeaderArgsForCall(0)
-			Expect(headers).To(Equal([]string{"Name", "GUID", "State", "Expiry"}))
+			Expect(headers).To(Equal([]string{"Name", "Version", "GUID", "State", "Expiry"}))
 
 			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
 
 			firstRow := fakeTableWriter.AppendArgsForCall(0)
 			Expect(firstRow).To(Equal([]string{
 				"cf",
+				"2.10.1",
 				"cf-fa24570b6a6e8940ab57",
 				"staged",
 				"2026-03-20",
@@ -575,6 +578,7 @@ var _ = Describe("TablePresenter", func() {
 			secondRow := fakeTableWriter.AppendArgsForCall(1)
 			Expect(secondRow).To(Equal([]string{
 				"p-bosh",
+				"3.0.0",
 				"p-bosh-123456789",
 				"deployed",
 				"2026-04-20",

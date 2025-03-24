@@ -8,10 +8,11 @@ import (
 )
 
 type ExpiringLicenseOutput struct {
-	ProductName  string    `json:"product_name"`
-	GUID         string    `json:"guid"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	ProductState string    `json:"product_state"`
+	ProductName    string    `json:"product_name"`
+	GUID           string    `json:"guid"`
+	ExpiresAt      time.Time `json:"expires_at"`
+	ProductState   string    `json:"product_state"`
+	ProductVersion string    `json:"product_version"`
 }
 
 type expiringProduct struct {
@@ -45,11 +46,15 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 
 			//expiresWithin is never null. Defaults to 3 months when nothing is passed
 			if t.Before(calcEndDate(expiresWithin)) {
+				// Get the product version from the license metadata
+				productVersion := license.ProductVersion
+
 				expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
-					ProductName:  expiredProduct.Type,
-					GUID:         expiredProduct.GUID,
-					ExpiresAt:    t,
-					ProductState: expiredProduct.ProductState,
+					ProductName:    expiredProduct.Type,
+					GUID:           expiredProduct.GUID,
+					ExpiresAt:      t,
+					ProductState:   expiredProduct.ProductState,
+					ProductVersion: productVersion,
 				})
 			}
 		}
@@ -89,7 +94,8 @@ func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
 	}
 
 	for _, stagedProduct := range stagedProducts.Products {
-		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: stagedProduct.GUID,
+		*expiringProducts = append(*expiringProducts, expiringProduct{
+			GUID:            stagedProduct.GUID,
 			Type:            stagedProduct.Type,
 			LicenseMetadata: stagedProduct.LicenseMetadata,
 			ProductState:    ProductStateStaged,
@@ -107,7 +113,8 @@ func (a Api) addDeployedProducts(expiringProducts *[]expiringProduct) error {
 	}
 
 	for _, deployedProduct := range deployedProducts {
-		*expiringProducts = append(*expiringProducts, expiringProduct{GUID: deployedProduct.GUID,
+		*expiringProducts = append(*expiringProducts, expiringProduct{
+			GUID:            deployedProduct.GUID,
 			Type:            deployedProduct.Type,
 			LicenseMetadata: deployedProduct.LicenseMetadata,
 			ProductState:    ProductStateDeployed,

@@ -50,25 +50,29 @@ var _ = Describe("ExpiringLicenses", func() {
 		It("displays the licenses correctly", func() {
 			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
-					ProductName: "pivotal-container-service",
-					GUID:        "pks-guid-123",
-					ExpiresAt:   time.Now().AddDate(0, 1, 0), // expires in 1 month
+					ProductName:    "pivotal-container-service",
+					GUID:           "pks-guid-123",
+					ExpiresAt:      time.Now().AddDate(0, 1, 0), // expires in 1 month
+					ProductVersion: "1.7.0",
 				},
 				{
-					ProductName: "pivotal-application-service",
-					GUID:        "pas-guid-456",
-					ExpiresAt:   time.Now().AddDate(0, 2, 0), // expires in 2 months
+					ProductName:    "pivotal-application-service",
+					GUID:           "pas-guid-456",
+					ExpiresAt:      time.Now().AddDate(0, 2, 0), // expires in 2 months
+					ProductVersion: "2.8.3",
 				},
 			}
-
 			service.ListExpiringLicensesReturns(expiringLicenses, nil)
 
 			command := commands.NewExpiringLicenses(presenter, service, logger)
 			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(presenter.SetFormatCallCount()).To(Equal(1))
-			Expect(presenter.SetFormatArgsForCall(0)).To(Equal("table"))
+			Expect(service.ListExpiringLicensesCallCount()).To(Equal(1))
+			timeWindow, staged, deployed := service.ListExpiringLicensesArgsForCall(0)
+			Expect(timeWindow).To(Equal("3m"))
+			Expect(staged).To(BeFalse())
+			Expect(deployed).To(BeFalse())
 
 			Expect(presenter.PresentLicensedProductsCallCount()).To(Equal(1))
 			Expect(presenter.PresentLicensedProductsArgsForCall(0)).To(Equal(expiringLicenses))
@@ -136,16 +140,18 @@ var _ = Describe("ExpiringLicenses", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
 			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
-					ProductName:  "cf",
-					GUID:         "cf-staged",
-					ExpiresAt:    expiryDate,
-					ProductState: "staged",
+					ProductName:    "cf",
+					GUID:           "cf-staged",
+					ExpiresAt:      expiryDate,
+					ProductState:   "staged",
+					ProductVersion: "2.5.0",
 				},
 				{
-					ProductName:  "p-bosh",
-					GUID:         "p-bosh-deployed",
-					ExpiresAt:    expiryDate,
-					ProductState: "deployed",
+					ProductName:    "p-bosh",
+					GUID:           "p-bosh-deployed",
+					ExpiresAt:      expiryDate,
+					ProductState:   "deployed",
+					ProductVersion: "3.2.0",
 				},
 			}
 			service.ListExpiringLicensesReturns(expiringLicenses, nil)
@@ -169,10 +175,11 @@ var _ = Describe("ExpiringLicenses", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
 			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
-					ProductName:  "cf",
-					GUID:         "cf-staged",
-					ExpiresAt:    expiryDate,
-					ProductState: "staged",
+					ProductName:    "cf",
+					GUID:           "cf-staged",
+					ExpiresAt:      expiryDate,
+					ProductState:   "staged",
+					ProductVersion: "2.8.0",
 				},
 			}
 			service.ListExpiringLicensesReturns(expiringLicenses, nil)
@@ -195,10 +202,11 @@ var _ = Describe("ExpiringLicenses", func() {
 			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
 			expiringLicenses := []api.ExpiringLicenseOutput{
 				{
-					ProductName:  "p-bosh",
-					GUID:         "p-bosh-deployed",
-					ExpiresAt:    expiryDate,
-					ProductState: "deployed",
+					ProductName:    "p-bosh",
+					GUID:           "p-bosh-deployed",
+					ExpiresAt:      expiryDate,
+					ProductState:   "deployed",
+					ProductVersion: "1.7.9",
 				},
 			}
 			service.ListExpiringLicensesReturns(expiringLicenses, nil)
