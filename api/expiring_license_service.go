@@ -29,9 +29,8 @@ const (
 
 func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bool) ([]ExpiringLicenseOutput, error) {
 	expiredLicense := []ExpiringLicenseOutput{}
-	expiringProducts := []expiringProduct{}
 
-	err := a.getProductsLicenseInfo(&expiringProducts, staged, deployed)
+	expiringProducts, err := a.getProductsLicenseInfo(staged, deployed)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not list licensed products: %w", err)
@@ -43,7 +42,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 			if err != nil {
 				return nil, fmt.Errorf("could not convert expiry date string to time: %w", err)
 			}
-			
+
 			//expiresWithin is never null. Defaults to 3 months when nothing is passed
 			if t.Before(calcEndDate(expiresWithin)) {
 				expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
@@ -58,26 +57,28 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 	return expiredLicense, err
 }
 
-func (a Api) getProductsLicenseInfo(expiringProducts *[]expiringProduct, staged bool, deployed bool) error {
+func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]expiringProduct, error) {
+	expiringProducts := []expiringProduct{}
+
 	noModifiersSelected := !staged && !deployed
 	if staged || noModifiersSelected {
-		err := a.addStagedProducts(expiringProducts)
+		err := a.addStagedProducts(&expiringProducts)
 
 		if err != nil {
-			return fmt.Errorf("could not get staged products: %w", err)
+			return nil, fmt.Errorf("could not get staged products: %w", err)
 		}
 
 	}
 	if deployed || noModifiersSelected {
-		err := a.addDeployedProducts(expiringProducts)
+		err := a.addDeployedProducts(&expiringProducts)
 
 		if err != nil {
-			return fmt.Errorf("could not get deployed products: %w", err)
+			return nil, fmt.Errorf("could not get deployed products: %w", err)
 		}
 
 	}
-	removeDuplicates(expiringProducts)
-	return nil
+	removeDuplicates(&expiringProducts)
+	return expiringProducts, nil
 }
 
 func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
