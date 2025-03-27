@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"gopkg.in/yaml.v2"
+	"reflect"
 
 	yamlConverter "github.com/ghodss/yaml"
 )
@@ -54,7 +55,7 @@ func (a Api) GetStagedProductByName(productName string) (StagedProductsFindOutpu
 		}
 	}
 
-	if (foundProduct == StagedProduct{}) {
+	if reflect.DeepEqual(foundProduct, StagedProduct{}) {
 		return StagedProductsFindOutput{}, fmt.Errorf("could not find product %q", productName)
 	}
 

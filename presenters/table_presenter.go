@@ -259,6 +259,16 @@ func (t TablePresenter) PresentStagedProducts(stagedProducts []api.DiagnosticPro
 	t.tableWriter.Render()
 }
 
+func (t TablePresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutput) {
+	t.tableWriter.SetHeader([]string{"Name", "Version", "GUID", "State", "Expiry"})
+
+	for _, product := range products {
+		t.tableWriter.Append([]string{product.ProductName, product.ProductVersion, product.GUID, product.ProductState, product.ExpiresAt.Format("2006-01-02")})
+	}
+
+	t.tableWriter.Render()
+}
+
 func sortCredentialMap(cm map[string]string) ([]string, []string) {
 	var header []string
 	var credential []string
