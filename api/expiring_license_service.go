@@ -80,7 +80,6 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]licenseInfoPr
 		}
 		allProducts = append(allProducts, deployedProducts...)
 	}
-	removeDuplicateProducts(&allProducts)
 	return allProducts, nil
 }
 
@@ -119,19 +118,6 @@ func (a Api) getDeployedProducts() ([]licenseInfoProduct, error) {
 		})
 	}
 	return expiringProducts, nil
-}
-
-func removeDuplicateProducts(expiringProducts *[]licenseInfoProduct) {
-	seen := make(map[string]bool)
-	result := []licenseInfoProduct{}
-
-	for _, expiringProduct := range *expiringProducts {
-		if !seen[expiringProduct.GUID] {
-			seen[expiringProduct.GUID] = true
-			result = append(result, expiringProduct)
-		}
-	}
-	*expiringProducts = result
 }
 
 func calcEndDate(expiresWithin string) time.Time {

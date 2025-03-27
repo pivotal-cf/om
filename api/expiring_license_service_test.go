@@ -191,32 +191,30 @@ var _ = Describe("ExpiringLicenseService", func() {
 				licenses, err := service.ListExpiringLicenses("30d", true, true)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(licenses).To(HaveLen(2))
-				expectLicenseDetails(findLicenseByGUID(licenses, stagedGUID), stagedGUID, stagedExpiryDate, "staged")
-				expectLicenseDetails(findLicenseByGUID(licenses, deployedGUID), deployedGUID, deployedExpiryDate, "deployed")
-			})
 
-			It("deduplicates products that appear in both staged and deployed states", func() {
-				expiryDate := formatDate(daysFromNow(20))
-				guid := "cf-duplicate-test"
-				label := "Product in both states"
+				// Find licenses by their state
+				var stagedLicense, deployedLicense *api.ExpiringLicenseOutput
+				for i := range licenses {
+					if licenses[i].ProductState == "staged" {
+						stagedLicense = &licenses[i]
+					} else if licenses[i].ProductState == "deployed" {
+						deployedLicense = &licenses[i]
+					}
+				}
 
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
-					),
-				)
+				// Verify staged license
+				Expect(stagedLicense).NotTo(BeNil())
+				Expect(stagedLicense.GUID).To(Equal(stagedGUID))
+				Expect(stagedLicense.ProductState).To(Equal("staged"))
+				expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
+				Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
 
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, expiryDate, label)),
-					),
-				)
-
-				licenses, err := service.ListExpiringLicenses("30d", true, true)
-				Expect(err).NotTo(HaveOccurred())
-				expectSingleLicense(licenses, guid, expiryDate, "staged")
+				// Verify deployed license
+				Expect(deployedLicense).NotTo(BeNil())
+				Expect(deployedLicense.GUID).To(Equal(deployedGUID))
+				Expect(deployedLicense.ProductState).To(Equal("deployed"))
+				expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
+				Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
 			})
 		})
 
@@ -439,6 +437,52 @@ var _ = Describe("ExpiringLicenseService", func() {
 				licenses, err = service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
 				expectSingleLicense(licenses, guid, expiredDate, "staged")
+			})
+
+			It("correctly handles different licenses for the same product in staged and deployed states", func() {
+				guid := "cf-same-product"
+				stagedExpiryDate := formatDate(daysFromNow(15))
+				deployedExpiryDate := formatDate(daysFromNow(25))
+				label := "Same Product Different Licenses"
+
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, stagedExpiryDate, label)),
+					),
+				)
+
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, deployedExpiryDate, label)),
+					),
+				)
+
+				licenses, err := service.ListExpiringLicenses("30d", true, true)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(licenses).To(HaveLen(2))
+
+				var stagedLicense, deployedLicense *api.ExpiringLicenseOutput
+				for i := range licenses {
+					if licenses[i].ProductState == "staged" {
+						stagedLicense = &licenses[i]
+					} else if licenses[i].ProductState == "deployed" {
+						deployedLicense = &licenses[i]
+					}
+				}
+
+				Expect(stagedLicense).NotTo(BeNil())
+				Expect(stagedLicense.GUID).To(Equal(guid))
+				Expect(stagedLicense.ProductState).To(Equal("staged"))
+				expectedStagedTime, _ := time.Parse("2006-01-02", stagedExpiryDate)
+				Expect(stagedLicense.ExpiresAt).To(Equal(expectedStagedTime))
+
+				Expect(deployedLicense).NotTo(BeNil())
+				Expect(deployedLicense.GUID).To(Equal(guid))
+				Expect(deployedLicense.ProductState).To(Equal("deployed"))
+				expectedDeployedTime, _ := time.Parse("2006-01-02", deployedExpiryDate)
+				Expect(deployedLicense.ExpiresAt).To(Equal(expectedDeployedTime))
 			})
 		})
 	})
