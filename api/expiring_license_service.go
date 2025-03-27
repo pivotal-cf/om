@@ -15,7 +15,7 @@ type ExpiringLicenseOutput struct {
 	ProductVersion string    `json:"product_version"`
 }
 
-type expiringProduct struct {
+type licenseInfoProduct struct {
 	Type            string
 	GUID            string
 	LicenseMetadata []LicenseMetadata `json:"license_metadata"`
@@ -62,8 +62,8 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 	return expiredLicense, err
 }
 
-func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]expiringProduct, error) {
-	var allProducts []expiringProduct
+func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]licenseInfoProduct, error) {
+	var allProducts []licenseInfoProduct
 
 	noModifiersSelected := !staged && !deployed
 	if staged || noModifiersSelected {
@@ -84,15 +84,15 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]expiringProdu
 	return allProducts, nil
 }
 
-func (a Api) getStagedProducts() ([]expiringProduct, error) {
+func (a Api) getStagedProducts() ([]licenseInfoProduct, error) {
 	stagedProducts, err := a.ListStagedProducts()
 	if err != nil {
 		return nil, fmt.Errorf("could not make a call to ListStagedProducts api: %w", err)
 	}
 
-	var expiringProducts []expiringProduct
+	var expiringProducts []licenseInfoProduct
 	for _, stagedProduct := range stagedProducts.Products {
-		expiringProducts = append(expiringProducts, expiringProduct{
+		expiringProducts = append(expiringProducts, licenseInfoProduct{
 			GUID:            stagedProduct.GUID,
 			Type:            stagedProduct.Type,
 			LicenseMetadata: stagedProduct.LicenseMetadata,
@@ -103,15 +103,15 @@ func (a Api) getStagedProducts() ([]expiringProduct, error) {
 	return expiringProducts, nil
 }
 
-func (a Api) getDeployedProducts() ([]expiringProduct, error) {
+func (a Api) getDeployedProducts() ([]licenseInfoProduct, error) {
 	deployedProducts, err := a.ListDeployedProducts()
 	if err != nil {
 		return nil, fmt.Errorf("could not make a call to ListDeployedProducts api: %w", err)
 	}
 
-	var expiringProducts []expiringProduct
+	var expiringProducts []licenseInfoProduct
 	for _, deployedProduct := range deployedProducts {
-		expiringProducts = append(expiringProducts, expiringProduct{
+		expiringProducts = append(expiringProducts, licenseInfoProduct{
 			GUID:            deployedProduct.GUID,
 			Type:            deployedProduct.Type,
 			LicenseMetadata: deployedProduct.LicenseMetadata,
@@ -121,9 +121,9 @@ func (a Api) getDeployedProducts() ([]expiringProduct, error) {
 	return expiringProducts, nil
 }
 
-func removeDuplicateProducts(expiringProducts *[]expiringProduct) {
+func removeDuplicateProducts(expiringProducts *[]licenseInfoProduct) {
 	seen := make(map[string]bool)
-	result := []expiringProduct{}
+	result := []licenseInfoProduct{}
 
 	for _, expiringProduct := range *expiringProducts {
 		if !seen[expiringProduct.GUID] {
