@@ -18,7 +18,7 @@ type ExpiringLicenseOutput struct {
 type expiringProduct struct {
 	Type            string
 	GUID            string
-	LicenseMetadata []ExpiryInfo `json:"license_metadata"`
+	LicenseMetadata []LicenseMetadata `json:"license_metadata"`
 	ProductState    string
 }
 
