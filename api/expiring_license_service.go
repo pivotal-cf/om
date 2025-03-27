@@ -63,38 +63,36 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 }
 
 func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]expiringProduct, error) {
-	expiringProducts := []expiringProduct{}
+	var allProducts []expiringProduct
 
 	noModifiersSelected := !staged && !deployed
 	if staged || noModifiersSelected {
-		err := a.addStagedProducts(&expiringProducts)
-
+		stagedProducts, err := a.getStagedProducts()
 		if err != nil {
 			return nil, fmt.Errorf("could not get staged products: %w", err)
 		}
-
+		allProducts = append(allProducts, stagedProducts...)
 	}
 	if deployed || noModifiersSelected {
-		err := a.addDeployedProducts(&expiringProducts)
-
+		deployedProducts, err := a.getDeployedProducts()
 		if err != nil {
 			return nil, fmt.Errorf("could not get deployed products: %w", err)
 		}
-
+		allProducts = append(allProducts, deployedProducts...)
 	}
-	removeDuplicateProducts(&expiringProducts)
-	return expiringProducts, nil
+	removeDuplicateProducts(&allProducts)
+	return allProducts, nil
 }
 
-func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
+func (a Api) getStagedProducts() ([]expiringProduct, error) {
 	stagedProducts, err := a.ListStagedProducts()
-
 	if err != nil {
-		return fmt.Errorf("could not make a call to ListStagedProducts api: %w", err)
+		return nil, fmt.Errorf("could not make a call to ListStagedProducts api: %w", err)
 	}
 
+	var expiringProducts []expiringProduct
 	for _, stagedProduct := range stagedProducts.Products {
-		*expiringProducts = append(*expiringProducts, expiringProduct{
+		expiringProducts = append(expiringProducts, expiringProduct{
 			GUID:            stagedProduct.GUID,
 			Type:            stagedProduct.Type,
 			LicenseMetadata: stagedProduct.LicenseMetadata,
@@ -102,25 +100,25 @@ func (a Api) addStagedProducts(expiringProducts *[]expiringProduct) error {
 		})
 	}
 
-	return nil
+	return expiringProducts, nil
 }
 
-func (a Api) addDeployedProducts(expiringProducts *[]expiringProduct) error {
+func (a Api) getDeployedProducts() ([]expiringProduct, error) {
 	deployedProducts, err := a.ListDeployedProducts()
-
 	if err != nil {
-		return fmt.Errorf("could not make a call to ListDeployedProducts api: %w", err)
+		return nil, fmt.Errorf("could not make a call to ListDeployedProducts api: %w", err)
 	}
 
+	var expiringProducts []expiringProduct
 	for _, deployedProduct := range deployedProducts {
-		*expiringProducts = append(*expiringProducts, expiringProduct{
+		expiringProducts = append(expiringProducts, expiringProduct{
 			GUID:            deployedProduct.GUID,
 			Type:            deployedProduct.Type,
 			LicenseMetadata: deployedProduct.LicenseMetadata,
 			ProductState:    ProductStateDeployed,
 		})
 	}
-	return nil
+	return expiringProducts, nil
 }
 
 func removeDuplicateProducts(expiringProducts *[]expiringProduct) {
