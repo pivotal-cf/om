@@ -481,10 +481,12 @@ func (a Api) addGUIDToExistingAZs(azs AvailabilityZones) (AvailabilityZones, err
 				az.GUID = existingAZ.GUID
 
 				for _, cluster := range az.Clusters {
-					for _, existingCluster := range existingAZ.Clusters {
-						if cluster.Name == existingCluster.Name {
-							cluster.GUID = existingCluster.GUID
-							break
+					if cluster.GUID == "" {
+						for _, existingCluster := range existingAZ.Clusters {
+							if cluster.Name == existingCluster.Name {
+								cluster.GUID = existingCluster.GUID
+								break
+							}
 						}
 					}
 				}
