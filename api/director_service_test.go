@@ -207,6 +207,70 @@ var _ = Describe("Director", func() {
 			})
 		})
 
+		When("there are existing azs and the clusters have the same name", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/iaas_configurations"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"iaas_configurations": [{
+								"guid": "existing-iaas-guid",
+								"name": "existing-iaas"
+							}]
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/director/availability_zones"),
+						ghttp.RespondWith(http.StatusOK, `{
+							"availability_zones": [{
+								"guid": "existing-az-guid",
+								"name": "existing-az",
+								"clusters": [
+									{ "cluster":"pizza", "guid":"pepperoni", "res_pool":"dcba"},
+									{ "cluster":"pizza", "guid":"ricotta", "res_pool":"abcd"}
+								]
+							}]
+						}`),
+					),
+				)
+			})
+
+			It("correctly matches the existing clusters within the az", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/staged/director/availability_zones/existing-az-guid"),
+						ghttp.VerifyJSON(`{
+							"availability_zone": {
+								"a_field": "some_val",
+								"guid": "existing-az-guid",
+								"name": "existing-az",
+								"iaas_configuration_guid": "existing-iaas-guid",
+								"clusters": [
+									{ "cluster":"pizza", "guid":"pepperoni", "res_pool":"dcba"},
+									{ "cluster":"pizza", "guid":"ricotta", "res_pool":"abcd"}
+								]
+							}
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{}`),
+					),
+				)
+				err := service.UpdateStagedDirectorAvailabilityZones(api.AvailabilityZoneInput{
+					AvailabilityZones: json.RawMessage(`[
+						{
+							"clusters": [
+								{"cluster": "pizza", "guid":"pepperoni", "res_pool": "dcba"},
+								{"cluster": "pizza", "guid":"ricotta", "res_pool": "abcd"}
+							],
+							"iaas_configuration_name": "existing-iaas",
+							"name": "existing-az",
+							"a_field":"some_val"
+						}
+					]`),
+				}, false)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
 		When("there is only 1 az config passed in without a name and only 1 iaas config is returned by the api", func() {
 			It("send the request anyway", func() {
 				server.AppendHandlers(
@@ -466,7 +530,7 @@ var _ = Describe("Director", func() {
 						ghttp.VerifyHeader(map[string][]string{"Content-Type": []string{"application/json"}}),
 						ghttp.RespondWith(http.StatusOK, `{
 							"networks": [{
-								"guid": "existing-network-guid", 
+								"guid": "existing-network-guid",
 								"name": "existing-network"
 							}]
 						}`),
