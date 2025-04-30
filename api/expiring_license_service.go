@@ -13,12 +13,14 @@ type ExpiringLicenseOutput struct {
 	ExpiresAt      time.Time `json:"expires_at"`
 	ProductState   string    `json:"product_state"`
 	ProductVersion string    `json:"product_version"`
+	LicenseVersion string    `json:"licensed_version"`
 }
 
 type licenseInfoProduct struct {
 	Type            string
 	GUID            string
 	LicenseMetadata []LicenseMetadata `json:"license_metadata"`
+	ProductVersion  string
 	ProductState    string
 }
 
@@ -36,29 +38,52 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 	if err != nil {
 		return nil, fmt.Errorf("could not list licensed products: %w", err)
 	}
-
 	for _, expiredProduct := range expiringProducts {
+
 		for _, license := range expiredProduct.LicenseMetadata {
-			t, err := time.Parse(layout, license.ExpiresAt)
-			if err != nil {
-				return nil, fmt.Errorf("could not convert expiry date string to time: %w", err)
-			}
 
-			//expiresWithin is never null. Defaults to 3 months when nothing is passed
-			if t.Before(calcEndDate(expiresWithin)) {
-				// Get the product version from the license metadata
-				productVersion := license.ProductVersion
+			if license.ExpiresAt == "" {
+				currentConfiguredProperties, err := a.GetStagedProductProperties(expiredProduct.GUID, false)
+				if err != nil {
+					return nil, err
+				}
+				configuredProperty := currentConfiguredProperties[license.PropertyReference]
 
-				expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
-					ProductName:    expiredProduct.Type,
-					GUID:           expiredProduct.GUID,
-					ExpiresAt:      t,
-					ProductState:   expiredProduct.ProductState,
-					ProductVersion: productVersion,
-				})
+				if configuredProperty.Value == nil {
+
+					expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
+						ProductName:    expiredProduct.Type,
+						GUID:           expiredProduct.GUID,
+						ProductState:   expiredProduct.ProductState + ", requires license",
+						ProductVersion: expiredProduct.ProductVersion,
+					})
+				}
+
+			} else {
+				t, err := time.Parse(layout, license.ExpiresAt)
+				if err != nil {
+					return nil, fmt.Errorf("could not convert expiry date string to time: %w", err)
+				}
+
+				//expiresWithin is never null. Defaults to 3 months when nothing is passed
+				if t.Before(calcEndDate(expiresWithin)) {
+					// Get the product version from the license metadata
+					productVersion := license.ProductVersion
+
+					expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
+						ProductName:    expiredProduct.Type,
+						GUID:           expiredProduct.GUID,
+						ExpiresAt:      t,
+						ProductState:   expiredProduct.ProductState,
+						ProductVersion: expiredProduct.ProductVersion,
+						LicenseVersion: productVersion,
+					})
+				}
 			}
 		}
 	}
+
+	removeDuplicates(&expiredLicense)
 	return expiredLicense, err
 }
 
@@ -66,13 +91,11 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]licenseInfoPr
 	var allProducts []licenseInfoProduct
 
 	noModifiersSelected := !staged && !deployed
-	if staged || noModifiersSelected {
-		stagedProducts, err := a.getStagedProducts()
-		if err != nil {
-			return nil, fmt.Errorf("could not get staged products: %w", err)
-		}
-		allProducts = append(allProducts, stagedProducts...)
-	}
+
+	// deployed products should come first and then staged. this order is important for removing the duplicates.
+	// This keeps the deployed and deletes staged from the list if the product is both staged and deployed
+	// The append function in Go adds elements to the end of a slice, maintaining the order in which they are appended.
+
 	if deployed || noModifiersSelected {
 		deployedProducts, err := a.getDeployedProducts()
 		if err != nil {
@@ -80,6 +103,15 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]licenseInfoPr
 		}
 		allProducts = append(allProducts, deployedProducts...)
 	}
+
+	if staged || noModifiersSelected {
+		stagedProducts, err := a.getStagedProducts()
+		if err != nil {
+			return nil, fmt.Errorf("could not get staged products: %w", err)
+		}
+		allProducts = append(allProducts, stagedProducts...)
+	}
+
 	return allProducts, nil
 }
 
@@ -95,6 +127,7 @@ func (a Api) getStagedProducts() ([]licenseInfoProduct, error) {
 			GUID:            stagedProduct.GUID,
 			Type:            stagedProduct.Type,
 			LicenseMetadata: stagedProduct.LicenseMetadata,
+			ProductVersion:  stagedProduct.ProductVersion,
 			ProductState:    ProductStateStaged,
 		})
 	}
@@ -114,6 +147,7 @@ func (a Api) getDeployedProducts() ([]licenseInfoProduct, error) {
 			GUID:            deployedProduct.GUID,
 			Type:            deployedProduct.Type,
 			LicenseMetadata: deployedProduct.LicenseMetadata,
+			ProductVersion:  deployedProduct.ProductVersion,
 			ProductState:    ProductStateDeployed,
 		})
 	}
@@ -140,4 +174,20 @@ func calcEndDate(expiresWithin string) time.Time {
 	default:
 		return time.Now().AddDate(0, 3, 0)
 	}
+}
+
+func removeDuplicates(expiringProducts *[]ExpiringLicenseOutput) {
+	seen := make(map[string]bool)
+	result := []ExpiringLicenseOutput{}
+
+	for _, expiringProduct := range *expiringProducts {
+		// cannot use license key  in the unique key combination because the key in staged product properties API automatically gets updated with
+		// the new license key value when a user updates with a new license key in the UI
+		// There is no endpoint to check for the deployed product properties. So relying on the expiry date being different.
+		if !seen[expiringProduct.GUID+expiringProduct.ProductVersion+expiringProduct.ExpiresAt.String()] {
+			seen[expiringProduct.GUID+expiringProduct.ProductVersion+expiringProduct.ExpiresAt.String()] = true
+			result = append(result, expiringProduct)
+		}
+	}
+	*expiringProducts = result
 }
