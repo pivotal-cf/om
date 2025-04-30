@@ -17,6 +17,7 @@ type DeployedProductOutput struct {
 	Type            string
 	GUID            string
 	LicenseMetadata []LicenseMetadata `json:"license_metadata"`
+	ProductVersion  string            `json:"product_version"`
 }
 
 func (a Api) GetDeployedProductManifest(guid string) (string, error) {

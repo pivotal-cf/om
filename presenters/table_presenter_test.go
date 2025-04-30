@@ -545,6 +545,7 @@ var _ = Describe("TablePresenter", func() {
 					GUID:           "cf-fa24570b6a6e8940ab57",
 					ExpiresAt:      expiryDate,
 					ProductState:   "staged",
+					LicenseVersion: "10.0",
 					ProductVersion: "2.10.1",
 				},
 				{
@@ -552,6 +553,7 @@ var _ = Describe("TablePresenter", func() {
 					GUID:           "p-bosh-123456789",
 					ExpiresAt:      expiryDate.AddDate(0, 1, 0),
 					ProductState:   "deployed",
+					LicenseVersion: "10.0",
 					ProductVersion: "3.0.0",
 				},
 			}
@@ -562,25 +564,27 @@ var _ = Describe("TablePresenter", func() {
 
 			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
 			headers := fakeTableWriter.SetHeaderArgsForCall(0)
-			Expect(headers).To(Equal([]string{"Name", "Version", "GUID", "State", "Expiry"}))
+			Expect(headers).To(Equal([]string{"Name", "GUID", "Product Version", "State", "Licensed Version", "Expiry"}))
 
 			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
 
 			firstRow := fakeTableWriter.AppendArgsForCall(0)
 			Expect(firstRow).To(Equal([]string{
 				"cf",
-				"2.10.1",
 				"cf-fa24570b6a6e8940ab57",
+				"2.10.1",
 				"staged",
+				"10.0",
 				"2026-03-20",
 			}))
 
 			secondRow := fakeTableWriter.AppendArgsForCall(1)
 			Expect(secondRow).To(Equal([]string{
 				"p-bosh",
-				"3.0.0",
 				"p-bosh-123456789",
+				"3.0.0",
 				"deployed",
+				"10.0",
 				"2026-04-20",
 			}))
 

@@ -68,6 +68,31 @@ var _ = Describe("ExpiringLicenseService", func() {
 				Expect(licenses).To(HaveLen(0))
 			})
 
+			It("does not return staged Products that have perpetual license", func() {
+				expiryDate := ""
+				guid := "cf-fa24570b6a6e8940ab57"
+				label := "Ops Manager: Example Licensed Product"
+
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
+					),
+				)
+
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products/cf-fa24570b6a6e8940ab57/properties"),
+						ghttp.RespondWith(http.StatusOK, createStagedProductPropertiesResponse("test-license-key")),
+					),
+				)
+
+				licenses, err := service.ListExpiringLicenses("30d", true, false)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(licenses).To(HaveLen(0))
+			})
+
 			It("returns an error when the API call to get staged products fails", func() {
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
@@ -147,15 +172,14 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
-					),
-				)
-
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
 						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
+					),
+				)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
 					),
 				)
 
@@ -176,15 +200,14 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
-					),
-				)
-
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
 						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
+					),
+				)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
 					),
 				)
 
@@ -447,15 +470,15 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, stagedExpiryDate, label)),
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, deployedExpiryDate, label)),
 					),
 				)
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, deployedExpiryDate, label)),
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, stagedExpiryDate, label)),
 					),
 				)
 
@@ -533,6 +556,20 @@ func createDeployedProductResponse(guid, expiryDate, label string) string {
 			}
 		}
 	]`, guid, guid, label, expiryDate)
+}
+
+func createStagedProductPropertiesResponse(value string) string {
+
+	return fmt.Sprintf(`{
+		  "properties": {
+			".properties.license_key": {
+			  "type": "tanzu_license_key",
+			  "configurable": true,
+			  "credential": false,
+			  "value": "%s"
+			}
+		  }
+		}`, value)
 }
 
 func daysFromNow(days int) time.Time {

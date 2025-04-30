@@ -26,6 +26,7 @@ type StagedProduct struct {
 	GUID            string
 	Type            string
 	LicenseMetadata []LicenseMetadata `json:"license_metadata"`
+	ProductVersion  string            `json:"product_version"`
 }
 
 type UnstageProductInput struct {

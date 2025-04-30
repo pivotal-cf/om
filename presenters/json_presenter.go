@@ -2,10 +2,9 @@ package presenters
 
 import (
 	"encoding/json"
-	"io"
-
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
+	"io"
 )
 
 type JSONPresenter struct {
@@ -109,7 +108,29 @@ func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
 }
 
 func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutput) {
-	j.encodeJSON(products)
+	type licenseOutput struct {
+		ProductName    string `json:"product_name"`
+		GUID           string `json:"guid"`
+		ExpiresAt      string `json:"expires_at"`
+		ProductState   string `json:"product_state"`
+		ProductVersion string `json:"product_version"`
+		LicenseVersion string `json:"licensed_version"`
+	}
+	var output []licenseOutput
+	var expiresAt string
+	for _, product := range products {
+
+		if product.ExpiresAt.IsZero() {
+			expiresAt = ""
+		} else {
+			expiresAt = product.ExpiresAt.Format("2006-01-02")
+		}
+		output = append(output, licenseOutput{ProductName: product.ProductName,
+			GUID: product.GUID, ExpiresAt: expiresAt,
+			ProductState: product.ProductState, ProductVersion: product.ProductVersion,
+			LicenseVersion: product.LicenseVersion})
+	}
+	j.encodeJSON(output)
 }
 
 func (j JSONPresenter) encodeJSON(v interface{}) {
