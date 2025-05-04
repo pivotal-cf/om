@@ -37,6 +37,7 @@ type AWSConfig struct {
 	PrivateIP                 string            `yaml:"private_ip" validate:"omitempty,ip"`
 	VMName                    string            `yaml:"vm_name"`
 	BootDiskSize              string            `yaml:"boot_disk_size"`
+	BootDiskType              string            `yaml:"boot_disk_type"`
 	InstanceType              string            `yaml:"instance_type"`
 	Tags                      map[string]string `yaml:"tags"`
 	AuthenticationType        string            `yaml:"authentication_type"`
@@ -131,16 +132,6 @@ func (a *AWSVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 	latestState.ID = instanceID
 
-	volumeID, err := a.getVolumeID(instanceID)
-	if err != nil {
-		return Incomplete, latestState, err
-	}
-
-	err = a.modifyVolume(volumeID)
-	if err != nil {
-		return Incomplete, latestState, err
-	}
-
 	if iaasConfig.PublicIP != "" {
 		addressID, err := a.getIPAddressID()
 		if err != nil {
@@ -187,6 +178,9 @@ func (a *AWSVMManager) addDefaultConfigFields() {
 	}
 	if a.Config.OpsmanConfig.AWS.BootDiskSize == "" {
 		a.Config.OpsmanConfig.AWS.BootDiskSize = "200"
+	}
+	if a.Config.OpsmanConfig.AWS.BootDiskType == "" {
+		a.Config.OpsmanConfig.AWS.BootDiskType = "gp2"
 	}
 	if a.Config.OpsmanConfig.AWS.InstanceType == "" {
 		a.Config.OpsmanConfig.AWS.InstanceType = "m5.large"
@@ -247,6 +241,10 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 		),
 		"--image-id", ami,
 		"--subnet-id", config.VPCSubnetId,
+		"--block-device-mappings", fmt.Sprintf(
+			"[{\"DeviceName\": \"/dev/xvda\", \"Ebs\": {\"VolumeType\": \"%s\", \"VolumeSize\": %s}}]",
+			a.Config.OpsmanConfig.AWS.BootDiskType, a.Config.OpsmanConfig.AWS.BootDiskSize,
+		),
 		"--security-group-ids",
 	}
 	for _, sgID := range config.SecurityGroupIds {
@@ -270,64 +268,6 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 	}
 
 	return cleanupString(instanceID.String()), nil
-}
-
-func (a *AWSVMManager) getVolumeID(instanceID string) (volumeID string, err error) {
-	// wait until available
-	for {
-		volumeID, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-			[]interface{}{
-				"ec2", "describe-volumes",
-				"--filters",
-				fmt.Sprintf("Name=attachment.instance-id,Values=%s", instanceID),
-				"Name=attachment.status,Values=attached",
-				"Name=status,Values=in-use",
-				"--query", "Volumes[0].VolumeId",
-			})
-		if err != nil {
-			return "", fmt.Errorf("aws error finding volumeID of the root device: %s", err)
-		}
-		if !strings.Contains(volumeID.String(), "null") {
-			return cleanupString(volumeID.String()), nil
-		}
-		_, _ = a.stderr.Write([]byte(fmt.Sprintf("volume not available yet, polling in %s\n", a.pollingInterval)))
-		time.Sleep(a.pollingInterval)
-	}
-}
-
-func (a *AWSVMManager) modifyVolume(volumeID string) error {
-	// wait until available
-	var currentRetryCount float64
-	timeoutTime := time.Now().Add(time.Hour)
-	for {
-		_, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-			[]interface{}{
-				"ec2", "modify-volume",
-				"--volume-id", volumeID,
-				"--size", a.Config.OpsmanConfig.AWS.BootDiskSize,
-			})
-
-		if err == nil {
-			break
-		}
-
-		if !strings.Contains(err.Error(), "exit status 255") {
-			return fmt.Errorf("aws error modifying size of root device: %s", err)
-		}
-
-		// Encrypted volume is not available
-		waitTime := getExponentialWaitTime(currentRetryCount, a.pollingInterval)
-		_, _ = a.stderr.Write([]byte(fmt.Sprintf("volume not available to configure yet, polling in %s\n", waitTime)))
-
-		if time.Now().After(timeoutTime) {
-			return errors.New("failed to modify VM disk volume within the hour allowed")
-		}
-
-		time.Sleep(waitTime)
-		currentRetryCount += 1
-	}
-
-	return nil
 }
 
 func (a *AWSVMManager) getIPAddressID() (ipAddress string, err error) {

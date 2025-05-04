@@ -42,6 +42,7 @@ var _ = Describe("aws", func() {
 						PrivateIP:              "5.6.7.8",
 						VMName:                 "opsman-vm",
 						BootDiskSize:           "160",
+						BootDiskType:           "gp3",
 						InstanceType:           "some-instance-type",
 					},
 				},
@@ -94,7 +95,8 @@ var _ = Describe("aws", func() {
 
 				return &ec2.DescribeVolumesOutput{
 					Volumes: []*ec2.Volume{{
-						Size: aws.Int64(160),
+						Size:       aws.Int64(160),
+						VolumeType: aws.String("gp3"),
 					}},
 				}, nil
 			}
