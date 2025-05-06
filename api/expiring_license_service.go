@@ -54,7 +54,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 					expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
 						ProductName:    expiredProduct.Type,
 						GUID:           expiredProduct.GUID,
-						ProductState:   []string{expiredProduct.ProductState, "requires license"},
+						ProductState:   []string{expiredProduct.ProductState},
 						ProductVersion: expiredProduct.ProductVersion,
 					})
 				}
@@ -92,9 +92,13 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]licenseInfoPr
 
 	noModifiersSelected := !staged && !deployed
 
-	// deployed products should come first and then staged. this order is important for removing the duplicates.
-	// This keeps the deployed and deletes staged from the list if the product is both staged and deployed
-	// The append function in Go adds elements to the end of a slice, maintaining the order in which they are appended.
+	if staged || noModifiersSelected {
+		stagedProducts, err := a.getStagedProducts()
+		if err != nil {
+			return nil, fmt.Errorf("could not get staged products: %w", err)
+		}
+		allProducts = append(allProducts, stagedProducts...)
+	}
 
 	if deployed || noModifiersSelected {
 		deployedProducts, err := a.getDeployedProducts()
@@ -102,14 +106,6 @@ func (a Api) getProductsLicenseInfo(staged bool, deployed bool) ([]licenseInfoPr
 			return nil, fmt.Errorf("could not get deployed products: %w", err)
 		}
 		allProducts = append(allProducts, deployedProducts...)
-	}
-
-	if staged || noModifiersSelected {
-		stagedProducts, err := a.getStagedProducts()
-		if err != nil {
-			return nil, fmt.Errorf("could not get staged products: %w", err)
-		}
-		allProducts = append(allProducts, stagedProducts...)
 	}
 
 	return allProducts, nil

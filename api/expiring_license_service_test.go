@@ -173,14 +173,15 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
-					),
-				)
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
 						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
+					),
+				)
+
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
 					),
 				)
 
@@ -201,14 +202,15 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
-					),
-				)
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
 						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(stagedGUID, stagedExpiryDate, stagedLabel)),
+					),
+				)
+
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(deployedGUID, deployedExpiryDate, deployedLabel)),
 					),
 				)
 
@@ -366,6 +368,30 @@ var _ = Describe("ExpiringLicenseService", func() {
 		})
 
 		Describe("edge cases", func() {
+			It("correctly handles products with no license metadata", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[
+							{
+								"installation_name": "cf-no-license",
+								"guid": "cf-no-license",
+								"type": "cf",
+								"product_version": "1.0-build.0",
+								"label": "Product without license",
+								"service_broker": false,
+								"bosh_read_creds": false,
+								"license_metadata": []
+							}
+						]`),
+					),
+				)
+
+				licenses, err := service.ListExpiringLicenses("30d", true, false)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(licenses).To(HaveLen(0))
+			})
+
 			It("correctly handles products with multiple licenses (some expiring, some not)", func() {
 				expiringDate := formatDate(daysFromNow(20))
 				futureDate := formatDate(daysFromNow(60))
@@ -404,30 +430,6 @@ var _ = Describe("ExpiringLicenseService", func() {
 				licenses, err := service.ListExpiringLicenses("30d", true, false)
 				Expect(err).NotTo(HaveOccurred())
 				expectSingleLicense(licenses, "cf-multiple-licenses", expiringDate, "staged")
-			})
-
-			It("correctly handles products with no license metadata", func() {
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-						ghttp.RespondWith(http.StatusOK, `[
-							{
-								"installation_name": "cf-no-license",
-								"guid": "cf-no-license",
-								"type": "cf",
-								"product_version": "1.0-build.0",
-								"label": "Product without license",
-								"service_broker": false,
-								"bosh_read_creds": false,
-								"license_metadata": []
-							}
-						]`),
-					),
-				)
-
-				licenses, err := service.ListExpiringLicenses("30d", true, false)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(licenses).To(HaveLen(0))
 			})
 
 			It("correctly handles licenses that have already expired", func() {
@@ -471,15 +473,14 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 				client.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, deployedExpiryDate, label)),
-					),
-				)
-
-				client.AppendHandlers(
-					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
 						ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, stagedExpiryDate, label)),
+					),
+				)
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, deployedExpiryDate, label)),
 					),
 				)
 
@@ -517,15 +518,15 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
-					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, expiryDate, label)),
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, createStagedProductResponse(guid, expiryDate, label)),
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, createDeployedProductResponse(guid, expiryDate, label)),
 				),
 			)
 
@@ -536,7 +537,7 @@ var _ = Describe("ExpiringLicenseService", func() {
 
 			Expect(combinedLicense).NotTo(BeNil())
 			Expect(combinedLicense.GUID).To(Equal(guid))
-			Expect(combinedLicense.ProductState).To(Equal([]string{"deployed", "staged"}))
+			Expect(combinedLicense.ProductState).To(Equal([]string{"staged", "deployed"}))
 			expectedStagedTime, _ := time.Parse("2006-01-02", expiryDate)
 			Expect(combinedLicense.ExpiresAt).To(Equal(expectedStagedTime))
 		})
