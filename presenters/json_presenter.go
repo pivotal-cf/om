@@ -109,12 +109,12 @@ func (j JSONPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
 
 func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutput) {
 	type licenseOutput struct {
-		ProductName    string `json:"product_name"`
-		GUID           string `json:"guid"`
-		ExpiresAt      string `json:"expires_at"`
-		ProductState   string `json:"product_state"`
-		ProductVersion string `json:"product_version"`
-		LicenseVersion string `json:"licensed_version"`
+		ProductName    string   `json:"product_name"`
+		GUID           string   `json:"guid"`
+		ExpiresAt      string   `json:"expires_at"`
+		ProductState   []string `json:"product_state"`
+		ProductVersion string   `json:"product_version"`
+		LicenseVersion string   `json:"licensed_version"`
 	}
 	var output []licenseOutput
 	var expiresAt string

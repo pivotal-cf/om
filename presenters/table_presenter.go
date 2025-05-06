@@ -268,7 +268,8 @@ func (t TablePresenter) PresentLicensedProducts(products []api.ExpiringLicenseOu
 		} else {
 			expiresAt = product.ExpiresAt.Format("2006-01-02")
 		}
-		t.tableWriter.Append([]string{product.ProductName, product.GUID, product.ProductVersion, product.ProductState, product.LicenseVersion, expiresAt})
+		states := strings.Join(product.ProductState, ", ")
+		t.tableWriter.Append([]string{product.ProductName, product.GUID, product.ProductVersion, states, product.LicenseVersion, expiresAt})
 	}
 
 	t.tableWriter.Render()
