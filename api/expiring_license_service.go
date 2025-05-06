@@ -11,7 +11,7 @@ type ExpiringLicenseOutput struct {
 	ProductName    string    `json:"product_name"`
 	GUID           string    `json:"guid"`
 	ExpiresAt      time.Time `json:"expires_at"`
-	ProductState   string    `json:"product_state"`
+	ProductState   []string  `json:"product_state"`
 	ProductVersion string    `json:"product_version"`
 	LicenseVersion string    `json:"licensed_version"`
 }
@@ -54,7 +54,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 					expiredLicense = append(expiredLicense, ExpiringLicenseOutput{
 						ProductName:    expiredProduct.Type,
 						GUID:           expiredProduct.GUID,
-						ProductState:   expiredProduct.ProductState + ", requires license",
+						ProductState:   []string{expiredProduct.ProductState, "requires license"},
 						ProductVersion: expiredProduct.ProductVersion,
 					})
 				}
@@ -74,7 +74,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 						ProductName:    expiredProduct.Type,
 						GUID:           expiredProduct.GUID,
 						ExpiresAt:      t,
-						ProductState:   expiredProduct.ProductState,
+						ProductState:   []string{expiredProduct.ProductState},
 						ProductVersion: expiredProduct.ProductVersion,
 						LicenseVersion: productVersion,
 					})
@@ -83,7 +83,7 @@ func (a Api) ListExpiringLicenses(expiresWithin string, staged bool, deployed bo
 		}
 	}
 
-	removeDuplicates(&expiredLicense)
+	mergeDuplicates(&expiredLicense)
 	return expiredLicense, err
 }
 
@@ -176,18 +176,27 @@ func calcEndDate(expiresWithin string) time.Time {
 	}
 }
 
-func removeDuplicates(expiringProducts *[]ExpiringLicenseOutput) {
-	seen := make(map[string]bool)
+func mergeDuplicates(expiringProducts *[]ExpiringLicenseOutput) {
+	type loc struct {
+		seen  bool
+		index int
+	}
+	seen := make(map[string]loc)
 	result := []ExpiringLicenseOutput{}
 
 	for _, expiringProduct := range *expiringProducts {
 		// cannot use license key  in the unique key combination because the key in staged product properties API automatically gets updated with
 		// the new license key value when a user updates with a new license key in the UI
 		// There is no endpoint to check for the deployed product properties. So relying on the expiry date being different.
-		if !seen[expiringProduct.GUID+expiringProduct.ProductVersion+expiringProduct.ExpiresAt.String()] {
-			seen[expiringProduct.GUID+expiringProduct.ProductVersion+expiringProduct.ExpiresAt.String()] = true
+		key := expiringProduct.GUID + expiringProduct.ProductVersion + expiringProduct.ExpiresAt.String()
+		if !seen[key].seen {
+			seen[key] = loc{true, len(result)}
 			result = append(result, expiringProduct)
+		} else {
+			result[seen[key].index].ProductState = append(result[seen[key].index].ProductState, expiringProduct.ProductState...)
+
 		}
 	}
+
 	*expiringProducts = result
 }

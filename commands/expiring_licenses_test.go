@@ -143,14 +143,14 @@ var _ = Describe("ExpiringLicenses", func() {
 					ProductName:    "cf",
 					GUID:           "cf-staged",
 					ExpiresAt:      expiryDate,
-					ProductState:   "staged",
+					ProductState:   []string{"staged"},
 					ProductVersion: "2.5.0",
 				},
 				{
 					ProductName:    "p-bosh",
 					GUID:           "p-bosh-deployed",
 					ExpiresAt:      expiryDate,
-					ProductState:   "deployed",
+					ProductState:   []string{"deployed"},
 					ProductVersion: "3.2.0",
 				},
 			}
@@ -178,7 +178,7 @@ var _ = Describe("ExpiringLicenses", func() {
 					ProductName:    "cf",
 					GUID:           "cf-staged",
 					ExpiresAt:      expiryDate,
-					ProductState:   "staged",
+					ProductState:   []string{"staged"},
 					ProductVersion: "2.8.0",
 				},
 			}
@@ -205,7 +205,7 @@ var _ = Describe("ExpiringLicenses", func() {
 					ProductName:    "p-bosh",
 					GUID:           "p-bosh-deployed",
 					ExpiresAt:      expiryDate,
-					ProductState:   "deployed",
+					ProductState:   []string{"deployed"},
 					ProductVersion: "1.7.9",
 				},
 			}
