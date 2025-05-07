@@ -533,4 +533,62 @@ var _ = Describe("TablePresenter", func() {
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})
 	})
+
+	Describe("PresentLicensedProducts", func() {
+		var products []api.ExpiringLicenseOutput
+
+		BeforeEach(func() {
+			expiryDate, _ := time.Parse("2006-01-02", "2026-03-20")
+			products = []api.ExpiringLicenseOutput{
+				{
+					ProductName:    "cf",
+					GUID:           "cf-fa24570b6a6e8940ab57",
+					ExpiresAt:      expiryDate,
+					ProductState:   []string{"staged"},
+					LicenseVersion: "10.0",
+					ProductVersion: "2.10.1",
+				},
+				{
+					ProductName:    "p-bosh",
+					GUID:           "p-bosh-123456789",
+					ExpiresAt:      expiryDate.AddDate(0, 1, 0),
+					ProductState:   []string{"deployed"},
+					LicenseVersion: "10.0",
+					ProductVersion: "3.0.0",
+				},
+			}
+		})
+
+		It("creates a table with all product license fields", func() {
+			tablePresenter.PresentLicensedProducts(products)
+
+			Expect(fakeTableWriter.SetHeaderCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Name", "GUID", "Product Version", "State", "Licensed Version", "Expiry"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(2))
+
+			firstRow := fakeTableWriter.AppendArgsForCall(0)
+			Expect(firstRow).To(Equal([]string{
+				"cf",
+				"cf-fa24570b6a6e8940ab57",
+				"2.10.1",
+				"staged",
+				"10.0",
+				"2026-03-20",
+			}))
+
+			secondRow := fakeTableWriter.AppendArgsForCall(1)
+			Expect(secondRow).To(Equal([]string{
+				"p-bosh",
+				"p-bosh-123456789",
+				"3.0.0",
+				"deployed",
+				"10.0",
+				"2026-04-20",
+			}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
 })

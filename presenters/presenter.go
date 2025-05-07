@@ -22,6 +22,7 @@ type Presenter interface {
 	PresentProducts(display models.ProductsVersionsDisplay)
 	PresentStagedProducts([]api.DiagnosticProduct)
 	PresentDiagnosticReport(api.DiagnosticReport)
+	PresentLicensedProducts([]api.ExpiringLicenseOutput)
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -172,5 +173,14 @@ func (p *MultiPresenter) PresentDiagnosticReport(report api.DiagnosticReport) {
 		p.jsonPresenter.PresentDiagnosticReport(report)
 	default:
 		p.tablePresenter.PresentDiagnosticReport(report)
+	}
+}
+
+func (p *MultiPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOutput) {
+	switch p.format {
+	case "json":
+		p.jsonPresenter.PresentLicensedProducts(products)
+	default:
+		p.tablePresenter.PresentLicensedProducts(products)
 	}
 }
