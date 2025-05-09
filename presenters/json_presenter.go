@@ -2,9 +2,10 @@ package presenters
 
 import (
 	"encoding/json"
+	"io"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/models"
-	"io"
 )
 
 type JSONPresenter struct {
@@ -116,10 +117,9 @@ func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOut
 		ProductVersion string   `json:"product_version"`
 		LicenseVersion string   `json:"licensed_version"`
 	}
-	var output []licenseOutput
+	output := []licenseOutput{}
 	var expiresAt string
 	for _, product := range products {
-
 		if product.ExpiresAt.IsZero() {
 			expiresAt = ""
 		} else {
