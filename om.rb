@@ -5,20 +5,20 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.15.1"
+  version "7.16.0"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.15.1/om-darwin-amd64-7.15.1.tar.gz"
-      sha256 "4c315633c023d9f0d06cf6604621324f376e46f006dc0d5af3d687917c8d2065"
+      url "https://github.com/pivotal-cf/om/releases/download/7.16.0/om-darwin-amd64-7.16.0.tar.gz"
+      sha256 "6d1c98c9f7570d2c2350d22e55b46195a13d6cd67cada7922eff7c65d5c01e6e"
 
       def install
         bin.install "om"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.15.1/om-darwin-arm64-7.15.1.tar.gz"
-      sha256 "248fe44657749b911136fe264ab2b7a378bbb91752559688d485f7fd51a31886"
+      url "https://github.com/pivotal-cf/om/releases/download/7.16.0/om-darwin-arm64-7.16.0.tar.gz"
+      sha256 "324f7150f186aab52d944e2754d5f156f3f3e52dbd24deced7e343be92df0a64"
 
       def install
         bin.install "om"
@@ -27,24 +27,18 @@ class Om < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      if Hardware::CPU.is_64_bit?
-        url "https://github.com/pivotal-cf/om/releases/download/7.15.1/om-linux-amd64-7.15.1.tar.gz"
-        sha256 "346a470c1929bcf456e90dc4433958668b9a08670269272f17b0a115604d955c"
-
-        def install
-          bin.install "om"
-        end
+    if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
+      url "https://github.com/pivotal-cf/om/releases/download/7.16.0/om-linux-amd64-7.16.0.tar.gz"
+      sha256 "2d256be4c13a33b12fae165e59238faaaaac04de3383c40e4f82e98a44e56f0c"
+      def install
+        bin.install "om"
       end
     end
-    if Hardware::CPU.arm?
-      if Hardware::CPU.is_64_bit?
-        url "https://github.com/pivotal-cf/om/releases/download/7.15.1/om-linux-arm64-7.15.1.tar.gz"
-        sha256 "d5f0e41c805c67d9c1fc1d460d95a5adae254338c7959329e908e7d65252a30c"
-
-        def install
-          bin.install "om"
-        end
+    if Hardware::CPU.arm? and Hardware::CPU.is_64_bit?
+      url "https://github.com/pivotal-cf/om/releases/download/7.16.0/om-linux-arm64-7.16.0.tar.gz"
+      sha256 "02ced3eec8a9642edff8b8d0657a7a1a7d6b84f9b40f5ab268c347be4427d943"
+      def install
+        bin.install "om"
       end
     end
   end
