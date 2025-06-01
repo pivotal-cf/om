@@ -44,7 +44,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		Vars       []string `long:"var"                        short:"v"`
 	}
 
-	parser := flags.NewParser(&config, flags.None)
+	parser := flags.NewParser(&config, flags.IgnoreUnknown)
 	args, err = parser.ParseArgs(args)
 	configFile := config.ConfigFile
 	if configFile == "" {
