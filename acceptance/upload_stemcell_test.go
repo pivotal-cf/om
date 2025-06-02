@@ -1,7 +1,10 @@
 package acceptance
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,6 +16,9 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 
+	"archive/tar"
+	"compress/gzip"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -23,6 +29,30 @@ var _ = Describe("upload-stemcell command", func() {
 		server       *ghttp.Server
 	)
 
+	createFakeStemcellTarballAt := func(path string, manifest string) error {
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		gz := gzip.NewWriter(f)
+		tarWriter := tar.NewWriter(gz)
+		hdr := &tar.Header{
+			Name: "stemcell.MF",
+			Mode: 0600,
+			Size: int64(len(manifest)),
+		}
+		if err := tarWriter.WriteHeader(hdr); err != nil {
+			return err
+		}
+		if _, err := tarWriter.Write([]byte(manifest)); err != nil {
+			return err
+		}
+		tarWriter.Close()
+		gz.Close()
+		return nil
+	}
+
 	createStemcell := func(filename string) (string, string) {
 		dir, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
@@ -31,7 +61,13 @@ var _ = Describe("upload-stemcell command", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		path := filepath.Join(dir, "stemcells", filename)
-		err = os.WriteFile(path, []byte("content so validation does not fail"), 0777)
+		manifest := `---
+operating_system: ubuntu-xenial
+version: '621.80'
+cloud_properties:
+  infrastructure: vsphere
+`
+		err = createFakeStemcellTarballAt(path, manifest)
 		Expect(err).ToNot(HaveOccurred())
 		return path, dir
 	}
@@ -105,7 +141,7 @@ var _ = Describe("upload-stemcell command", func() {
 					"--password", "pass",
 					"--skip-ssl-validation",
 					"upload-stemcell",
-					"--config", writeFile(fmt.Sprintf("{stemcell: %s, shasum: 33d5f6335e83364e11760878afad059fffd6a2729ae53691c87cc349a784de92}", filename)),
+					"--config", writeFile(fmt.Sprintf("{stemcell: %s, shasum: %s}", filename, fileSha256(filename))),
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -262,7 +298,7 @@ var _ = Describe("upload-stemcell command", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Eventually(session, 10*time.Second).Should(gexec.Exit(1))
-				Eventually(session.Err).Should(gbytes.Say("failed to upload stemcell: file provided has no content"))
+				Eventually(session.Err).Should(gbytes.Say("could not extract stemcell manifest: EOF"))
 			})
 		})
 
@@ -287,3 +323,13 @@ var _ = Describe("upload-stemcell command", func() {
 		})
 	})
 })
+
+func fileSha256(path string) string {
+	f, err := os.Open(path)
+	Expect(err).ToNot(HaveOccurred())
+	defer f.Close()
+	h := sha256.New()
+	_, err = io.Copy(h, f)
+	Expect(err).ToNot(HaveOccurred())
+	return hex.EncodeToString(h.Sum(nil))
+}

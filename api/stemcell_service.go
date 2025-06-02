@@ -1,9 +1,15 @@
 package api
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v2"
 )
 
 type ProductStemcells struct {
@@ -17,6 +23,17 @@ type ProductStemcell struct {
 	StagedStemcellVersion   string   `json:"staged_stemcell_version,omitempty"`
 	RequiredStemcellVersion string   `json:"required_stemcell_version,omitempty"`
 	AvailableVersions       []string `json:"available_stemcell_versions,omitempty"`
+}
+
+// StemcellManifest represents the structure of stemcell.MF
+// Only relevant fields are included
+// Example fields: os, version, infrastructure
+type StemcellManifest struct {
+	OperatingSystem string `yaml:"operating_system"`
+	Version         string `yaml:"version"`
+	CloudProperties struct {
+		Infrastructure string `yaml:"infrastructure"`
+	} `yaml:"cloud_properties"`
 }
 
 func (a Api) ListStemcells() (ProductStemcells, error) {
@@ -57,6 +74,44 @@ func (a Api) AssignStemcell(input ProductStemcells) error {
 	return nil
 }
 
+func extractStemcellManifest(tgzPath string) (StemcellManifest, error) {
+	f, err := os.Open(tgzPath)
+	if err != nil {
+		return StemcellManifest{}, err
+	}
+	defer f.Close()
+
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return StemcellManifest{}, err
+	}
+	defer gz.Close()
+
+	tarReader := tar.NewReader(gz)
+	for {
+		hdr, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return StemcellManifest{}, err
+		}
+		if hdr.Name == "stemcell.MF" {
+			var mf StemcellManifest
+			manifestBytes, err := io.ReadAll(tarReader)
+			if err != nil {
+				return StemcellManifest{}, err
+			}
+			err = yaml.Unmarshal(manifestBytes, &mf)
+			if err != nil {
+				return StemcellManifest{}, err
+			}
+			return mf, nil
+		}
+	}
+	return StemcellManifest{}, io.EOF // not found
+}
+
 func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 	report, err := a.GetDiagnosticReport()
 	if err != nil {
@@ -73,9 +128,22 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 		return false, fmt.Errorf("could not determine version was 2.6+ compatible: %s", err)
 	}
 
+	manifest, err := extractStemcellManifest(stemcellFilename)
+	if err != nil {
+		return false, fmt.Errorf("could not extract stemcell manifest: %w", err)
+	}
+
+	osField := manifest.OperatingSystem
+	versionField := manifest.Version
+	iaasField := manifest.CloudProperties.Infrastructure
+
+	if osField == "" || versionField == "" || iaasField == "" {
+		return false, fmt.Errorf("stemcell manifest missing required fields: operating_system, version, or cloud_properties.infrastructure")
+	}
+
 	if validVersion {
 		for _, stemcell := range report.AvailableStemcells {
-			if stemcell.Filename == filepath.Base(stemcellFilename) {
+			if stemcell.OS == osField && stemcell.Version == versionField && iaasField == report.InfrastructureType {
 				return true, nil
 			}
 		}
