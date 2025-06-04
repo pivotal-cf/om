@@ -791,31 +791,57 @@ func checkForVars(opts *options) error {
 	return nil
 }
 
+// Helper to recursively collect all options from a group and its subgroups
+func collectAllOptions(group *flags.Group) []*flags.Option {
+	var allOptions []*flags.Option
+	allOptions = append(allOptions, group.Options()...)
+	for _, subgroup := range group.Groups() {
+		allOptions = append(allOptions, collectAllOptions(subgroup)...)
+	}
+	return allOptions
+}
+
 // validateCommandFlags checks if the provided command flags are valid for the given command.
 func validateCommandFlags(parser *flags.Parser, args []string) error {
-	// If no args, return nil
 	if len(args) == 0 {
 		return nil
 	}
 
-	// Find the command to validate flags for
-	cmdName := args[0]
 	var selectedCmd *flags.Command
-	for _, cmd := range parser.Commands() {
-		if cmd.Name == cmdName || contains(cmd.Aliases, cmdName) {
+	cmds := parser.Commands()
+	argIdx := 0
+
+	// Find the top-level command
+	for _, cmd := range cmds {
+		if cmd.Name == args[argIdx] || contains(cmd.Aliases, args[argIdx]) {
 			selectedCmd = cmd
 			break
 		}
 	}
-	// Unknown command, let parser handle it
 	if selectedCmd == nil {
-		return nil
+		return nil // unknown command, let parser handle it
+	}
+	argIdx++
+
+	// Walk down subcommands as long as the next arg matches a subcommand
+	for argIdx < len(args) {
+		found := false
+		for _, sub := range selectedCmd.Commands() {
+			if sub.Name == args[argIdx] || contains(sub.Aliases, args[argIdx]) {
+				selectedCmd = sub
+				argIdx++
+				found = true
+				break
+			}
+		}
+		if !found {
+			break
+		}
 	}
 
-	// Find unknown flags
-	invalidFlags := findUnknownFlags(selectedCmd, args)
+	// Now selectedCmd is the deepest subcommand
+	invalidFlags := findUnknownFlags(selectedCmd, args[argIdx:])
 
-	// If there are unknown flags, print an error and return
 	if len(invalidFlags) > 0 {
 		fmt.Fprintf(os.Stderr, "Error: unknown flag(s) %q for command '%s'\n", invalidFlags, selectedCmd.Name)
 		fmt.Fprintf(os.Stderr, "See 'om %s --help' for available options.\n", selectedCmd.Name)
@@ -830,7 +856,11 @@ func findUnknownFlags(selectedCmd *flags.Command, args []string) []string {
 	addFlag := func(name string, takesValue bool) {
 		validFlags[name] = takesValue
 	}
-	for _, opt := range selectedCmd.Options() {
+	cmd := selectedCmd
+	for cmd.Active != nil {
+		cmd = cmd.Active
+	}
+	for _, opt := range collectAllOptions(cmd.Group) {
 		val := opt.Value()
 		_, isBool := val.(*bool)
 		_, isBoolSlice := val.(*[]bool)
@@ -846,15 +876,13 @@ func findUnknownFlags(selectedCmd *flags.Command, args []string) []string {
 	addFlag("-h", false)
 
 	var invalidFlags []string
-	i := 1
+	i := 0
 	for i < len(args) {
 		arg := args[i]
 		if !strings.HasPrefix(arg, "-") {
-			// Not a flag, just a value
-			// Example: args = ["upload-product", "file.pivotal"]
-			// "file.pivotal" is a positional argument or a value for a previous flag
-			i++
-			continue
+			// Not a flag, and not a value for a previous flag (since we only check flags)
+			// Stop processing further, as all remaining args are positional
+			break
 		}
 
 		// Split flag and value if --flag=value

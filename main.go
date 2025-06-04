@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/pivotal-cf/om/cmd"
@@ -18,10 +18,9 @@ func main() {
 	err := cmd.Main(os.Stdout, os.Stderr, version, applySleepDurationString, os.Args)
 	if err != nil {
 		if errors.Is(err, commands.ErrBoshDiffChangesExist) {
-			fmt.Fprintln(os.Stderr, err)
+			log.Print(err)
 			os.Exit(2)
 		}
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
