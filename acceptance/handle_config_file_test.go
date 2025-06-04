@@ -102,7 +102,7 @@ username123: username
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session, "5s").Should(gexec.Exit(1))
-			Expect(session.Err.Contents()).To(ContainSubstring("unknown flag `username123'"))
+			Expect(session.Err.Contents()).To(ContainSubstring("unknown flag(s) [\"--username123\"]"))
 		})
 	})
 
