@@ -809,11 +809,12 @@ func validateCommandFlags(parser *flags.Parser, args []string) error {
 
 	var selectedCmd *flags.Command
 	cmds := parser.Commands()
-	argIdx := 0
+	// currentArgPosition tracks our position in the args array as we traverse the command hierarchy
+	currentArgPosition := 0
 
 	// Find the top-level command
 	for _, cmd := range cmds {
-		if cmd.Name == args[argIdx] || contains(cmd.Aliases, args[argIdx]) {
+		if cmd.Name == args[currentArgPosition] || contains(cmd.Aliases, args[currentArgPosition]) {
 			selectedCmd = cmd
 			break
 		}
@@ -821,15 +822,18 @@ func validateCommandFlags(parser *flags.Parser, args []string) error {
 	if selectedCmd == nil {
 		return nil // unknown command, let parser handle it
 	}
-	argIdx++
+	currentArgPosition++
 
 	// Walk down subcommands as long as the next arg matches a subcommand
-	for argIdx < len(args) {
+	// For example: "om vm-lifecycle export-opsman-config" would traverse:
+	// 1. "vm-lifecycle" (top-level command)
+	// 2. "export-opsman-config" (subcommand)
+	for currentArgPosition < len(args) {
 		found := false
 		for _, sub := range selectedCmd.Commands() {
-			if sub.Name == args[argIdx] || contains(sub.Aliases, args[argIdx]) {
+			if sub.Name == args[currentArgPosition] || contains(sub.Aliases, args[currentArgPosition]) {
 				selectedCmd = sub
-				argIdx++
+				currentArgPosition++
 				found = true
 				break
 			}
@@ -840,12 +844,13 @@ func validateCommandFlags(parser *flags.Parser, args []string) error {
 	}
 
 	// Now selectedCmd is the deepest subcommand
-	invalidFlags := findUnknownFlags(selectedCmd, args[argIdx:])
+	// Check remaining args for unknown flags
+	invalidFlags := findUnknownFlags(selectedCmd, args[currentArgPosition:])
 
 	if len(invalidFlags) > 0 {
 		fmt.Fprintf(os.Stderr, "Error: unknown flag(s) %q for command '%s'\n", invalidFlags, selectedCmd.Name)
 		fmt.Fprintf(os.Stderr, "See 'om %s --help' for available options.\n", selectedCmd.Name)
-		return fmt.Errorf("unknown flag(s) %q for command '%s'", invalidFlags, selectedCmd.Name)
+		os.Exit(1)
 	}
 	return nil
 }
