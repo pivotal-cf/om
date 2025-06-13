@@ -55,7 +55,7 @@ opsman-configuration:
 			Expect(err).ToNot(HaveOccurred())
 			Eventually(session, 5).Should(gexec.Exit(1))
 
-			Eventually(session.Err).Should(gbytes.Say("unknown flag `random'"))
+			Expect(session.Err).To(gbytes.Say("unknown flag\\(s\\) \\[\"--random\"\\] for command 'delete-vm'"))
 		})
 	})
 })

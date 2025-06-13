@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-cf/om/extractor"
+	"github.com/pivotal-cf/om/validator"
 )
 
 var _ = Describe("upload-product command", func() {
@@ -176,4 +179,212 @@ name: some-product`)
 		})
 	})
 
+	When("validating command flags", func() {
+		var actualShasum string
+		var actualVersion string
+		var configFile *os.File
+		var varsFile1 *os.File
+		var varsFile2 *os.File
+
+		BeforeEach(func() {
+			// Calculate the actual shasum of the test file
+			shaValidator := validator.NewSHA256Calculator()
+			var err error
+			actualShasum, err = shaValidator.Checksum(productFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			// Get the actual version from the test file
+			metadataExtractor := extractor.NewMetadataExtractor()
+			metadata, err := metadataExtractor.ExtractFromFile(productFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+			actualVersion = metadata.Version
+
+			// Create temporary config file
+			configFile, err = os.CreateTemp("", "config.yml")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = configFile.WriteString("product: ((product_path))\npolling-interval: ((interval))")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(configFile.Close()).To(Succeed())
+
+			// Create temporary vars files
+			varsFile1, err = os.CreateTemp("", "vars1.yml")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = varsFile1.WriteString(fmt.Sprintf("product_path: %s\ninterval: \"5\"", productFile.Name()))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(varsFile1.Close()).To(Succeed())
+
+			varsFile2, err = os.CreateTemp("", "vars2.yml")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = varsFile2.WriteString("additional_var: value")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(varsFile2.Close()).To(Succeed())
+
+			// Add handler for product upload
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/v0/available_products"),
+					http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+						err := req.ParseMultipartForm(100)
+						Expect(err).ToNot(HaveOccurred())
+
+						requestFileName := req.MultipartForm.File["product[file]"][0].Filename
+						Expect(requestFileName).To(Equal(filepath.Base(productFile.Name())))
+
+						w.WriteHeader(http.StatusOK)
+						_, err = w.Write([]byte(`{}`))
+						Expect(err).ToNot(HaveOccurred())
+					}),
+				),
+			)
+		})
+
+		AfterEach(func() {
+			os.Remove(configFile.Name())
+			os.Remove(varsFile1.Name())
+			os.Remove(varsFile2.Name())
+		})
+
+		It("accepts valid flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"--product", productFile.Name(),
+				"--polling-interval", "5",
+				"--shasum", actualShasum,
+				"--product-version", actualVersion,
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(0))
+		})
+
+		It("accepts valid short flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"-p", productFile.Name(),
+				"-i", "5",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(0))
+		})
+
+		It("accepts all config interpolation flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"-c", configFile.Name(),
+				"--vars-env", "MY",
+				"-l", varsFile1.Name(),
+				"-l", varsFile2.Name(),
+				"-v", "FOO=bar",
+				"-v", "BAZ=qux",
+				"-p", productFile.Name(),
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(0))
+		})
+
+		It("accepts mix of config and main flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"-p", productFile.Name(),
+				"-c", configFile.Name(),
+				"--vars-env", "MY",
+				"--shasum", actualShasum,
+				"-l", varsFile1.Name(),
+				"-v", "FOO=bar",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(0))
+		})
+
+		It("rejects unknown flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"-p", productFile.Name(),
+				"--notaflag",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(1))
+			Eventually(session.Err).Should(gbytes.Say("Error: unknown flag\\(s\\) \\[\"--notaflag\"\\] for command 'upload-product'"))
+		})
+
+		It("rejects multiple unknown flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"--foo",
+				"--bar",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(1))
+			Eventually(session.Err).Should(gbytes.Say("Error: unknown flag\\(s\\) \\[\"--foo\" \"--bar\"\\] for command 'upload-product'"))
+		})
+
+		It("rejects unknown short flags", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"-p", productFile.Name(),
+				"-x", "18000",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(1))
+			Eventually(session.Err).Should(gbytes.Say("Error: unknown flag\\(s\\) \\[\"-x\"\\] for command 'upload-product'"))
+		})
+
+		It("rejects another unknown short flag", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"upload-product",
+				"-p", productFile.Name(),
+				"-z", "18000",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(session, 5).Should(gexec.Exit(1))
+			Eventually(session.Err).Should(gbytes.Say("Error: unknown flag\\(s\\) \\[\"-z\"\\] for command 'upload-product'"))
+		})
+	})
 })

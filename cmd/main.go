@@ -659,11 +659,14 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		return err
 	}
 
-	parser.Options |= flags.HelpFlag
-
-	_, err = parser.ParseArgs(args)
-
+	// Strict flag validation block
+	err = validateCommandFlags(parser, args)
 	if err != nil {
+		return err
+	}
+
+	parser.Options |= flags.HelpFlag
+	if _, err = parser.ParseArgs(args); err != nil {
 		if e, ok := err.(*flags.Error); ok {
 			switch e.Type {
 			case flags.ErrHelp, flags.ErrCommandRequired:
@@ -786,4 +789,158 @@ func checkForVars(opts *options) error {
 	}
 
 	return nil
+}
+
+// Helper to recursively collect all options from a group and its subgroups
+func collectAllOptions(group *flags.Group) []*flags.Option {
+	var allOptions []*flags.Option
+	allOptions = append(allOptions, group.Options()...)
+	for _, subgroup := range group.Groups() {
+		allOptions = append(allOptions, collectAllOptions(subgroup)...)
+	}
+	return allOptions
+}
+
+// validateCommandFlags checks if the provided command flags are valid for the given command.
+func validateCommandFlags(parser *flags.Parser, args []string) error {
+	if len(args) == 0 {
+		return nil
+	}
+
+	var selectedCmd *flags.Command
+	cmds := parser.Commands()
+	// currentArgPosition tracks our position in the args array as we traverse the command hierarchy
+	currentArgPosition := 0
+
+	// Find the top-level command
+	for _, cmd := range cmds {
+		if cmd.Name == args[currentArgPosition] || contains(cmd.Aliases, args[currentArgPosition]) {
+			selectedCmd = cmd
+			break
+		}
+	}
+	if selectedCmd == nil {
+		return nil // unknown command, let parser handle it
+	}
+	currentArgPosition++
+
+	// Walk down subcommands as long as the next arg matches a subcommand
+	// For example: "om vm-lifecycle export-opsman-config" would traverse:
+	// 1. "vm-lifecycle" (top-level command)
+	// 2. "export-opsman-config" (subcommand)
+	for currentArgPosition < len(args) {
+		found := false
+		for _, sub := range selectedCmd.Commands() {
+			if sub.Name == args[currentArgPosition] || contains(sub.Aliases, args[currentArgPosition]) {
+				selectedCmd = sub
+				currentArgPosition++
+				found = true
+				break
+			}
+		}
+		if !found {
+			break
+		}
+	}
+
+	// Now selectedCmd is the deepest subcommand
+	// Check remaining args for unknown flags
+	invalidFlags := findUnknownFlags(selectedCmd, args[currentArgPosition:])
+
+	if len(invalidFlags) > 0 {
+		return fmt.Errorf(
+			"Error: unknown flag(s) %q for command '%s'\nSee 'om %s --help' for available options",
+			invalidFlags,
+			selectedCmd.Name,
+			selectedCmd.Name,
+		)
+	}
+	return nil
+}
+
+// findUnknownFlags checks for unknown flags in the provided args for the given command.
+func findUnknownFlags(selectedCmd *flags.Command, args []string) []string {
+	validFlags := make(map[string]bool)
+	addFlag := func(name string, takesValue bool) {
+		validFlags[name] = takesValue
+	}
+	cmd := selectedCmd
+	for cmd.Active != nil {
+		cmd = cmd.Active
+	}
+	for _, opt := range collectAllOptions(cmd.Group) {
+		val := opt.Value()
+		_, isBool := val.(*bool)
+		_, isBoolSlice := val.(*[]bool)
+		takesValue := !(isBool || isBoolSlice)
+		if ln := opt.LongNameWithNamespace(); ln != "" {
+			addFlag("--"+ln, takesValue)
+		}
+		if opt.ShortName != 0 {
+			addFlag("-"+string(opt.ShortName), takesValue)
+		}
+	}
+	addFlag("--help", false)
+	addFlag("-h", false)
+
+	var invalidFlags []string
+	i := 0
+	for i < len(args) {
+		arg := args[i]
+		if !strings.HasPrefix(arg, "-") {
+			// Not a flag, and not a value for a previous flag (since we only check flags)
+			// Stop processing further, as all remaining args are positional
+			break
+		}
+
+		// Split flag and value if --flag=value
+		flagName, hasEquals := arg, false
+		if eqIdx := strings.Index(arg, "="); eqIdx != -1 {
+			flagName = arg[:eqIdx]
+			hasEquals = true
+			// Example: arg = "--product=foo.pivotal" -> flagName = "--product", value = "foo.pivotal"
+		}
+
+		takesValue, isValid := validFlags[flagName]
+		if !isValid {
+			// Unknown flag
+			// Example: arg = "--notaflag" (not defined in command options)
+			invalidFlags = append(invalidFlags, flagName)
+			i++
+			continue
+		}
+
+		if takesValue {
+			if hasEquals {
+				// --flag=value, value is in this arg
+				// Example: arg = "--product=foo.pivotal"
+				i++
+			} else if i+1 < len(args) {
+				// --flag value, value is next arg (even if it looks like a flag)
+				// Example: args = ["--product", "--notaflag"]
+				// "--notaflag" is treated as the value for --product, not as a flag
+				i += 2
+			} else {
+				// --flag with missing value.
+				// No need to handle this here as this will handled appropriately by the parser.
+				// Example: args = ["--product"] (no value provided)
+				i++
+			}
+		} else {
+			// Boolean flag, no value expected
+			// Example: arg = "--help"
+			i++
+		}
+	}
+	return invalidFlags
+}
+
+// contains checks if a string is present in a list of strings.
+func contains(list []string, s string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
