@@ -848,9 +848,12 @@ func validateCommandFlags(parser *flags.Parser, args []string) error {
 	invalidFlags := findUnknownFlags(selectedCmd, args[currentArgPosition:])
 
 	if len(invalidFlags) > 0 {
-		fmt.Fprintf(os.Stderr, "Error: unknown flag(s) %q for command '%s'\n", invalidFlags, selectedCmd.Name)
-		fmt.Fprintf(os.Stderr, "See 'om %s --help' for available options.\n", selectedCmd.Name)
-		os.Exit(1)
+		return fmt.Errorf(
+			"Error: unknown flag(s) %q for command '%s'\nSee 'om %s --help' for available options",
+			invalidFlags,
+			selectedCmd.Name,
+			selectedCmd.Name,
+		)
 	}
 	return nil
 }
