@@ -236,6 +236,34 @@ var _ = Describe("Curl", func() {
 
 				Expect(bodyContents).To(Equal("hello, world"))
 			})
+
+			It("reads request data from a file when --data is present with @", func() {
+				f, err := os.CreateTemp("", "om-curl-*")
+				Expect(err).ToNot(HaveOccurred())
+				defer os.Remove(f.Name())
+
+				fmt.Fprintf(f, "hello, world")
+				err = f.Close()
+				Expect(err).ToNot(HaveOccurred())
+
+				var bodyContents string
+				fakeService.CurlStub = func(input api.RequestServiceCurlInput) (api.RequestServiceCurlOutput, error) {
+					c, _ := io.ReadAll(input.Data)
+					bodyContents = string(c)
+					return api.RequestServiceCurlOutput{
+						Body: stringCloser(`{"some-response-key": "some-response-value"}`),
+					}, nil
+				}
+
+				err = executeCommand(command, []string{
+					"--path", "/api/v0/some/path",
+					"--data", "installation[file]=@" + f.Name(),
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(bodyContents).To(ContainSubstring("application/octet-stream"))
+				Expect(bodyContents).To(ContainSubstring("hello, world"))
+			})
 		})
 
 		When("a custom content-type is passed in", func() {

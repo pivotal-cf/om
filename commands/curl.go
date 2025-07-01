@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/formcontent"
 )
 
 //counterfeiter:generate -o ./fakes/curl_service.go --fake-name CurlService . curlService
@@ -18,10 +19,11 @@ type curlService interface {
 }
 
 type Curl struct {
-	service curlService
-	stdout  logger
-	stderr  logger
-	Options struct {
+	formcontent formcontent.Form
+	service     curlService
+	stdout      logger
+	stderr      logger
+	Options     struct {
 		Path    string   `long:"path"    short:"p" required:"true" description:"path to api endpoint"`
 		Method  string   `long:"request" short:"x"                 description:"http verb (defaults to GET, POST when 'data' specified"`
 		Data    string   `long:"data"    short:"d"                 description:"api request payload (prefix with @ to read file contents)"`
@@ -31,7 +33,7 @@ type Curl struct {
 }
 
 func NewCurl(service curlService, stdout logger, stderr logger) *Curl {
-	return &Curl{service: service, stdout: stdout, stderr: stderr}
+	return &Curl{service: service, stdout: stdout, stderr: stderr, formcontent: *formcontent.NewForm()}
 }
 
 func (c Curl) Execute(args []string) error {
@@ -50,6 +52,21 @@ func (c Curl) Execute(args []string) error {
 		}
 		data = f
 		defer f.Close()
+	}
+
+	// adding support for the data if it contains file with form multipart data
+	if strings.Contains(c.Options.Data, "=@") {
+		splitVals := strings.Split(c.Options.Data, "=@")
+		if len(splitVals) == 2 {
+			fileKey, fileName := splitVals[0], splitVals[1]
+			err := c.formcontent.AddFile(fileKey, fileName)
+			if err != nil {
+				return fmt.Errorf("failed to add form content %v", err)
+			}
+			submission := c.formcontent.Finalize()
+			data = submission.Content
+			requestHeaders.Set("Content-Type", submission.ContentType)
+		}
 	}
 
 	input := api.RequestServiceCurlInput{
