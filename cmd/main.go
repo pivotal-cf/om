@@ -474,6 +474,15 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		return err
 	}
 	_, err = parser.AddCommand(
+		"get-certificates",
+		"fetches deployed certificates and displays their serial numbers",
+		"fetches all deployed certificates, retrieves their PEMs, extracts serial numbers, and displays the merged result",
+		commands.NewGetCertificates(api),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
 		"import-installation",
 		"imports a given installation to the Ops Manager targeted",
 		"This unauthenticated command attempts to import an installation to the Ops Manager targeted.",

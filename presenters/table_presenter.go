@@ -1,6 +1,7 @@
 package presenters
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -273,6 +274,10 @@ func (t TablePresenter) PresentLicensedProducts(products []api.ExpiringLicenseOu
 	}
 
 	t.tableWriter.Render()
+}
+
+func (t TablePresenter) PresentCertificates(certs interface{}) {
+	fmt.Println("Table output for certificates is not implemented yet. Use --format json.")
 }
 
 func sortCredentialMap(cm map[string]string) ([]string, []string) {

@@ -44,3 +44,26 @@ func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertifica
 
 	return expiringCertificatesResponse.Certificates, nil
 }
+
+type DeployedCertificatesResponse struct {
+	Certificates []ExpiringCertificate `json:"certificates"`
+}
+
+func (a Api) ListDeployedCertificates() ([]ExpiringCertificate, error) {
+	resp, err := a.sendAPIRequest("GET", "/api/v0/deployed/certificates", nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not make api request to deployed certificates endpoint: %w", err)
+	}
+
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
+
+	var deployedCertificatesResponse DeployedCertificatesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&deployedCertificatesResponse); err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return deployedCertificatesResponse.Certificates, nil
+}
