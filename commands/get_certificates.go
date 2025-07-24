@@ -1,10 +1,12 @@
 package commands
 
 import (
+	"crypto/x509"
+	"encoding/json"
+	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"os/exec"
+	"sync"
 
 	"github.com/pivotal-cf/om/api"
 )
@@ -38,44 +40,71 @@ func (cmd *GetCertificates) Execute(args []string) error {
 		api.ExpiringCertificate
 		Serial string `json:"serial_number"`
 	}
-	var results []certWithSerial
 
-	for _, cert := range certs {
-		serial := ""
-		if cert.ProductGUID != "" && cert.PropertyReference != "" {
-			_, ok := guidToType[cert.ProductGUID]
-			if ok {
-				cred, err := cmd.api.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-					DeployedGUID:        cert.ProductGUID,
-					CredentialReference: cert.PropertyReference,
-				})
-				if err == nil {
-					pem, ok := cred.Credential.Value["cert_pem"]
-					if ok && pem != "" {
-						tmpfile, err := ioutil.TempFile("", "om-cert-*.crt")
-						if err == nil {
-							defer os.Remove(tmpfile.Name())
-							tmpfile.WriteString(pem)
-							tmpfile.Close()
-							out, err := exec.Command("openssl", "x509", "-noout", "-serial", "-in", tmpfile.Name()).Output()
-							if err == nil {
-								serialLine := string(out)
-								if len(serialLine) > 7 && serialLine[:7] == "serial=" {
-									serial = serialLine[7:]
-								}
-							}
+	results := make([]certWithSerial, len(certs))
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 10) // limit concurrency to 10
+	progressEvery := 10
+	progressCount := 0
+	progressLock := sync.Mutex{}
+
+	for i, cert := range certs {
+		wg.Add(1)
+		go func(i int, cert api.ExpiringCertificate) {
+			defer wg.Done()
+			sem <- struct{}{}        // acquire
+			defer func() { <-sem }() // release
+
+			serial := ""
+			if cert.ProductGUID != "" && cert.PropertyReference != "" {
+				_, ok := guidToType[cert.ProductGUID]
+				if ok {
+					cred, err := cmd.api.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+						DeployedGUID:        cert.ProductGUID,
+						CredentialReference: cert.PropertyReference,
+					})
+					if err == nil {
+						pem, ok := cred.Credential.Value["cert_pem"]
+						if ok && pem != "" {
+							serial, _ = extractSerialFromPEM(pem)
 						}
 					}
 				}
 			}
-		}
-		results = append(results, certWithSerial{
-			ExpiringCertificate: cert,
-			Serial:              serial,
-		})
+			results[i] = certWithSerial{
+				ExpiringCertificate: cert,
+				Serial:              serial,
+			}
+
+			progressLock.Lock()
+			progressCount++
+			if progressCount%progressEvery == 0 {
+				fmt.Fprint(os.Stderr, ".")
+			}
+			progressLock.Unlock()
+		}(i, cert)
 	}
 
-	// For now, just print the results
-	fmt.Printf("%+v\n", results)
+	wg.Wait()
+	fmt.Fprintln(os.Stderr) // finish progress line
+
+	// Pretty-print the results as JSON, with serial number included in each cert
+	jsonBytes, err := json.MarshalIndent(results, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal results: %w", err)
+	}
+	fmt.Println(string(jsonBytes))
 	return nil
+}
+
+func extractSerialFromPEM(pemData string) (string, error) {
+	block, _ := pem.Decode([]byte(pemData))
+	if block == nil {
+		return "", fmt.Errorf("failed to decode PEM")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+	return cert.SerialNumber.Text(16), nil // hex string, like openssl
 }
