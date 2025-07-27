@@ -5,19 +5,23 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/pivotal-cf/om/api"
 )
 
 type GetCertificates struct {
-	api api.Api
+	api     api.Api
+	logger  logger
+	Options struct {
+		Product string `long:"product" short:"p" required:"true" description:"product type to filter certificates (e.g., p-bosh, cf)"`
+	}
 }
 
-func NewGetCertificates(apiClient api.Api) *GetCertificates {
+func NewGetCertificates(apiClient api.Api, logger logger) *GetCertificates {
 	return &GetCertificates{
-		api: apiClient,
+		api:    apiClient,
+		logger: logger,
 	}
 }
 
@@ -36,19 +40,33 @@ func (cmd *GetCertificates) Execute(args []string) error {
 		guidToType[p.GUID] = p.Type
 	}
 
+	// Filter certificates by product type
+	var filteredCerts []api.ExpiringCertificate
+	for _, cert := range certs {
+		if cert.ProductGUID != "" {
+			if productType, ok := guidToType[cert.ProductGUID]; ok && productType == cmd.Options.Product {
+				filteredCerts = append(filteredCerts, cert)
+			}
+		}
+	}
+
+	if len(filteredCerts) == 0 {
+		cmd.logger.Printf("No certificates found for product '%s'", cmd.Options.Product)
+		return nil
+	}
+
+	cmd.logger.Printf("Processing %d certificates (this may take a moment)...", len(filteredCerts))
+
 	type certWithSerial struct {
 		api.ExpiringCertificate
 		Serial string `json:"serial_number"`
 	}
 
-	results := make([]certWithSerial, len(certs))
+	results := make([]certWithSerial, len(filteredCerts))
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, 10) // limit concurrency to 10
-	progressEvery := 10
-	progressCount := 0
-	progressLock := sync.Mutex{}
 
-	for i, cert := range certs {
+	for i, cert := range filteredCerts {
 		wg.Add(1)
 		go func(i int, cert api.ExpiringCertificate) {
 			defer wg.Done()
@@ -57,17 +75,14 @@ func (cmd *GetCertificates) Execute(args []string) error {
 
 			serial := ""
 			if cert.ProductGUID != "" && cert.PropertyReference != "" {
-				_, ok := guidToType[cert.ProductGUID]
-				if ok {
-					cred, err := cmd.api.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
-						DeployedGUID:        cert.ProductGUID,
-						CredentialReference: cert.PropertyReference,
-					})
-					if err == nil {
-						pem, ok := cred.Credential.Value["cert_pem"]
-						if ok && pem != "" {
-							serial, _ = extractSerialFromPEM(pem)
-						}
+				cred, err := cmd.api.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+					DeployedGUID:        cert.ProductGUID,
+					CredentialReference: cert.PropertyReference,
+				})
+				if err == nil {
+					pem, ok := cred.Credential.Value["cert_pem"]
+					if ok && pem != "" {
+						serial, _ = extractSerialFromPEM(pem)
 					}
 				}
 			}
@@ -75,25 +90,17 @@ func (cmd *GetCertificates) Execute(args []string) error {
 				ExpiringCertificate: cert,
 				Serial:              serial,
 			}
-
-			progressLock.Lock()
-			progressCount++
-			if progressCount%progressEvery == 0 {
-				fmt.Fprint(os.Stderr, ".")
-			}
-			progressLock.Unlock()
 		}(i, cert)
 	}
 
 	wg.Wait()
-	fmt.Fprintln(os.Stderr) // finish progress line
 
-	// Pretty-print the results as JSON, with serial number included in each cert
+	// Pretty-print the results as JSON using logger
 	jsonBytes, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal results: %w", err)
 	}
-	fmt.Println(string(jsonBytes))
+	cmd.logger.Print(string(jsonBytes))
 	return nil
 }
 

@@ -477,7 +477,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"get-certificates",
 		"fetches deployed certificates and displays their serial numbers",
 		"fetches all deployed certificates, retrieves their PEMs, extracts serial numbers, and displays the merged result",
-		commands.NewGetCertificates(api),
+		commands.NewGetCertificates(api, stdout),
 	)
 	if err != nil {
 		return err
