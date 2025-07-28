@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/pivotal-cf/om/api"
@@ -83,7 +84,11 @@ func (cmd *GetCertificates) Execute(args []string) error {
 					CredentialReference: cert.PropertyReference,
 				})
 				if err != nil {
-					errorMsg = fmt.Sprintf("failed to fetch credential: %v", err)
+					if strings.Contains(err.Error(), "404") {
+						errorMsg = fmt.Sprintf("credential not found for reference '%s'", cert.PropertyReference)
+					} else {
+						errorMsg = err.Error()
+					}
 				} else {
 					pem, ok := cred.Credential.Value["cert_pem"]
 					if !ok || pem == "" {
