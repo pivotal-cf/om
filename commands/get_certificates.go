@@ -60,6 +60,7 @@ func (cmd *GetCertificates) Execute(args []string) error {
 	type certWithSerial struct {
 		api.ExpiringCertificate
 		Serial string `json:"serial_number"`
+		Error  string `json:"error,omitempty"`
 	}
 
 	results := make([]certWithSerial, len(filteredCerts))
@@ -74,21 +75,34 @@ func (cmd *GetCertificates) Execute(args []string) error {
 			defer func() { <-sem }() // release
 
 			serial := ""
+			errorMsg := ""
+
 			if cert.ProductGUID != "" && cert.PropertyReference != "" {
 				cred, err := cmd.api.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
 					DeployedGUID:        cert.ProductGUID,
 					CredentialReference: cert.PropertyReference,
 				})
-				if err == nil {
+				if err != nil {
+					errorMsg = fmt.Sprintf("failed to fetch credential: %v", err)
+				} else {
 					pem, ok := cred.Credential.Value["cert_pem"]
-					if ok && pem != "" {
-						serial, _ = extractSerialFromPEM(pem)
+					if !ok || pem == "" {
+						errorMsg = "cert_pem not found in credential"
+					} else {
+						serial, err = extractSerialFromPEM(pem)
+						if err != nil {
+							errorMsg = fmt.Sprintf("failed to extract serial number: %v", err)
+						}
 					}
 				}
+			} else {
+				errorMsg = "missing product_guid or property_reference"
 			}
+
 			results[i] = certWithSerial{
 				ExpiringCertificate: cert,
 				Serial:              serial,
+				Error:               errorMsg,
 			}
 		}(i, cert)
 	}
