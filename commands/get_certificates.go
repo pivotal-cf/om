@@ -27,6 +27,9 @@ func NewGetCertificates(apiClient api.Api, logger logger) *GetCertificates {
 }
 
 func (cmd *GetCertificates) Execute(args []string) error {
+
+	cmd.logger.Printf("Getting certificates for %s...", cmd.Options.Product)
+
 	certs, err := cmd.api.ListDeployedCertificates()
 	if err != nil {
 		return fmt.Errorf("failed to fetch deployed certificates: %w", err)
