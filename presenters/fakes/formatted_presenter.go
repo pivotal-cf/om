@@ -630,8 +630,6 @@ func (fake *FormattedPresenter) SetFormatArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FormattedPresenter) PresentCertificates(_ interface{}) {}
-
 func (fake *FormattedPresenter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()

@@ -133,10 +133,6 @@ func (j JSONPresenter) PresentLicensedProducts(products []api.ExpiringLicenseOut
 	j.encodeJSON(output)
 }
 
-func (j JSONPresenter) PresentCertificates(certs interface{}) {
-	j.encodeJSON(certs)
-}
-
 func (j JSONPresenter) encodeJSON(v interface{}) {
 	b, _ := json.MarshalIndent(&v, "", "  ")
 

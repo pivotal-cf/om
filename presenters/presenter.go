@@ -31,7 +31,6 @@ type Presenter interface {
 type FormattedPresenter interface {
 	Presenter
 	SetFormat(string)
-	PresentCertificates(interface{})
 }
 
 type MultiPresenter struct {
@@ -185,5 +184,3 @@ func (p *MultiPresenter) PresentLicensedProducts(products []api.ExpiringLicenseO
 		p.tablePresenter.PresentLicensedProducts(products)
 	}
 }
-
-func (p *MultiPresenter) PresentCertificates(_ interface{}) {}
