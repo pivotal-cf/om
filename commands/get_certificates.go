@@ -69,7 +69,7 @@ func (cmd *GetCertificates) Execute(args []string) error {
 
 	results := make([]certWithSerial, len(filteredCerts))
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 10) // limit concurrency to 10
+	sem := make(chan struct{}, 30) // limit concurrency to 30
 
 	for i, cert := range filteredCerts {
 		wg.Add(1)
