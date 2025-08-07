@@ -11,17 +11,24 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
+//counterfeiter:generate -o ./fakes/get_certificates_service.go --fake-name GetCertificatesService . getCertificatesService
+type getCertificatesService interface {
+	ListDeployedCertificates() ([]api.ExpiringCertificate, error)
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
+	GetDeployedProductCredential(api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
+}
+
 type GetCertificates struct {
-	api     api.Api
+	api     getCertificatesService
 	logger  logger
 	Options struct {
 		Product string `long:"product" short:"p" required:"true" description:"product type to filter certificates (e.g., p-bosh, cf)"`
 	}
 }
 
-func NewGetCertificates(apiClient api.Api, logger logger) *GetCertificates {
+func NewGetCertificates(service getCertificatesService, logger logger) *GetCertificates {
 	return &GetCertificates{
-		api:    apiClient,
+		api:    service,
 		logger: logger,
 	}
 }
@@ -97,7 +104,7 @@ func (cmd *GetCertificates) Execute(args []string) error {
 					if !ok || pem == "" {
 						errorMsg = "cert_pem not found in credential"
 					} else {
-						serial, err = extractSerialFromPEM(pem)
+						serial, err = ExtractSerialFromPEM(pem)
 						if err != nil {
 							errorMsg = fmt.Sprintf("failed to extract serial number: %v", err)
 						}
@@ -126,7 +133,7 @@ func (cmd *GetCertificates) Execute(args []string) error {
 	return nil
 }
 
-func extractSerialFromPEM(pemData string) (string, error) {
+func ExtractSerialFromPEM(pemData string) (string, error) {
 	block, _ := pem.Decode([]byte(pemData))
 	if block == nil {
 		return "", fmt.Errorf("failed to decode PEM")
