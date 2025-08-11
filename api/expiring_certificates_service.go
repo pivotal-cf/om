@@ -45,10 +45,6 @@ func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertifica
 	return expiringCertificatesResponse.Certificates, nil
 }
 
-type DeployedCertificatesResponse struct {
-	Certificates []ExpiringCertificate `json:"certificates"`
-}
-
 func (a Api) ListDeployedCertificates() ([]ExpiringCertificate, error) {
 	resp, err := a.sendAPIRequest("GET", "/api/v0/deployed/certificates", nil)
 	if err != nil {
@@ -59,11 +55,11 @@ func (a Api) ListDeployedCertificates() ([]ExpiringCertificate, error) {
 		return nil, err
 	}
 
-	var deployedCertificatesResponse DeployedCertificatesResponse
-	if err := json.NewDecoder(resp.Body).Decode(&deployedCertificatesResponse); err != nil {
+	var expiringCertificatesResponse ExpiringCertificatesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&expiringCertificatesResponse); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	return deployedCertificatesResponse.Certificates, nil
+	return expiringCertificatesResponse.Certificates, nil
 }
