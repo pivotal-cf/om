@@ -11,6 +11,8 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
+const MAX_CONCURRENCY = 30
+
 //counterfeiter:generate -o ./fakes/get_certificates_service.go --fake-name GetCertificatesService . getCertificatesService
 type getCertificatesService interface {
 	ListDeployedCertificates() ([]api.ExpiringCertificate, error)
@@ -76,7 +78,7 @@ func (cmd *GetCertificates) Execute(args []string) error {
 
 	results := make([]certWithSerial, len(filteredCerts))
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 30) // limit concurrency to 30
+	sem := make(chan struct{}, MAX_CONCURRENCY)
 
 	for i, cert := range filteredCerts {
 		wg.Add(1)
