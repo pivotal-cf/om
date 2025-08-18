@@ -32,7 +32,7 @@ var _ = Describe("GetCertificates", func() {
 	Describe("Execute", func() {
 		Context("when no certificates are found for the product", func() {
 			It("displays a helpful message", func() {
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{}, nil)
+				service.ListCertificatesReturns([]api.ExpiringCertificate{}, nil)
 				service.ListDeployedProductsReturns([]api.DeployedProductOutput{}, nil)
 
 				command.Options.Product = "cf"
@@ -61,7 +61,7 @@ var _ = Describe("GetCertificates", func() {
 					},
 				}, nil)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cert-property-1",
@@ -116,7 +116,11 @@ svTEb6EMuB8T2B9Rtg==
 				Expect(stdout).To(gbytes.Say("Processing 1 certificates"))
 
 				// Verify API calls
-				Expect(service.ListDeployedCertificatesCallCount()).To(Equal(1))
+				Expect(service.ListCertificatesCallCount()).To(Equal(1))
+
+				// Verify that ListCertificates was called with empty string (for all certificates)
+				expiresWithin := service.ListCertificatesArgsForCall(0)
+				Expect(expiresWithin).To(Equal(""))
 				Expect(service.ListDeployedProductsCallCount()).To(Equal(1))
 				Expect(service.GetDeployedProductCredentialCallCount()).To(Equal(1))
 
@@ -128,7 +132,7 @@ svTEb6EMuB8T2B9Rtg==
 
 		Context("API failure scenarios", func() {
 			It("returns an error when ListDeployedCertificates fails", func() {
-				service.ListDeployedCertificatesReturns(nil, errors.New("network error"))
+				service.ListCertificatesReturns(nil, errors.New("network error"))
 
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
@@ -138,7 +142,7 @@ svTEb6EMuB8T2B9Rtg==
 			})
 
 			It("returns an error when ListDeployedProducts fails", func() {
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{}, nil)
+				service.ListCertificatesReturns([]api.ExpiringCertificate{}, nil)
 				service.ListDeployedProductsReturns(nil, errors.New("authentication failed"))
 
 				command.Options.Product = "cf"
@@ -155,7 +159,7 @@ svTEb6EMuB8T2B9Rtg==
 					{GUID: "cf-guid-123", Type: "cf"},
 				}, nil)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cert-property-1",
@@ -180,7 +184,7 @@ svTEb6EMuB8T2B9Rtg==
 					{GUID: "cf-guid-123", Type: "cf"},
 				}, nil)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "non-existent-cert",
@@ -206,7 +210,7 @@ svTEb6EMuB8T2B9Rtg==
 			})
 
 			It("handles certificates with missing ProductGUID", func() {
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "", // Missing GUID
 						PropertyReference: "cert-property-1",
@@ -222,7 +226,7 @@ svTEb6EMuB8T2B9Rtg==
 			})
 
 			It("handles certificates with missing PropertyReference", func() {
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "", // Missing reference
@@ -240,7 +244,7 @@ svTEb6EMuB8T2B9Rtg==
 			It("handles credentials missing cert_pem field", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cert-property-1",
@@ -266,7 +270,7 @@ svTEb6EMuB8T2B9Rtg==
 			It("handles credentials with empty cert_pem", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cert-property-1",
@@ -292,7 +296,7 @@ svTEb6EMuB8T2B9Rtg==
 			It("handles invalid PEM data", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cert-property-1",
@@ -326,7 +330,7 @@ svTEb6EMuB8T2B9Rtg==
 					{GUID: "mysql-guid-789", Type: "pivotal-mysql"},
 				}, nil)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cf-cert",
@@ -394,7 +398,7 @@ svTEb6EMuB8T2B9Rtg==
 					{GUID: "cf-guid-123", Type: "cf"},
 				}, nil)
 
-				service.ListDeployedCertificatesReturns([]api.ExpiringCertificate{
+				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
 						PropertyReference: "cert-1",

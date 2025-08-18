@@ -11,11 +11,11 @@ import (
 	"github.com/pivotal-cf/om/api"
 )
 
-const MAX_CONCURRENCY = 30
+const DEFAULT_CONCURRENCY = 30
 
 //counterfeiter:generate -o ./fakes/get_certificates_service.go --fake-name GetCertificatesService . getCertificatesService
 type getCertificatesService interface {
-	ListDeployedCertificates() ([]api.ExpiringCertificate, error)
+	ListCertificates(expiresWithin string) ([]api.ExpiringCertificate, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	GetDeployedProductCredential(api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
 }
@@ -39,7 +39,7 @@ func (cmd *GetCertificates) Execute(args []string) error {
 
 	cmd.logger.Printf("Getting certificates for %s...", cmd.Options.Product)
 
-	certs, err := cmd.api.ListDeployedCertificates()
+	certs, err := cmd.api.ListCertificates("")
 	if err != nil {
 		return fmt.Errorf("failed to fetch deployed certificates: %w", err)
 	}
@@ -78,7 +78,13 @@ func (cmd *GetCertificates) Execute(args []string) error {
 
 	results := make([]certWithSerial, len(filteredCerts))
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, MAX_CONCURRENCY)
+
+	concurrency := DEFAULT_CONCURRENCY
+	if len(filteredCerts) < concurrency {
+		concurrency = len(filteredCerts)
+	}
+
+	sem := make(chan struct{}, concurrency)
 
 	for i, cert := range filteredCerts {
 		wg.Add(1)

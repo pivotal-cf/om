@@ -21,15 +21,16 @@ type GetCertificatesService struct {
 		result1 api.GetDeployedProductCredentialOutput
 		result2 error
 	}
-	ListDeployedCertificatesStub        func() ([]api.ExpiringCertificate, error)
-	listDeployedCertificatesMutex       sync.RWMutex
-	listDeployedCertificatesArgsForCall []struct {
+	ListCertificatesStub        func(string) ([]api.ExpiringCertificate, error)
+	listCertificatesMutex       sync.RWMutex
+	listCertificatesArgsForCall []struct {
+		arg1 string
 	}
-	listDeployedCertificatesReturns struct {
+	listCertificatesReturns struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}
-	listDeployedCertificatesReturnsOnCall map[int]struct {
+	listCertificatesReturnsOnCall map[int]struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}
@@ -112,56 +113,64 @@ func (fake *GetCertificatesService) GetDeployedProductCredentialReturnsOnCall(i 
 	}{result1, result2}
 }
 
-func (fake *GetCertificatesService) ListDeployedCertificates() ([]api.ExpiringCertificate, error) {
-	fake.listDeployedCertificatesMutex.Lock()
-	ret, specificReturn := fake.listDeployedCertificatesReturnsOnCall[len(fake.listDeployedCertificatesArgsForCall)]
-	fake.listDeployedCertificatesArgsForCall = append(fake.listDeployedCertificatesArgsForCall, struct {
-	}{})
-	fake.recordInvocation("ListDeployedCertificates", []interface{}{})
-	fake.listDeployedCertificatesMutex.Unlock()
-	if fake.ListDeployedCertificatesStub != nil {
-		return fake.ListDeployedCertificatesStub()
+func (fake *GetCertificatesService) ListCertificates(arg1 string) ([]api.ExpiringCertificate, error) {
+	fake.listCertificatesMutex.Lock()
+	ret, specificReturn := fake.listCertificatesReturnsOnCall[len(fake.listCertificatesArgsForCall)]
+	fake.listCertificatesArgsForCall = append(fake.listCertificatesArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("ListCertificates", []interface{}{arg1})
+	fake.listCertificatesMutex.Unlock()
+	if fake.ListCertificatesStub != nil {
+		return fake.ListCertificatesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listDeployedCertificatesReturns
+	fakeReturns := fake.listCertificatesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *GetCertificatesService) ListDeployedCertificatesCallCount() int {
-	fake.listDeployedCertificatesMutex.RLock()
-	defer fake.listDeployedCertificatesMutex.RUnlock()
-	return len(fake.listDeployedCertificatesArgsForCall)
+func (fake *GetCertificatesService) ListCertificatesCallCount() int {
+	fake.listCertificatesMutex.RLock()
+	defer fake.listCertificatesMutex.RUnlock()
+	return len(fake.listCertificatesArgsForCall)
 }
 
-func (fake *GetCertificatesService) ListDeployedCertificatesCalls(stub func() ([]api.ExpiringCertificate, error)) {
-	fake.listDeployedCertificatesMutex.Lock()
-	defer fake.listDeployedCertificatesMutex.Unlock()
-	fake.ListDeployedCertificatesStub = stub
+func (fake *GetCertificatesService) ListCertificatesCalls(stub func(string) ([]api.ExpiringCertificate, error)) {
+	fake.listCertificatesMutex.Lock()
+	defer fake.listCertificatesMutex.Unlock()
+	fake.ListCertificatesStub = stub
 }
 
-func (fake *GetCertificatesService) ListDeployedCertificatesReturns(result1 []api.ExpiringCertificate, result2 error) {
-	fake.listDeployedCertificatesMutex.Lock()
-	defer fake.listDeployedCertificatesMutex.Unlock()
-	fake.ListDeployedCertificatesStub = nil
-	fake.listDeployedCertificatesReturns = struct {
+func (fake *GetCertificatesService) ListCertificatesArgsForCall(i int) string {
+	fake.listCertificatesMutex.RLock()
+	defer fake.listCertificatesMutex.RUnlock()
+	argsForCall := fake.listCertificatesArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *GetCertificatesService) ListCertificatesReturns(result1 []api.ExpiringCertificate, result2 error) {
+	fake.listCertificatesMutex.Lock()
+	defer fake.listCertificatesMutex.Unlock()
+	fake.ListCertificatesStub = nil
+	fake.listCertificatesReturns = struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *GetCertificatesService) ListDeployedCertificatesReturnsOnCall(i int, result1 []api.ExpiringCertificate, result2 error) {
-	fake.listDeployedCertificatesMutex.Lock()
-	defer fake.listDeployedCertificatesMutex.Unlock()
-	fake.ListDeployedCertificatesStub = nil
-	if fake.listDeployedCertificatesReturnsOnCall == nil {
-		fake.listDeployedCertificatesReturnsOnCall = make(map[int]struct {
+func (fake *GetCertificatesService) ListCertificatesReturnsOnCall(i int, result1 []api.ExpiringCertificate, result2 error) {
+	fake.listCertificatesMutex.Lock()
+	defer fake.listCertificatesMutex.Unlock()
+	fake.ListCertificatesStub = nil
+	if fake.listCertificatesReturnsOnCall == nil {
+		fake.listCertificatesReturnsOnCall = make(map[int]struct {
 			result1 []api.ExpiringCertificate
 			result2 error
 		})
 	}
-	fake.listDeployedCertificatesReturnsOnCall[i] = struct {
+	fake.listCertificatesReturnsOnCall[i] = struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}{result1, result2}
@@ -227,8 +236,8 @@ func (fake *GetCertificatesService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.getDeployedProductCredentialMutex.RLock()
 	defer fake.getDeployedProductCredentialMutex.RUnlock()
-	fake.listDeployedCertificatesMutex.RLock()
-	defer fake.listDeployedCertificatesMutex.RUnlock()
+	fake.listCertificatesMutex.RLock()
+	defer fake.listCertificatesMutex.RUnlock()
 	fake.listDeployedProductsMutex.RLock()
 	defer fake.listDeployedProductsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
