@@ -152,7 +152,7 @@ svTEb6EMuB8T2B9Rtg==
 				Expect(err.Error()).To(ContainSubstring("failed to fetch deployed products: authentication failed"))
 			})
 
-			It("handles GetDeployedProductCredential API failures gracefully", func() {
+			It("returns an error when GetDeployedProductCredential API fails", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
 				service.ListDeployedProductsReturns([]api.DeployedProductOutput{
@@ -172,12 +172,13 @@ svTEb6EMuB8T2B9Rtg==
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some certificates could not be processed"))
 				Expect(stdout).To(gbytes.Say("Getting certificates for cf..."))
 				Expect(stdout).To(gbytes.Say("credential fetch failed"))
 			})
 
-			It("handles 404 errors from GetDeployedProductCredential", func() {
+			It("returns an error when GetDeployedProductCredential returns 404", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
 				service.ListDeployedProductsReturns([]api.DeployedProductOutput{
@@ -197,7 +198,8 @@ svTEb6EMuB8T2B9Rtg==
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some certificates could not be processed"))
 				Expect(stdout).To(gbytes.Say("credential not found for reference 'non-existent-cert'"))
 			})
 		})
@@ -225,7 +227,7 @@ svTEb6EMuB8T2B9Rtg==
 				Expect(stdout).To(gbytes.Say("No certificates found for product 'cf'"))
 			})
 
-			It("handles certificates with missing PropertyReference", func() {
+			It("returns an error when certificates have missing PropertyReference", func() {
 				service.ListCertificatesReturns([]api.ExpiringCertificate{
 					{
 						ProductGUID:       "cf-guid-123",
@@ -237,11 +239,12 @@ svTEb6EMuB8T2B9Rtg==
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some certificates could not be processed"))
 				Expect(stdout).To(gbytes.Say("missing product_guid or property_reference"))
 			})
 
-			It("handles credentials missing cert_pem field", func() {
+			It("returns an error when credentials are missing cert_pem field", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
 				service.ListCertificatesReturns([]api.ExpiringCertificate{
@@ -263,11 +266,12 @@ svTEb6EMuB8T2B9Rtg==
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some certificates could not be processed"))
 				Expect(stdout).To(gbytes.Say("cert_pem not found in credential"))
 			})
 
-			It("handles credentials with empty cert_pem", func() {
+			It("returns an error when credentials have empty cert_pem", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
 				service.ListCertificatesReturns([]api.ExpiringCertificate{
@@ -289,11 +293,12 @@ svTEb6EMuB8T2B9Rtg==
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some certificates could not be processed"))
 				Expect(stdout).To(gbytes.Say("cert_pem not found in credential"))
 			})
 
-			It("handles invalid PEM data", func() {
+			It("returns an error when PEM data is invalid", func() {
 				expiryTime := time.Now().Add(30 * 24 * time.Hour)
 
 				service.ListCertificatesReturns([]api.ExpiringCertificate{
@@ -315,7 +320,8 @@ svTEb6EMuB8T2B9Rtg==
 				command.Options.Product = "cf"
 				err := command.Execute([]string{})
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some certificates could not be processed"))
 				Expect(stdout).To(gbytes.Say("failed to extract serial number"))
 			})
 		})

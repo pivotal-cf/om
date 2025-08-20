@@ -132,12 +132,27 @@ func (cmd *GetCertificates) Execute(args []string) error {
 
 	wg.Wait()
 
+	// Check if any certificates had processing errors
+	var hasErrors bool
+	for _, result := range results {
+		if result.Error != "" {
+			hasErrors = true
+			break
+		}
+	}
+
 	// Pretty-print the results as JSON using logger
 	jsonBytes, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal results: %w", err)
 	}
 	cmd.logger.Print(string(jsonBytes))
+
+	// Return error if any certificates had processing errors
+	if hasErrors {
+		return fmt.Errorf("some certificates could not be processed (see output for details)")
+	}
+
 	return nil
 }
 
@@ -150,5 +165,9 @@ func ExtractSerialFromPEM(pemData string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return cert.SerialNumber.Text(16), nil // hex string, like openssl
+
+	// Use uppercase hex format to match OpenSSL's serial number display format
+	// OpenSSL returns serial numbers in uppercase hex (e.g., B272466F1682991E7B518F1A428BDDE9641AE234)
+	// This ensures consistency with standard certificate inspection tools
+	return strings.ToUpper(cert.SerialNumber.Text(16)), nil
 }
