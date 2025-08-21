@@ -8,16 +8,16 @@ import (
 )
 
 type ExpiringCertsService struct {
-	ListExpiringCertificatesStub        func(string) ([]api.ExpiringCertificate, error)
-	listExpiringCertificatesMutex       sync.RWMutex
-	listExpiringCertificatesArgsForCall []struct {
+	ListCertificatesStub        func(string) ([]api.ExpiringCertificate, error)
+	listCertificatesMutex       sync.RWMutex
+	listCertificatesArgsForCall []struct {
 		arg1 string
 	}
-	listExpiringCertificatesReturns struct {
+	listCertificatesReturns struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}
-	listExpiringCertificatesReturnsOnCall map[int]struct {
+	listCertificatesReturnsOnCall map[int]struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}
@@ -25,64 +25,64 @@ type ExpiringCertsService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ExpiringCertsService) ListExpiringCertificates(arg1 string) ([]api.ExpiringCertificate, error) {
-	fake.listExpiringCertificatesMutex.Lock()
-	ret, specificReturn := fake.listExpiringCertificatesReturnsOnCall[len(fake.listExpiringCertificatesArgsForCall)]
-	fake.listExpiringCertificatesArgsForCall = append(fake.listExpiringCertificatesArgsForCall, struct {
+func (fake *ExpiringCertsService) ListCertificates(arg1 string) ([]api.ExpiringCertificate, error) {
+	fake.listCertificatesMutex.Lock()
+	ret, specificReturn := fake.listCertificatesReturnsOnCall[len(fake.listCertificatesArgsForCall)]
+	fake.listCertificatesArgsForCall = append(fake.listCertificatesArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("ListExpiringCertificates", []interface{}{arg1})
-	fake.listExpiringCertificatesMutex.Unlock()
-	if fake.ListExpiringCertificatesStub != nil {
-		return fake.ListExpiringCertificatesStub(arg1)
+	fake.recordInvocation("ListCertificates", []interface{}{arg1})
+	fake.listCertificatesMutex.Unlock()
+	if fake.ListCertificatesStub != nil {
+		return fake.ListCertificatesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listExpiringCertificatesReturns
+	fakeReturns := fake.listCertificatesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *ExpiringCertsService) ListExpiringCertificatesCallCount() int {
-	fake.listExpiringCertificatesMutex.RLock()
-	defer fake.listExpiringCertificatesMutex.RUnlock()
-	return len(fake.listExpiringCertificatesArgsForCall)
+func (fake *ExpiringCertsService) ListCertificatesCallCount() int {
+	fake.listCertificatesMutex.RLock()
+	defer fake.listCertificatesMutex.RUnlock()
+	return len(fake.listCertificatesArgsForCall)
 }
 
-func (fake *ExpiringCertsService) ListExpiringCertificatesCalls(stub func(string) ([]api.ExpiringCertificate, error)) {
-	fake.listExpiringCertificatesMutex.Lock()
-	defer fake.listExpiringCertificatesMutex.Unlock()
-	fake.ListExpiringCertificatesStub = stub
+func (fake *ExpiringCertsService) ListCertificatesCalls(stub func(string) ([]api.ExpiringCertificate, error)) {
+	fake.listCertificatesMutex.Lock()
+	defer fake.listCertificatesMutex.Unlock()
+	fake.ListCertificatesStub = stub
 }
 
-func (fake *ExpiringCertsService) ListExpiringCertificatesArgsForCall(i int) string {
-	fake.listExpiringCertificatesMutex.RLock()
-	defer fake.listExpiringCertificatesMutex.RUnlock()
-	argsForCall := fake.listExpiringCertificatesArgsForCall[i]
+func (fake *ExpiringCertsService) ListCertificatesArgsForCall(i int) string {
+	fake.listCertificatesMutex.RLock()
+	defer fake.listCertificatesMutex.RUnlock()
+	argsForCall := fake.listCertificatesArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *ExpiringCertsService) ListExpiringCertificatesReturns(result1 []api.ExpiringCertificate, result2 error) {
-	fake.listExpiringCertificatesMutex.Lock()
-	defer fake.listExpiringCertificatesMutex.Unlock()
-	fake.ListExpiringCertificatesStub = nil
-	fake.listExpiringCertificatesReturns = struct {
+func (fake *ExpiringCertsService) ListCertificatesReturns(result1 []api.ExpiringCertificate, result2 error) {
+	fake.listCertificatesMutex.Lock()
+	defer fake.listCertificatesMutex.Unlock()
+	fake.ListCertificatesStub = nil
+	fake.listCertificatesReturns = struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *ExpiringCertsService) ListExpiringCertificatesReturnsOnCall(i int, result1 []api.ExpiringCertificate, result2 error) {
-	fake.listExpiringCertificatesMutex.Lock()
-	defer fake.listExpiringCertificatesMutex.Unlock()
-	fake.ListExpiringCertificatesStub = nil
-	if fake.listExpiringCertificatesReturnsOnCall == nil {
-		fake.listExpiringCertificatesReturnsOnCall = make(map[int]struct {
+func (fake *ExpiringCertsService) ListCertificatesReturnsOnCall(i int, result1 []api.ExpiringCertificate, result2 error) {
+	fake.listCertificatesMutex.Lock()
+	defer fake.listCertificatesMutex.Unlock()
+	fake.ListCertificatesStub = nil
+	if fake.listCertificatesReturnsOnCall == nil {
+		fake.listCertificatesReturnsOnCall = make(map[int]struct {
 			result1 []api.ExpiringCertificate
 			result2 error
 		})
 	}
-	fake.listExpiringCertificatesReturnsOnCall[i] = struct {
+	fake.listCertificatesReturnsOnCall[i] = struct {
 		result1 []api.ExpiringCertificate
 		result2 error
 	}{result1, result2}
@@ -91,8 +91,8 @@ func (fake *ExpiringCertsService) ListExpiringCertificatesReturnsOnCall(i int, r
 func (fake *ExpiringCertsService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.listExpiringCertificatesMutex.RLock()
-	defer fake.listExpiringCertificatesMutex.RUnlock()
+	fake.listCertificatesMutex.RLock()
+	defer fake.listCertificatesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

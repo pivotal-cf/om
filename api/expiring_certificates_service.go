@@ -52,9 +52,3 @@ func (a Api) ListCertificates(expiresWithin string) ([]ExpiringCertificate, erro
 
 	return certificatesResponse.Certificates, nil
 }
-
-// ListExpiringCertificates retrieves certificates that expire within the specified timeframe.
-// This method maintains backward compatibility with existing code.
-func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertificate, error) {
-	return a.ListCertificates(expiresWithin)
-}

@@ -48,7 +48,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
+			Expect(service.ListCertificatesArgsForCall(0)).To(Equal("5w"))
 
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("Getting expiring certificates...")))
 			Expect(stdout).To(gbytes.Say(regexp.QuoteMeta("[✓] No certificates are expiring in 5w")))
@@ -68,7 +68,7 @@ var _ = Describe("ExpiringCertificates", func() {
 				credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
 				Expect(err).ToNot(HaveOccurred())
 
-				service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
+				service.ListCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
 					return []api.ExpiringCertificate{
 						{
 							Issuer:            "",
@@ -172,7 +172,7 @@ var _ = Describe("ExpiringCertificates", func() {
 				credhubUntilTimeAlreadyExpired, err := time.Parse(time.RFC3339, credhubTimeAlreadyExpired)
 				Expect(err).ToNot(HaveOccurred())
 
-				service.ListExpiringCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
+				service.ListCertificatesStub = func(duration string) ([]api.ExpiringCertificate, error) {
 					return []api.ExpiringCertificate{
 						{
 							Issuer:                "",
@@ -305,7 +305,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			err := executeCommand(command, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("3m"))
+			Expect(service.ListCertificatesArgsForCall(0)).To(Equal("3m"))
 		})
 
 		It("sets ExpiresWithin when passed", func() {
@@ -316,7 +316,7 @@ var _ = Describe("ExpiringCertificates", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(service.ListExpiringCertificatesArgsForCall(0)).To(Equal("5w"))
+			Expect(service.ListCertificatesArgsForCall(0)).To(Equal("5w"))
 		})
 
 		It("validates the ExpiresWithin value as d,w,m,or y when passed", func() {
@@ -362,7 +362,7 @@ var _ = Describe("ExpiringCertificates", func() {
 
 	When("certs cannot be fetched", func() {
 		It("returns an error", func() {
-			service.ListExpiringCertificatesReturns(nil, errors.New("an api error"))
+			service.ListCertificatesReturns(nil, errors.New("an api error"))
 			command := commands.NewExpiringCertificates(service, logger)
 
 			err := executeCommand(command, []string{})
