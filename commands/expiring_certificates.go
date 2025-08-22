@@ -14,7 +14,7 @@ import (
 
 //counterfeiter:generate -o ./fakes/expiring_certs_service.go --fake-name ExpiringCertsService . expiringCertsService
 type expiringCertsService interface {
-	ListExpiringCertificates(string) ([]api.ExpiringCertificate, error)
+	ListCertificates(string) ([]api.ExpiringCertificate, error)
 }
 
 type ExpiringCerts struct {
@@ -43,7 +43,7 @@ func (e *ExpiringCerts) Execute(args []string) error {
 	}
 
 	e.logger.Println("Getting expiring certificates...")
-	expiringCerts, err := e.api.ListExpiringCertificates(e.Options.ExpiresWithin)
+	expiringCerts, err := e.api.ListCertificates(e.Options.ExpiresWithin)
 	if err != nil {
 		return fmt.Errorf("could not fetch expiring certificates: %s", err)
 	}

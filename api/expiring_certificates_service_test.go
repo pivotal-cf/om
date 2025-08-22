@@ -52,7 +52,7 @@ var _ = Describe("Expiring Certificates", func() {
 			)
 
 			expiresWithin := "3d"
-			certs, err := service.ListExpiringCertificates(expiresWithin)
+			certs, err := service.ListCertificates(expiresWithin)
 			Expect(err).ToNot(HaveOccurred())
 
 			fromTime, err := time.Parse(time.RFC3339, "2018-08-10T21:07:37Z")
@@ -84,7 +84,7 @@ var _ = Describe("Expiring Certificates", func() {
 			),
 		)
 
-		_, err := service.ListExpiringCertificates(expiresWithin)
+		_, err := service.ListCertificates(expiresWithin)
 		Expect(err).ToNot(HaveOccurred())
 	},
 		Entry("days", "2d", "2d"),
@@ -103,7 +103,7 @@ var _ = Describe("Expiring Certificates", func() {
 			)
 
 			expiresWithin := "3d"
-			_, err := service.ListExpiringCertificates(expiresWithin)
+			_, err := service.ListCertificates(expiresWithin)
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -113,7 +113,7 @@ var _ = Describe("Expiring Certificates", func() {
 			client.Close()
 
 			expiresWithin := "3d"
-			_, err := service.ListExpiringCertificates(expiresWithin)
+			_, err := service.ListCertificates(expiresWithin)
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -128,7 +128,7 @@ var _ = Describe("Expiring Certificates", func() {
 			)
 
 			expiresWithin := "3d"
-			_, err := service.ListExpiringCertificates(expiresWithin)
+			_, err := service.ListCertificates(expiresWithin)
 			Expect(err).To(HaveOccurred())
 		})
 	})

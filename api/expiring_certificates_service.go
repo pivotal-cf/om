@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const expiringCertificatesEndpoint = "/api/v0/deployed/certificates?expires_within=%s"
+const baseCertificatesEndpoint = "/api/v0/deployed/certificates"
 
 type ExpiringCertificatesResponse struct {
 	Certificates []ExpiringCertificate `json:"certificates"`
@@ -26,8 +26,16 @@ type ExpiringCertificate struct {
 	RotationProcedureUrl  string    `json:"rotation_procedure_url"`
 }
 
-func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertificate, error) {
-	resp, err := a.sendAPIRequest("GET", fmt.Sprintf(expiringCertificatesEndpoint, expiresWithin), nil)
+// ListCertificates retrieves certificates from the deployed certificates endpoint.
+// If expiresWithin is provided (non-empty), it filters for expiring certificates.
+// If expiresWithin is empty, it returns all deployed certificates.
+func (a Api) ListCertificates(expiresWithin string) ([]ExpiringCertificate, error) {
+	endpoint := baseCertificatesEndpoint
+	if expiresWithin != "" {
+		endpoint = fmt.Sprintf("%s?expires_within=%s", baseCertificatesEndpoint, expiresWithin)
+	}
+
+	resp, err := a.sendAPIRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not make api request to certificates endpoint: %w", err)
 	}
@@ -36,11 +44,11 @@ func (a Api) ListExpiringCertificates(expiresWithin string) ([]ExpiringCertifica
 		return nil, err
 	}
 
-	var expiringCertificatesResponse ExpiringCertificatesResponse
-	if err := json.NewDecoder(resp.Body).Decode(&expiringCertificatesResponse); err != nil {
+	var certificatesResponse ExpiringCertificatesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&certificatesResponse); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	return expiringCertificatesResponse.Certificates, nil
+	return certificatesResponse.Certificates, nil
 }

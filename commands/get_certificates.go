@@ -1,0 +1,173 @@
+package commands
+
+import (
+	"crypto/x509"
+	"encoding/json"
+	"encoding/pem"
+	"fmt"
+	"strings"
+	"sync"
+
+	"github.com/pivotal-cf/om/api"
+)
+
+const DEFAULT_CONCURRENCY = 30
+
+//counterfeiter:generate -o ./fakes/get_certificates_service.go --fake-name GetCertificatesService . getCertificatesService
+type getCertificatesService interface {
+	ListCertificates(expiresWithin string) ([]api.ExpiringCertificate, error)
+	ListDeployedProducts() ([]api.DeployedProductOutput, error)
+	GetDeployedProductCredential(api.GetDeployedProductCredentialInput) (api.GetDeployedProductCredentialOutput, error)
+}
+
+type GetCertificates struct {
+	api     getCertificatesService
+	logger  logger
+	Options struct {
+		Product string `long:"product" short:"p" required:"true" description:"product type to filter certificates (e.g., p-bosh, cf)"`
+	}
+}
+
+func NewGetCertificates(service getCertificatesService, logger logger) *GetCertificates {
+	return &GetCertificates{
+		api:    service,
+		logger: logger,
+	}
+}
+
+func (cmd *GetCertificates) Execute(args []string) error {
+
+	cmd.logger.Printf("Getting certificates for %s...", cmd.Options.Product)
+
+	certs, err := cmd.api.ListCertificates("")
+	if err != nil {
+		return fmt.Errorf("failed to fetch deployed certificates: %w", err)
+	}
+
+	products, err := cmd.api.ListDeployedProducts()
+	if err != nil {
+		return fmt.Errorf("failed to fetch deployed products: %w", err)
+	}
+	guidToType := map[string]string{}
+	for _, p := range products {
+		guidToType[p.GUID] = p.Type
+	}
+
+	// Filter certificates by product type
+	var filteredCerts []api.ExpiringCertificate
+	for _, cert := range certs {
+		if cert.ProductGUID != "" {
+			if productType, ok := guidToType[cert.ProductGUID]; ok && productType == cmd.Options.Product {
+				filteredCerts = append(filteredCerts, cert)
+			}
+		}
+	}
+
+	if len(filteredCerts) == 0 {
+		cmd.logger.Printf("No certificates found for product '%s'", cmd.Options.Product)
+		return nil
+	}
+
+	cmd.logger.Printf("Processing %d certificates (this may take a moment)...", len(filteredCerts))
+
+	type certWithSerial struct {
+		api.ExpiringCertificate
+		Serial string `json:"serial_number"`
+		Error  string `json:"error,omitempty"`
+	}
+
+	results := make([]certWithSerial, len(filteredCerts))
+	var wg sync.WaitGroup
+
+	concurrency := DEFAULT_CONCURRENCY
+	if len(filteredCerts) < concurrency {
+		concurrency = len(filteredCerts)
+	}
+
+	sem := make(chan struct{}, concurrency)
+
+	for i, cert := range filteredCerts {
+		wg.Add(1)
+		go func(i int, cert api.ExpiringCertificate) {
+			defer wg.Done()
+			sem <- struct{}{}        // acquire
+			defer func() { <-sem }() // release
+
+			serial := ""
+			errorMsg := ""
+
+			if cert.ProductGUID != "" && cert.PropertyReference != "" {
+				cred, err := cmd.api.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+					DeployedGUID:        cert.ProductGUID,
+					CredentialReference: cert.PropertyReference,
+				})
+				if err != nil {
+					if strings.Contains(err.Error(), "404") {
+						errorMsg = fmt.Sprintf("credential not found for reference '%s'", cert.PropertyReference)
+					} else {
+						errorMsg = err.Error()
+					}
+				} else {
+					pem, ok := cred.Credential.Value["cert_pem"]
+					if !ok || pem == "" {
+						errorMsg = "cert_pem not found in credential"
+					} else {
+						serial, err = ExtractSerialFromPEM(pem)
+						if err != nil {
+							errorMsg = fmt.Sprintf("failed to extract serial number: %v", err)
+						}
+					}
+				}
+			} else {
+				errorMsg = "missing product_guid or property_reference"
+			}
+
+			results[i] = certWithSerial{
+				ExpiringCertificate: cert,
+				Serial:              serial,
+				Error:               errorMsg,
+			}
+		}(i, cert)
+	}
+
+	wg.Wait()
+
+	// Check if any certificates had processing errors
+	var hasErrors bool
+	for _, result := range results {
+		if result.Error != "" {
+			hasErrors = true
+			break
+		}
+	}
+
+	// Pretty-print the results as JSON using logger
+	jsonBytes, err := json.MarshalIndent(results, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal results: %w", err)
+	}
+	cmd.logger.Print(string(jsonBytes))
+
+	// Return error if any certificates had processing errors
+	if hasErrors {
+		return fmt.Errorf("some certificates could not be processed (see output for details)")
+	}
+
+	return nil
+}
+
+func ExtractSerialFromPEM(pemData string) (string, error) {
+	block, _ := pem.Decode([]byte(pemData))
+	if block == nil {
+		return "", fmt.Errorf("failed to decode PEM")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+
+	// Use uppercase hex format to match OpenSSL's serial number display format
+	// OpenSSL returns serial numbers in uppercase hex (e.g., B272466F1682991E7B518F1A428BDDE9641AE234)
+	// This ensures consistency with standard certificate inspection tools
+	return strings.ToUpper(cert.SerialNumber.Text(16)), nil
+}
