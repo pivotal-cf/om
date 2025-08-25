@@ -267,6 +267,23 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 		return "", fmt.Errorf("aws error creating the vm: %s", err)
 	}
 
+	// describe state and wait till running
+	for {
+		state, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
+			[]interface{}{
+				"ec2", "describe-instances",
+				"--instance-ids", cleanupString(instanceID.String()),
+				"--query", "Reservations[*].Instances[*].State.Name",
+			})
+		if err != nil {
+			return "", fmt.Errorf("could not check the instance state for %s", cleanupString(instanceID.String()))
+		}
+		if strings.Contains(state.String(), "running") {
+			break
+		}
+		time.Sleep(a.pollingInterval)
+	}
+
 	return cleanupString(instanceID.String()), nil
 }
 
