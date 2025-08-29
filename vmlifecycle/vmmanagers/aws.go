@@ -132,6 +132,10 @@ func (a *AWSVMManager) CreateVM() (Status, StateInfo, error) {
 	}
 	latestState.ID = instanceID
 
+	if err := a.waitTillVmRunning(instanceID); err != nil {
+		return Incomplete, latestState, fmt.Errorf("aws error creating the vm: %s", err)
+	}
+
 	if iaasConfig.PublicIP != "" {
 		addressID, err := a.getIPAddressID()
 		if err != nil {
@@ -266,27 +270,31 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("aws error creating the vm: %s", err)
 	}
-
-	// describe state and wait till running
-	for {
-		state, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
-			[]interface{}{
-				"ec2", "describe-instances",
-				"--instance-ids", cleanupString(instanceID.String()),
-				"--query", "Reservations[*].Instances[*].State.Name",
-			})
-		if err != nil {
-			return "", fmt.Errorf("could not check the instance state for %s", cleanupString(instanceID.String()))
-		}
-		if strings.Contains(state.String(), "running") {
-			break
-		}
-		time.Sleep(a.pollingInterval)
-	}
-
 	return cleanupString(instanceID.String()), nil
 }
 
+func (a *AWSVMManager) waitTillVmRunning(instanceID string) error {
+	// describe state and wait till running
+	for i := 0; i <= 200; i++ {
+		state, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
+			[]interface{}{
+				"ec2", "describe-instances",
+				"--instance-ids", instanceID,
+				"--query", "Reservations[*].Instances[*].State.Name",
+			})
+		if err != nil {
+			return fmt.Errorf("could not check the instance state for %s", instanceID)
+		}
+		if cleanupString(state.String()) == "running" {
+			return nil
+		}
+		if i == 200 {
+			return fmt.Errorf("timeout exceeded in running status")
+		}
+		time.Sleep(a.pollingInterval)
+	}
+	return nil
+}
 func (a *AWSVMManager) getIPAddressID() (ipAddress string, err error) {
 	allocationID, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(),
 		[]interface{}{
