@@ -60,10 +60,14 @@ opsman-configuration:
 `
 
 		command, runner := createCommand(fmt.Sprintf(configStrTemplate, accessKey, secretAccessKey, assumeRole, region, publicIP, privateIP))
+		// Set default return value for all calls (for waitTillVmRunning)
+		runner.ExecuteWithEnvVarsReturns(bytes.NewBufferString("\"running\"\r\n"), nil, nil)
+		// Override specific calls with their expected return values
 		runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(6, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(7, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
 		return command, runner
 	}
 
@@ -74,7 +78,7 @@ opsman-configuration:
 	Context("create vm", func() {
 		Context("with a config with all values filled out", func() {
 			It("calls aws with correct cli arguments and does not describe instances", func() {
-				numCLICalls := 7
+				numCLICalls := 8
 				commands := [][]string{
 					{
 						`ec2`, `run-instances`,
@@ -90,6 +94,11 @@ opsman-configuration:
 						`--iam-instance-profile`, `Name=awesome-profile`,
 						`--query`, `Instances[0].InstanceId`,
 						`--private-ip-address`, `10.10.10.10`,
+					},
+					{
+						`ec2`, `describe-instances`,
+						`--instance-ids`, `i-0016d0fe3a11c73c2`,
+						`--query`, `Reservations[*].Instances[*].State.Name`,
 					},
 					{
 						`ec2`, `describe-addresses`,
@@ -542,7 +551,9 @@ opsman-configuration:
     private_ip: 1.2.3.4
 `)
 			runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
-			runner.ExecuteWithEnvVarsReturnsOnCall(9, bytes.NewBufferString("stopped\r\n"), nil, nil)
+			// Add return values for waitTillVmRunning calls
+			runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("running\r\n"), nil, nil)
+			runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
 
 			_, _, err := command.CreateVM()
 			Expect(err).ToNot(HaveOccurred())
@@ -813,14 +824,16 @@ func happyPathAWSRunnerStubFunc(vmID string) func() (*bytes.Buffer, *bytes.Buffe
 		case 0:
 			return bytes.NewBufferString(fmt.Sprintf("%q\r\n", vmID)), nil, nil
 		case 1:
+			return bytes.NewBufferString("\"running\"\r\n"), nil, nil
+		case 2:
 			return bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil
-		case 2, 3:
+		case 3, 4:
 			return nil, nil, nil
-		case 4:
-			return bytes.NewBufferString("\"stopping\"\r\n"), nil, nil
 		case 5:
+			return bytes.NewBufferString("\"stopping\"\r\n"), nil, nil
+		case 6:
 			return bytes.NewBufferString("\"stopped\"\r\n"), nil, nil
-		case 6, 7:
+		case 7, 8:
 			return nil, nil, nil
 		default:
 			panic("stub for nth call not implemented")
