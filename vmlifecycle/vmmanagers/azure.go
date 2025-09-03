@@ -506,7 +506,10 @@ func (a *AzureVMManager) createVM(imageUrl string, imageID string, publicIP stri
 	}
 
 	if azure.Tags != "" {
-		args = append(args, "--tags", azure.Tags)
+		args = append(args, "--tags")
+		for _, t := range strings.Split(azure.Tags, " ") {
+			args = append(args, t)
+		}
 	}
 
 	_, _, err = a.runner.ExecuteWithEnvVars(a.addEnvVars(), args)

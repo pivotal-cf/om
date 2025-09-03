@@ -211,7 +211,7 @@ opsman-configuration:
 						"--private-ip-address", "10.0.0.3",
 						"--storage-sku", "Standard_LRS",
 						"--image", "/some/resource/id/image",
-						"--tags", "Project=ECommerce CostCenter=00123 Team=Web",
+						"--tags", "Project=ECommerce", "CostCenter=00123", "Team=Web",
 					},
 					{
 						"storage", "blob", "delete-batch",
