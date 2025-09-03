@@ -5,20 +5,20 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.16.2"
+  version "7.17.0"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.16.2/om-darwin-amd64-7.16.2.tar.gz"
-      sha256 "7d65b9e137375d556c3ce2b0daa63760ab755de31070ae65b64e988b9583155b"
+      url "https://github.com/pivotal-cf/om/releases/download/7.17.0/om-darwin-amd64-7.17.0.tar.gz"
+      sha256 "ad2036a789ecbe758b8a22f6029142b63ea84b61c138329db78141126e71c4f6"
 
       def install
         bin.install "om"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.16.2/om-darwin-arm64-7.16.2.tar.gz"
-      sha256 "71dcb492a6b264e2969874821d1eefc7f9c97724791dbddc18f2be0d46586e35"
+      url "https://github.com/pivotal-cf/om/releases/download/7.17.0/om-darwin-arm64-7.17.0.tar.gz"
+      sha256 "88d43682fa0a548baa0a36cbbbf6945c0ab911f2f2239ee2439f40f80346f783"
 
       def install
         bin.install "om"
@@ -27,16 +27,16 @@ class Om < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.16.2/om-linux-amd64-7.16.2.tar.gz"
-      sha256 "0f346e849fa1e210bffd2a20dff03cdc51b0ab49c203f25c699530bfcc94f22b"
+    if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
+      url "https://github.com/pivotal-cf/om/releases/download/7.17.0/om-linux-amd64-7.17.0.tar.gz"
+      sha256 "2d754c44e643668d717c28288e4012c36409070eb80031057cc276de0f7b7d8e"
       def install
         bin.install "om"
       end
     end
-    if Hardware::CPU.arm? and Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.16.2/om-linux-arm64-7.16.2.tar.gz"
-      sha256 "71558daf958cc57a87083423f0db2ea684518becf81baf664386cafee5d1c113"
+    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+      url "https://github.com/pivotal-cf/om/releases/download/7.17.0/om-linux-arm64-7.17.0.tar.gz"
+      sha256 "02d7f11f0b71939c791cb86b57ab6f095d8bc966631d247162fee6772572eadb"
       def install
         bin.install "om"
       end
