@@ -308,6 +308,8 @@ func stemcellFromProduct(filename string) (*stemcell, error) {
 		"windows2016":   "stemcells-windows-server",
 		"windows1803":   "stemcells-windows-server",
 		"windows2019":   "stemcells-windows-server",
+		"windows2025":   "stemcells-windows-server",
+		"ubuntu-noble":  "stemcells-ubuntu-noble",
 	}
 
 	return &stemcell{

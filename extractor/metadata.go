@@ -1,7 +1,7 @@
 package extractor
 
 type Metadata struct {
-	Name             string
+	Name             string `yaml:"name"`
 	Version          string `yaml:"product_version"`
 	StemcellCriteria struct {
 		OS                   string `yaml:"os"`

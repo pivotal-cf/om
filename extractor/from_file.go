@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var metadataRegexp = regexp.MustCompile(`^(\.\/)?metadata/.*\.yml`)
+var metadataRegexp = regexp.MustCompile(`^(.*\/)?metadata/.*\.yml`)
 
 func (me *MetadataExtractor) ExtractFromFile(productPath string) (*Metadata, error) {
 	zipReader, err := zip.OpenReader(productPath)
