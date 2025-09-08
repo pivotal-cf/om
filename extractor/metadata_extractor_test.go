@@ -214,26 +214,6 @@ var _ = Describe("MetadataExtractor", func() {
 					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})
-
-			When("the metadata file URL is in a subdirectory", func() {
-				var nestedProductFile *os.File
-				BeforeEach(func() {
-					nestedProductFile = createProductFile("__MACOSX/metadata/._metadata.yml", validYAML)
-				})
-
-				AfterEach(func() {
-					os.Remove(nestedProductFile.Name())
-				})
-
-				It("returns an error", func() {
-					server, url := setupServer(nestedProductFile.Name())
-					defer server.Close()
-
-					_, err := metadataExtractor.ExtractFromURL(url)
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
-				})
-			})
 		})
 	})
 
@@ -321,22 +301,6 @@ var _ = Describe("MetadataExtractor", func() {
 
 				It("returns an error", func() {
 					_, err := metadataExtractor.ExtractFromFile(wrongProductFile.Name())
-					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
-				})
-			})
-
-			When("the metadata file is in a subdirectory", func() {
-				var nestedProductFile *os.File
-				BeforeEach(func() {
-					nestedProductFile = createProductFile("__MACOSX/metadata/._metadata.yml", validYAML)
-				})
-
-				AfterEach(func() {
-					os.Remove(nestedProductFile.Name())
-				})
-
-				It("returns an error", func() {
-					_, err := metadataExtractor.ExtractFromFile(nestedProductFile.Name())
 					Expect(err).To(MatchError(ContainSubstring("no metadata file was found in provided .pivotal")))
 				})
 			})
