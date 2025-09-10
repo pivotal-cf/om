@@ -211,7 +211,7 @@ opsman-configuration:
 						"--private-ip-address", "10.0.0.3",
 						"--storage-sku", "Standard_LRS",
 						"--image", "/some/resource/id/image",
-						"--tags", "Project=ECommerce CostCenter=00123 Team=Web",
+						"--tags", "Project=ECommerce", "CostCenter=00123", "Team=Web",
 					},
 					{
 						"storage", "blob", "delete-batch",
@@ -225,6 +225,68 @@ opsman-configuration:
 					_, actualArgs := runner.ExecuteWithEnvVarsArgsForCall(i)
 					Expect(actualArgs).To(matchers.OrderedConsistOf(expectedArgs))
 				}
+			})
+
+			It("passes multiple tags as separate arguments", func() {
+				const configWithMultipleTags = `
+opsman-configuration:
+  azure:
+    vm_name: vm-name
+    subscription_id: subscription
+    resource_group: rg
+    tenant_id: tenant
+    client_id: client
+    client_secret: secret
+    location: %s
+    public_ip: 1.2.3.4
+    private_ip: 10.0.0.3
+    container: opsman_container
+    boot_disk_size: 200
+    network_security_group: nsg
+    subnet_id: /subscriptions/sub-guid/resourceGroups/network-resource-group/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/sub1
+    storage_account: account
+    storage_key: key
+    ssh_public_key: asdfasdfs
+    cloud_name: AzureGermanCloud
+    tags: "foo 'bar=single quote' \"key=double quote\" key1=\"value\" key2=value2 key3=\"value with spaces\" key4='value with single quotes' key5=simple key6=\"quoted=equals\" key7='single=equals'"
+`
+				setupCommand(configWithMultipleTags)
+				status, stateInfo, err := command.CreateVM()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(status).To(Equal(vmmanagers.Success))
+				Expect(stateInfo).To(Equal(vmmanagers.StateInfo{IAAS: "azure", ID: "vm-name"}))
+
+				// Find the vm create command call
+				var vmCreateArgs []interface{}
+				for i := 0; i < runner.ExecuteWithEnvVarsCallCount(); i++ {
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(i)
+					if len(args) > 0 && args[0] == "vm" && args[1] == "create" {
+						vmCreateArgs = args
+						break
+					}
+				}
+				Expect(vmCreateArgs).ToNot(BeNil())
+
+				// Verify that tags are passed as separate arguments
+				Expect(vmCreateArgs).To(ContainElement("--tags"))
+
+				// Test key without value
+				Expect(vmCreateArgs).To(ContainElement("foo"))
+
+				// Test simple key=value pairs
+				Expect(vmCreateArgs).To(ContainElement("key2=value2"))
+				Expect(vmCreateArgs).To(ContainElement("key5=simple"))
+
+				// Test single quotes
+				Expect(vmCreateArgs).To(ContainElement("bar=single quote"))
+				Expect(vmCreateArgs).To(ContainElement("key4=value with single quotes"))
+				Expect(vmCreateArgs).To(ContainElement("key7=single=equals"))
+
+				// Test double quotes
+				Expect(vmCreateArgs).To(ContainElement("key=double quote"))
+				Expect(vmCreateArgs).To(ContainElement("key1=value"))
+				Expect(vmCreateArgs).To(ContainElement("key3=value with spaces"))
+				Expect(vmCreateArgs).To(ContainElement("key6=quoted=equals"))
 			})
 
 			Context("DEPRECATED tests", func() {

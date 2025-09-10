@@ -91,6 +91,48 @@ type AzureVMManager struct {
 	pollingInterval time.Duration
 }
 
+func ParseTagsString(tagsStr string) []string {
+	var tags []string
+	var current strings.Builder
+	inQuotes := false
+	quoteChar := byte(0)
+
+	for i := 0; i < len(tagsStr); i++ {
+		char := tagsStr[i]
+
+		if inQuotes {
+			if char == quoteChar {
+				// End of quoted string
+				inQuotes = false
+				quoteChar = 0
+			} else {
+				current.WriteByte(char)
+			}
+		} else {
+			if char == '"' || char == '\'' {
+				// Start of quoted string
+				inQuotes = true
+				quoteChar = char
+			} else if char == ' ' {
+				// Space → end of tag
+				if current.Len() > 0 {
+					tags = append(tags, strings.TrimSpace(current.String()))
+					current.Reset()
+				}
+			} else {
+				current.WriteByte(char)
+			}
+		}
+	}
+
+	// Add last tag if buffer not empty
+	if current.Len() > 0 {
+		tags = append(tags, strings.TrimSpace(current.String()))
+	}
+
+	return tags
+}
+
 func NewAzureVMManager(stdout, stderr io.Writer, config *OpsmanConfigFilePayload, imageYaml string, state StateInfo, azureRunner azureRunner, t time.Duration) *AzureVMManager {
 	return &AzureVMManager{
 		stdout:          stdout,
@@ -506,7 +548,12 @@ func (a *AzureVMManager) createVM(imageUrl string, imageID string, publicIP stri
 	}
 
 	if azure.Tags != "" {
-		args = append(args, "--tags", azure.Tags)
+		// Parse tags string respecting quoted values that may contain spaces
+		tags := ParseTagsString(azure.Tags)
+		args = append(args, "--tags")
+		for _, tag := range tags {
+			args = append(args, tag)
+		}
 	}
 
 	_, _, err = a.runner.ExecuteWithEnvVars(a.addEnvVars(), args)
