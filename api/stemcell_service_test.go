@@ -7,6 +7,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 
+	"archive/tar"
+	"compress/gzip"
+	"io/ioutil"
+	"os"
+
 	"github.com/pivotal-cf/om/api"
 )
 
@@ -216,7 +221,15 @@ var _ = Describe("StemcellService", func() {
 						ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.4.3"}}`),
 					)
 
-					found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+					stemcellPath := createFakeStemcellTarballWithManifest(`---
+operating_system: ubuntu-xenial
+version: '621.77'
+cloud_properties:
+  infrastructure: google
+`)
+					defer os.Remove(stemcellPath)
+
+					found, err := service.CheckStemcellAvailability(stemcellPath)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(found).To(BeFalse())
@@ -228,7 +241,15 @@ var _ = Describe("StemcellService", func() {
 							ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
 						)
 
-						found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+						stemcellPath := createFakeStemcellTarballWithManifest(`---
+operating_system: ubuntu-xenial
+version: '621.77'
+cloud_properties:
+  infrastructure: google
+`)
+						defer os.Remove(stemcellPath)
+
+						found, err := service.CheckStemcellAvailability(stemcellPath)
 						Expect(err).NotTo(HaveOccurred())
 
 						Expect(found).To(BeFalse())
@@ -242,7 +263,16 @@ var _ = Describe("StemcellService", func() {
 						ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.4.3"}}`),
 					)
 
-					found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.79-google-kvm-ubuntu-xenial-go_agent.tgz")
+					filename := "light-bosh-stemcell-621.79-google-kvm-ubuntu-xenial-go_agent.tgz"
+					createFakeStemcellTarballWithManifestAt(filename, `---
+operating_system: ubuntu-xenial
+version: '621.79'
+cloud_properties:
+  infrastructure: google
+`)
+					defer os.Remove(filename)
+
+					found, err := service.CheckStemcellAvailability(filename)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(found).To(BeTrue())
@@ -250,11 +280,26 @@ var _ = Describe("StemcellService", func() {
 
 				When("the OpsMan 2.6+", func() {
 					It("returns true", func() {
-						server.AppendHandlers(
-							ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
-						)
+						server.RouteToHandler("GET", "/api/v0/diagnostic_report", ghttp.RespondWith(http.StatusOK, `{
+							"available_stemcells": [{
+								"filename": "light-bosh-stemcell-621.80-google-kvm-ubuntu-xenial-go_agent.tgz",
+								"os": "ubuntu-xenial",
+								"version": "621.80"
+							}],
+							"infrastructure_type": "google"
+						}`))
+						server.RouteToHandler("GET", "/api/v0/info", ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`))
 
-						found, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.80-google-kvm-ubuntu-xenial-go_agent.tgz")
+						filename := "light-bosh-stemcell-621.80-google-kvm-ubuntu-xenial-go_agent.tgz"
+						createFakeStemcellTarballWithManifestAt(filename, `---
+operating_system: ubuntu-xenial
+version: '621.80'
+cloud_properties:
+  infrastructure: google
+`)
+						defer os.Remove(filename)
+
+						found, err := service.CheckStemcellAvailability(filename)
 						Expect(err).NotTo(HaveOccurred())
 
 						Expect(found).To(BeTrue())
@@ -273,4 +318,122 @@ var _ = Describe("StemcellService", func() {
 			})
 		})
 	})
+
+	Describe("CheckStemcellAvailability with infrastructure_type", func() {
+		It("returns true when os, version, and infrastructure_type all match", func() {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"available_stemcells": [{
+						"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.803.tgz",
+						"os": "ubuntu-jammy",
+						"version": "1.803"
+					}],
+					"infrastructure_type": "vsphere"
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.10.58"}}`),
+			)
+
+			stemcellPath := createFakeStemcellTarballWithManifest(`---
+operating_system: ubuntu-jammy
+version: '1.803'
+cloud_properties:
+  infrastructure: vsphere
+`)
+			defer os.Remove(stemcellPath)
+
+			found, err := service.CheckStemcellAvailability(stemcellPath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+		})
+
+		It("returns false when infrastructure_type does not match", func() {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"available_stemcells": [{
+						"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.803.tgz",
+						"os": "ubuntu-jammy",
+						"version": "1.803"
+					}],
+					"infrastructure_type": "aws"
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.10.58"}}`),
+			)
+
+			stemcellPath := createFakeStemcellTarballWithManifest(`---
+operating_system: ubuntu-jammy
+version: '1.803'
+cloud_properties:
+  infrastructure: vsphere
+`)
+			defer os.Remove(stemcellPath)
+
+			found, err := service.CheckStemcellAvailability(stemcellPath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeFalse())
+		})
+
+		It("returns an error if manifest is missing required fields", func() {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"available_stemcells": [{
+						"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.803.tgz",
+						"os": "ubuntu-jammy",
+						"version": "1.803"
+					}],
+					"infrastructure_type": "vsphere"
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.10.58"}}`),
+			)
+
+			stemcellPath := createFakeStemcellTarballWithManifest(`---
+operating_system: ubuntu-jammy
+# version is missing
+cloud_properties:
+  infrastructure: vsphere
+`)
+			defer os.Remove(stemcellPath)
+
+			found, err := service.CheckStemcellAvailability(stemcellPath)
+			Expect(err).To(HaveOccurred())
+			Expect(found).To(BeFalse())
+		})
+	})
 })
+
+// Helper to create a fake stemcell tarball with a given manifest
+func createFakeStemcellTarballWithManifest(manifest string) string {
+	tmpfile, _ := ioutil.TempFile("", "stemcell-*.tgz")
+	defer tmpfile.Close()
+
+	gz := gzip.NewWriter(tmpfile)
+	tarWriter := tar.NewWriter(gz)
+
+	hdr := &tar.Header{
+		Name: "stemcell.MF",
+		Mode: 0600,
+		Size: int64(len(manifest)),
+	}
+	tarWriter.WriteHeader(hdr)
+	tarWriter.Write([]byte(manifest))
+	tarWriter.Close()
+	gz.Close()
+
+	return tmpfile.Name()
+}
+
+// Helper to create a fake stemcell tarball at a specific filename
+func createFakeStemcellTarballWithManifestAt(filename, manifest string) {
+	f, _ := os.Create(filename)
+	defer f.Close()
+	gz := gzip.NewWriter(f)
+	tarWriter := tar.NewWriter(gz)
+	hdr := &tar.Header{
+		Name: "stemcell.MF",
+		Mode: 0600,
+		Size: int64(len(manifest)),
+	}
+	tarWriter.WriteHeader(hdr)
+	tarWriter.Write([]byte(manifest))
+	tarWriter.Close()
+	gz.Close()
+}
