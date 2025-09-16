@@ -60,11 +60,10 @@ opsman-configuration:
 `
 
 		command, runner := createCommand(fmt.Sprintf(configStrTemplate, accessKey, secretAccessKey, assumeRole, region, publicIP, privateIP))
-		// Set default return value for all calls (for waitTillVmRunning)
-		runner.ExecuteWithEnvVarsReturns(bytes.NewBufferString("\"running\"\r\n"), nil, nil)
 		// Override specific calls with their expected return values
-		runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
-		runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)
+		runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil) // ec2 run-instances
+		runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("\"running\"\r\n"), nil, nil)               // ec2 describe-instances
+		runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("\"eipalloc-18643c24\"\r\n"), nil, nil)     // ec2 describe-addresses
 		runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"stopping\"\r\n"), nil, nil)
 		runner.ExecuteWithEnvVarsReturnsOnCall(6, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
 		runner.ExecuteWithEnvVarsReturnsOnCall(7, bytes.NewBufferString("\"stopped\"\r\n"), nil, nil)
@@ -98,7 +97,7 @@ opsman-configuration:
 					{
 						`ec2`, `describe-instances`,
 						`--instance-ids`, `i-0016d0fe3a11c73c2`,
-						`--query`, `Reservations[*].Instances[*].State.Name`,
+						`--query`, `Reservations[0].Instances[0].State.Name`,
 					},
 					{
 						`ec2`, `describe-addresses`,
@@ -258,7 +257,9 @@ credential_source = Ec2InstanceMetadata`)), comment)
 				It("execute as if no vm has been deployed", func() {
 					command, runner := createValidCommand("1.2.3.4", "10.10.10.10", "us-west-2")
 					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("terminated\r\n"), nil, nil)
-					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil) // ec2 run-instances
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("\"running\"\r\n"), nil, nil)               // ec2 describe-instances
+					runner.ExecuteWithEnvVarsReturnsOnCall(3, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
 
 					command.State = vmmanagers.StateInfo{
 						IAAS: "aws",
@@ -278,6 +279,7 @@ credential_source = Ec2InstanceMetadata`)), comment)
 					command, runner := createValidCommand("1.2.3.4", "10.10.10.10", "us-west-2")
 					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("[]\n"), nil, nil)
 					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString(fmt.Sprintf("\"%s\"\r\n", vmID)), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // ec2 describe-instances
 
 					command.State = vmmanagers.StateInfo{
 						IAAS: "aws",
@@ -393,11 +395,12 @@ credential_source = Ec2InstanceMetadata`)), comment)
 						Expect(err.Error()).To(ContainSubstring("aws error "))
 					},
 						Entry("create vm", 0, vmmanagers.Unknown),
-						Entry("find root device", 1, vmmanagers.Incomplete),
-						Entry("modify root device size", 2, vmmanagers.Incomplete),
-						Entry("find public ip address", 3, vmmanagers.Incomplete),
-						Entry("assign public ip address", 4, vmmanagers.Incomplete),
-						Entry("reboot vm", 5, vmmanagers.Incomplete),
+						Entry("wait for running", 1, vmmanagers.Incomplete),
+						Entry("find root device", 2, vmmanagers.Incomplete),
+						Entry("modify root device size", 3, vmmanagers.Incomplete),
+						Entry("find public ip address", 4, vmmanagers.Incomplete),
+						Entry("assign public ip address", 5, vmmanagers.Incomplete),
+						Entry("reboot vm", 6, vmmanagers.Incomplete),
 					)
 				})
 
@@ -551,8 +554,7 @@ opsman-configuration:
     private_ip: 1.2.3.4
 `)
 			runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
-			// Add return values for waitTillVmRunning calls
-			runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("running\r\n"), nil, nil)
+			runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
 			runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
 
 			_, _, err := command.CreateVM()
