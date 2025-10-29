@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet/v6/logshim"
-	"github.com/pivotal-cf/pivnet-cli/v2/filter"
+	"github.com/pivotal-cf/go-pivnet/v7"
+	"github.com/pivotal-cf/go-pivnet/v7/logshim"
+	"github.com/pivotal-cf/pivnet-cli/v3/filter"
 
-	"github.com/pivotal-cf/go-pivnet/v6"
-	"github.com/pivotal-cf/go-pivnet/v6/download"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/v6/logger"
-	"github.com/pivotal-cf/pivnet-cli/v2/gp"
+	"github.com/pivotal-cf/go-pivnet/v7/download"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v7/logger"
+	"github.com/pivotal-cf/pivnet-cli/v3/gp"
 )
 
 //counterfeiter:generate -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
