@@ -134,10 +134,10 @@ github.com/opencontainers/image-spec
 github.com/pierrec/lz4
 github.com/pivotal-cf-experimental/gomegamatchers
 github.com/pivotal-cf/go-pivnet
-github.com/pivotal-cf/go-pivnet/v6
+github.com/pivotal-cf/go-pivnet/v7
 github.com/pivotal-cf/jhanda
 github.com/pivotal-cf/paraphernalia
-github.com/pivotal-cf/pivnet-cli/v2
+github.com/pivotal-cf/pivnet-cli/v3
 github.com/pivotal-cf/replicator
 github.com/pivotal-cf/winfs-injector
 github.com/pkg/errors
