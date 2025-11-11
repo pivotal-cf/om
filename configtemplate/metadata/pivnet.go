@@ -10,13 +10,20 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 	stderr := log.New(os.Stderr, "", 0)
 	stdout := log.New(os.Stdout, "", 0)
 
-	downloadClient := download_clients.NewPivnetClient(
+	proxyConfig := download_clients.ProxyAuthConfig{
+		URL:      "", // proxyURL
+		Username: "", // proxyUsername
+		Password: "", // proxyPassword
+		Domain:   "", // proxyDomain
+	}
+	downloadClient := download_clients.NewPivnetClientWithProxyConfig(
 		stdout,
 		stderr,
 		download_clients.DefaultPivnetFactory,
 		token,
 		skipSSL,
 		host,
+		proxyConfig,
 	)
 
 	return &PivnetProvider{

@@ -24,6 +24,12 @@ type PivnetOptions struct {
 	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
+	PivnetProxyURL      string `long:"pivnet-proxy-url" description:"proxy URL to use when making requests to Pivnet (e.g., http://proxy.example.com:8080)"`
+	PivnetProxyUsername string `long:"pivnet-proxy-username" description:"username for proxy authentication"`
+	PivnetProxyPassword string `long:"pivnet-proxy-password" description:"password for proxy authentication"`
+	PivnetProxyDomain   string `long:"pivnet-proxy-domain" description:"Active Directory domain for SPNEGO/Kerberos proxy authentication. When provided, SPNEGO authentication will be used instead of basic auth."`
+	PivnetProxyAuthType string `long:"pivnet-proxy-auth-type" description:"explicit proxy authentication type: 'basic' or 'spnego'. If not specified, type is auto-detected based on provided parameters (domain -> spnego, username/password -> basic)."`
+
 	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
 }
 
@@ -622,13 +628,29 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 			stderr,
 		)
 	case "pivnet", "":
-		return download_clients.NewPivnetClient(
+		// Convert auth type string to ProxyAuthType if provided
+		var proxyAuthType download_clients.ProxyAuthType
+		if c.PivnetProxyAuthType != "" {
+			proxyAuthType = download_clients.ProxyAuthType(c.PivnetProxyAuthType)
+		}
+		
+		// Build proxy config with explicit type if provided
+		proxyConfig := download_clients.ProxyAuthConfig{
+			URL:      c.PivnetProxyURL,
+			Username: c.PivnetProxyUsername,
+			Password: c.PivnetProxyPassword,
+			Domain:   c.PivnetProxyDomain,
+			Type:     proxyAuthType,
+		}
+		
+		return download_clients.NewPivnetClientWithProxyConfig(
 			stdout,
 			stderr,
 			download_clients.DefaultPivnetFactory,
 			c.PivnetToken,
 			c.PivnetDisableSSL,
 			c.PivnetHost,
+			proxyConfig,
 		), nil
 	}
 

@@ -30,12 +30,33 @@ type PivnetDownloader interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
+// NewPivnetClient creates a new Pivnet client with individual proxy parameters (backward compatibility)
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyDomain string) ProductDownloader {
+	proxyConfig := ProxyAuthConfig{
+		URL:      proxyURL,
+		Username: proxyUsername,
+		Password: proxyPassword,
+		Domain:   proxyDomain,
+	}
+	return NewPivnetClientWithProxyConfig(stdout, stderr, factory, token, skipSSL, pivnetHost, proxyConfig)
+}
+
+// NewPivnetClientWithProxyConfig creates a new Pivnet client with a ProxyAuthConfig (new extensible API)
+var NewPivnetClientWithProxyConfig = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyConfig ProxyAuthConfig) ProductDownloader {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
 		false,
 	)
+
+	// Set up proxy configuration using the extensible proxy auth system
+	if proxyConfig.URL != "" {
+		registry := NewProxyAuthRegistry()
+		if err := ConfigureProxyAuth(proxyConfig, registry, stderr); err != nil {
+			stderr.Printf("Warning: Failed to configure proxy authentication: %s", err)
+		}
+	}
+
 	tokenGenerator := pivnet.NewAccessTokenOrLegacyToken(
 		token,
 		pivnetHost,
@@ -65,6 +86,7 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		client:     client,
 	}
 }
+
 
 type pivnetClient struct {
 	downloader PivnetDownloader
