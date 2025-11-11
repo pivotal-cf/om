@@ -5,20 +5,20 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.18.3"
+  version "7.18.4"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.18.3/om-darwin-amd64-7.18.3.tar.gz"
-      sha256 "a7121ef0be8d7733ef98c5297ab0b6ede951a46ce07dea2c69e3f63bfd00fe31"
+      url "https://github.com/pivotal-cf/om/releases/download/7.18.4/om-darwin-amd64-7.18.4.tar.gz"
+      sha256 "e5273c295484003c18b87074bb8bcc2a3b360ff2b9720446740427314486fec0"
 
       def install
         bin.install "om"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.18.3/om-darwin-arm64-7.18.3.tar.gz"
-      sha256 "a3391cdd432b9a2efdc272d93f3989f8ee27b039ddedf58486c8c60b6aa1fef8"
+      url "https://github.com/pivotal-cf/om/releases/download/7.18.4/om-darwin-arm64-7.18.4.tar.gz"
+      sha256 "60a7b4f5aec970e070553f00b22504a21c612ce4428934fdb7224661346327eb"
 
       def install
         bin.install "om"
@@ -28,15 +28,15 @@ class Om < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.18.3/om-linux-amd64-7.18.3.tar.gz"
-      sha256 "4e92eb1dbf54571286deadfcb7d3275f55a4f0a2e0436fb492a7bdd155c508a6"
+      url "https://github.com/pivotal-cf/om/releases/download/7.18.4/om-linux-amd64-7.18.4.tar.gz"
+      sha256 "322f66a8ab3ecdf9f5040b8a6c578e6cdf9a575d5471c2377f9ad0cc972be691"
       def install
         bin.install "om"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.18.3/om-linux-arm64-7.18.3.tar.gz"
-      sha256 "c3ac785026672a229e4c9b2e8d18d953a15709f7f268b8b2c8efc14f25f43ba2"
+      url "https://github.com/pivotal-cf/om/releases/download/7.18.4/om-linux-arm64-7.18.4.tar.gz"
+      sha256 "6a0102f524547b378a85d0ebda0153a9984c2fff6e78a3e74401bf0199f0cf78"
       def install
         bin.install "om"
       end
