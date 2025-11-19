@@ -23,6 +23,11 @@ type PivnetOptions struct {
 	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded."`
 	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
+	ProxyURL            string `long:"proxy-url"                                                 description:"proxy URL for HTTPS connections (e.g., http://proxy.example.com:8080)"`
+	ProxyUsername       string `long:"proxy-username"                                            description:"username for proxy authentication"`
+	ProxyPassword       string `long:"proxy-password"                                            description:"password for proxy authentication"`
+	ProxyDomain         string `long:"proxy-domain"                                              description:"domain/realm for proxy authentication (optional for spnego/negotiate/kerberos if default_realm is set in krb5.conf, optional for basic)"`
+	ProxyAuthType       string `long:"proxy-auth-type"                                           description:"type of proxy authentication: basic, spnego, negotiate, or kerberos (default: spnego)" default:"spnego"`
 
 	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
 }
@@ -629,6 +634,11 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 			c.PivnetToken,
 			c.PivnetDisableSSL,
 			c.PivnetHost,
+			c.ProxyURL,
+			c.ProxyUsername,
+			c.ProxyPassword,
+			c.ProxyDomain,
+			c.ProxyAuthType,
 		), nil
 	}
 

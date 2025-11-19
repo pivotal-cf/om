@@ -2,6 +2,8 @@ module github.com/pivotal-cf/om
 
 go 1.24.8
 
+replace github.com/pivotal-cf/go-pivnet/v7 => ./third_party/go-pivnet
+
 require (
 	cloud.google.com/go/storage v1.46.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20201102140135-1a6b82ad1f99
@@ -19,6 +21,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/graymeta/stow v0.2.8
 	github.com/hashicorp/go-version v1.7.0
+	github.com/jcmturner/gokrb5/v8 v8.4.4
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2
 	github.com/olekukonko/tablewriter v0.0.5
@@ -104,7 +107,13 @@ require (
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
+	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
+	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
+	github.com/jcmturner/gofork v1.7.6 // indirect
+	github.com/jcmturner/goidentity/v6 v6.0.1 // indirect
+	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/jhoonb/archivex v0.0.0-20201016144719-6a343cdae81d // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect

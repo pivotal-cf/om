@@ -1,9 +1,10 @@
 package metadata
 
 import (
-	"github.com/pivotal-cf/om/download_clients"
 	"log"
 	"os"
+
+	"github.com/pivotal-cf/om/download_clients"
 )
 
 func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Provider {
@@ -17,6 +18,11 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 		token,
 		skipSSL,
 		host,
+		"", // proxyURL
+		"", // proxyUsername
+		"", // proxyPassword
+		"", // proxyDomain
+		"", // proxyAuthType
 	)
 
 	return &PivnetProvider{

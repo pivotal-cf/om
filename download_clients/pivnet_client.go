@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
@@ -30,7 +32,7 @@ type PivnetDownloader interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyDomain string, proxyAuthType string) ProductDownloader {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
@@ -42,10 +44,67 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		skipSSL,
 		userAgent,
 	)
+	
+	// Build transport configuration before creating client
+	var finalTransport http.RoundTripper
+	baseTransport := http.DefaultTransport
+	
+	// Configure proxy URL if provided
+	var proxyURLParsed *url.URL
+	if proxyURL != "" {
+		var err error
+		proxyURLParsed, err = url.Parse(proxyURL)
+		if err != nil {
+			stderr.Printf("Warning: invalid proxy URL %q: %s", proxyURL, err)
+		} else {
+			// Create transport with proxy configuration
+			if defaultTransport, ok := http.DefaultTransport.(*http.Transport); ok {
+				// Clone default transport and set proxy
+				baseTransport = &http.Transport{
+					Proxy:           http.ProxyURL(proxyURLParsed),
+					TLSClientConfig: defaultTransport.TLSClientConfig,
+					DialContext:     defaultTransport.DialContext,
+				}
+			} else {
+				baseTransport = &http.Transport{
+					Proxy: http.ProxyURL(proxyURLParsed),
+				}
+			}
+		}
+	}
+	
+	// Configure proxy authentication if provided
+	if proxyUsername != "" && proxyPassword != "" {
+		// Default auth type to "spnego" if not specified
+		authType := proxyAuthType
+		if authType == "" {
+			authType = "spnego"
+		}
+		
+		proxyConfig := &ProxyAuthConfig{
+			AuthType: authType,
+			Username: proxyUsername,
+			Password: proxyPassword,
+			Domain:   proxyDomain,
+			ProxyURL: proxyURL, // Pass proxy URL for SPN construction
+			Logger:   stderr,  // Pass logger for debugging
+		}
+		
+		var err error
+		finalTransport, err = NewProxyAuthTransport(baseTransport, proxyConfig)
+		if err != nil {
+			stderr.Printf("Warning: failed to configure proxy authentication: %s", err)
+			finalTransport = baseTransport
+		}
+	} else {
+		finalTransport = baseTransport
+	}
+	
 	config := pivnet.ClientConfig{
 		Host:              pivnetHost,
 		UserAgent:         userAgent,
 		SkipSSLValidation: skipSSL,
+		Transport:         finalTransport, // Pass custom transport (with proxy auth) to ClientConfig
 	}
 	downloader := factory(
 		tokenGenerator,
