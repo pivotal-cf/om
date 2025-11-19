@@ -30,7 +30,7 @@ type PivnetDownloader interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyUsername string, proxyPassword string, proxyDomain string) ProductDownloader {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
@@ -57,6 +57,28 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		config,
 		logger,
 	)
+
+	// Configure proxy authentication if provided
+	var proxyAuthTransport *ProxyAuthTransport
+	if proxyUsername != "" && proxyPassword != "" && proxyDomain != "" {
+		proxyConfig := &ProxyAuthConfig{
+			Username: proxyUsername,
+			Password: proxyPassword,
+			Domain:   proxyDomain,
+		}
+		
+		// Get the underlying HTTP client from pivnet client
+		// Wrap its transport with proxy authentication
+		if client.HTTP != nil && client.HTTP.Transport != nil {
+			var err error
+			proxyAuthTransport, err = NewProxyAuthTransport(client.HTTP.Transport, proxyConfig)
+			if err != nil {
+				stderr.Printf("Warning: failed to configure proxy authentication: %s", err)
+			} else {
+				client.HTTP.Transport = proxyAuthTransport
+			}
+		}
+	}
 
 	return &pivnetClient{
 		filter:     filter.NewFilter(logger),
