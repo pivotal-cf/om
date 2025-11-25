@@ -206,6 +206,60 @@ tokens-expiration:
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
 		})
 
+		It("can enable the foundation core UI using flag", func() {
+			err := executeCommand(command, []string{
+				"--enable-foundation-core-ui", "true",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateUIFeatureControllerCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateUIFeatureControllerArgsForCall(0)).To(Equal(api.UIFeatureControllerSettings{
+				EnableFoundationCoreUI: true,
+			}))
+		})
+
+		It("can disable the foundation core UI using flag", func() {
+			err := executeCommand(command, []string{
+				"--enable-foundation-core-ui", "false",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateUIFeatureControllerCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateUIFeatureControllerArgsForCall(0)).To(Equal(api.UIFeatureControllerSettings{
+				EnableFoundationCoreUI: false,
+			}))
+		})
+
+		It("returns an error for invalid --enable-foundation-core-ui value", func() {
+			err := executeCommand(command, []string{
+				"--enable-foundation-core-ui", "invalid",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("invalid value for --enable-foundation-core-ui: invalid"))
+			Expect(err.Error()).To(ContainSubstring("must be 'true' or 'false'"))
+		})
+
+		It("returns an error when neither config nor flag is provided", func() {
+			err := executeCommand(command, []string{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("either --config or --enable-foundation-core-ui must be provided"))
+		})
+
+		It("returns an error when both config and flag are provided", func() {
+			config := `
+banner-settings:
+  ui_banner_contents: example UI banner
+`
+			configFileName := writeTestConfigFile(config)
+
+			err := executeCommand(command, []string{
+				"--config", configFileName,
+				"--enable-foundation-core-ui", "true",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("--config and --enable-foundation-core-ui cannot be used together"))
+		})
+
 		It("returns an error if both ldap and saml keys provided", func() {
 			rbacConfig := `
 rbac-settings:
@@ -403,6 +457,18 @@ syslog-settings:
 				Expect(err.Error()).To(ContainSubstring("some error"))
 
 				Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(1))
+			})
+
+			It("returns an error when UI Feature Controller api fails", func() {
+				fakeService.UpdateUIFeatureControllerReturns(errors.New("some error"))
+
+				err := executeCommand(command, []string{
+					"--enable-foundation-core-ui", "true",
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some error"))
+
+				Expect(fakeService.UpdateUIFeatureControllerCallCount()).To(Equal(1))
 			})
 		})
 	})

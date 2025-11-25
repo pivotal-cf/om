@@ -393,4 +393,57 @@ var _ = Describe("ConfigureOpsmanService", func() {
 			})
 		})
 	})
+
+	Describe("UpdateUIFeatureController", func() {
+		It("Updates the UI Feature Controller in ops manager", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/ui_feature"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{
+					  "enable_foundation_core_ops_manager_ui": false
+					}`),
+				),
+			)
+
+			err := service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
+				EnableFoundationCoreUI: false,
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("can enable the foundation core UI", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/settings/ui_feature"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+					ghttp.VerifyJSON(`{
+					  "enable_foundation_core_ops_manager_ui": true
+					}`),
+				),
+			)
+
+			err := service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
+				EnableFoundationCoreUI: true,
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		When("the api returns an error", func() {
+			It("returns the error to the user", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/v0/settings/ui_feature"),
+						ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+					),
+				)
+
+				err := service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
+					EnableFoundationCoreUI: false,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("500 Internal Server Error"))
+			})
+		})
+	})
 })
