@@ -41,6 +41,10 @@ type TokensExpiration struct {
 	SessionIdleTimeout     int `json:"session_idle_timeout,omitempty" yaml:"session_idle_timeout"`
 }
 
+type UIFeatureSettings struct {
+	EnableFoundationCoreUI bool `json:"enable_foundation_core_ops_manager_ui" yaml:"enable_foundation_core_ops_manager_ui"`
+}
+
 type SyslogSettings struct {
 	Enabled             string `json:"enabled,omitempty" yaml:"enabled"`
 	Address             string `json:"address,omitempty" yaml:"address"`
@@ -163,6 +167,16 @@ func (a Api) UpdateTokensExpiration(tokenExpirations TokensExpiration) error {
 	body := strings.NewReader(fmt.Sprintf(
 		`{ "tokens_expiration": %s}`, payload))
 	return a.updateSettings(body, "uaa/tokens_expiration")
+}
+
+func (a Api) UpdateUIFeature(settings UIFeatureSettings) error {
+	payload, err := json.Marshal(settings)
+	if err != nil {
+		return err // not tested
+	}
+
+	body := strings.NewReader(string(payload))
+	return a.updateSettings(body, "settings/ui_feature")
 }
 
 func (a Api) updateSettings(body *strings.Reader, endpoint string) error {

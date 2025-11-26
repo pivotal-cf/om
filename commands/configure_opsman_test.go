@@ -206,6 +206,56 @@ tokens-expiration:
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
 		})
 
+		It("updates UI Feature from config file", func() {
+			uiFeatureConfig := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: false
+`
+			configFileName := writeTestConfigFile(uiFeatureConfig)
+
+			err := executeCommand(command, []string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateUIFeatureCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateUIFeatureArgsForCall(0)).To(Equal(api.UIFeatureSettings{
+				EnableFoundationCoreUI: false,
+			}))
+		})
+
+		It("can enable UI Feature from config file", func() {
+			uiFeatureConfig := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: true
+`
+			configFileName := writeTestConfigFile(uiFeatureConfig)
+
+			err := executeCommand(command, []string{
+				"--config", configFileName,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateUIFeatureCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateUIFeatureArgsForCall(0)).To(Equal(api.UIFeatureSettings{
+				EnableFoundationCoreUI: true,
+			}))
+		})
+
+		It("returns an error for invalid boolean value in ui-feature-settings", func() {
+			invalidConfig := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: invalid
+`
+			configFileName := writeTestConfigFile(invalidConfig)
+
+			err := executeCommand(command, []string{
+				"--config", configFileName,
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("could not be parsed as valid configuration"))
+		})
+
 		It("returns an error if both ldap and saml keys provided", func() {
 			rbacConfig := `
 rbac-settings:
@@ -403,6 +453,24 @@ syslog-settings:
 				Expect(err.Error()).To(ContainSubstring("some error"))
 
 				Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(1))
+			})
+
+			It("returns an error when UI Feature api fails", func() {
+				fakeService.UpdateUIFeatureReturns(errors.New("some error"))
+
+				config := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: true
+`
+				configFileName := writeTestConfigFile(config)
+
+				err := executeCommand(command, []string{
+					"--config", configFileName,
+				})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("some error"))
+
+				Expect(fakeService.UpdateUIFeatureCallCount()).To(Equal(1))
 			})
 		})
 	})

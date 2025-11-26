@@ -3,11 +3,12 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/interpolate"
 	"gopkg.in/yaml.v2"
-	"sort"
-	"strings"
 )
 
 type ConfigureOpsman struct {
@@ -42,6 +43,9 @@ type opsmanConfig struct {
 	TokenExpirations *struct {
 		Settings api.TokensExpiration `yaml:",inline"`
 	} `yaml:"tokens-expiration"`
+	UIFeature *struct {
+		Settings api.UIFeatureSettings `yaml:",inline"`
+	} `yaml:"ui-feature-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
@@ -53,6 +57,7 @@ type configureOpsmanService interface {
 	EnableRBAC(rbacSettings api.RBACSettings) error
 	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error
 	UpdateTokensExpiration(tokenExpirations api.TokensExpiration) error
+	UpdateUIFeature(settings api.UIFeatureSettings) error
 }
 
 func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) *ConfigureOpsman {
@@ -129,6 +134,15 @@ func (c ConfigureOpsman) Execute(args []string) error {
 			return err
 		}
 		c.logger.Printf("Successfully updated tokens expiration.\n")
+	}
+
+	if config.UIFeature != nil {
+		c.logger.Printf("Updating UI Feature...\n")
+		err = c.service.UpdateUIFeature(config.UIFeature.Settings)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully updated UI Feature.\n")
 	}
 
 	return nil
