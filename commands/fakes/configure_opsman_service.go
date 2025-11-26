@@ -74,15 +74,15 @@ type ConfigureOpsmanService struct {
 	updateTokensExpirationReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpdateUIFeatureControllerStub        func(api.UIFeatureControllerSettings) error
-	updateUIFeatureControllerMutex       sync.RWMutex
-	updateUIFeatureControllerArgsForCall []struct {
-		arg1 api.UIFeatureControllerSettings
+	UpdateUIFeatureStub        func(api.UIFeatureSettings) error
+	updateUIFeatureMutex       sync.RWMutex
+	updateUIFeatureArgsForCall []struct {
+		arg1 api.UIFeatureSettings
 	}
-	updateUIFeatureControllerReturns struct {
+	updateUIFeatureReturns struct {
 		result1 error
 	}
-	updateUIFeatureControllerReturnsOnCall map[int]struct {
+	updateUIFeatureReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -449,62 +449,62 @@ func (fake *ConfigureOpsmanService) UpdateTokensExpirationReturnsOnCall(i int, r
 	}{result1}
 }
 
-func (fake *ConfigureOpsmanService) UpdateUIFeatureController(arg1 api.UIFeatureControllerSettings) error {
-	fake.updateUIFeatureControllerMutex.Lock()
-	ret, specificReturn := fake.updateUIFeatureControllerReturnsOnCall[len(fake.updateUIFeatureControllerArgsForCall)]
-	fake.updateUIFeatureControllerArgsForCall = append(fake.updateUIFeatureControllerArgsForCall, struct {
-		arg1 api.UIFeatureControllerSettings
+func (fake *ConfigureOpsmanService) UpdateUIFeature(arg1 api.UIFeatureSettings) error {
+	fake.updateUIFeatureMutex.Lock()
+	ret, specificReturn := fake.updateUIFeatureReturnsOnCall[len(fake.updateUIFeatureArgsForCall)]
+	fake.updateUIFeatureArgsForCall = append(fake.updateUIFeatureArgsForCall, struct {
+		arg1 api.UIFeatureSettings
 	}{arg1})
-	fake.recordInvocation("UpdateUIFeatureController", []interface{}{arg1})
-	fake.updateUIFeatureControllerMutex.Unlock()
-	if fake.UpdateUIFeatureControllerStub != nil {
-		return fake.UpdateUIFeatureControllerStub(arg1)
+	fake.recordInvocation("UpdateUIFeature", []interface{}{arg1})
+	fake.updateUIFeatureMutex.Unlock()
+	if fake.UpdateUIFeatureStub != nil {
+		return fake.UpdateUIFeatureStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateUIFeatureControllerReturns
+	fakeReturns := fake.updateUIFeatureReturns
 	return fakeReturns.result1
 }
 
-func (fake *ConfigureOpsmanService) UpdateUIFeatureControllerCallCount() int {
-	fake.updateUIFeatureControllerMutex.RLock()
-	defer fake.updateUIFeatureControllerMutex.RUnlock()
-	return len(fake.updateUIFeatureControllerArgsForCall)
+func (fake *ConfigureOpsmanService) UpdateUIFeatureCallCount() int {
+	fake.updateUIFeatureMutex.RLock()
+	defer fake.updateUIFeatureMutex.RUnlock()
+	return len(fake.updateUIFeatureArgsForCall)
 }
 
-func (fake *ConfigureOpsmanService) UpdateUIFeatureControllerCalls(stub func(api.UIFeatureControllerSettings) error) {
-	fake.updateUIFeatureControllerMutex.Lock()
-	defer fake.updateUIFeatureControllerMutex.Unlock()
-	fake.UpdateUIFeatureControllerStub = stub
+func (fake *ConfigureOpsmanService) UpdateUIFeatureCalls(stub func(api.UIFeatureSettings) error) {
+	fake.updateUIFeatureMutex.Lock()
+	defer fake.updateUIFeatureMutex.Unlock()
+	fake.UpdateUIFeatureStub = stub
 }
 
-func (fake *ConfigureOpsmanService) UpdateUIFeatureControllerArgsForCall(i int) api.UIFeatureControllerSettings {
-	fake.updateUIFeatureControllerMutex.RLock()
-	defer fake.updateUIFeatureControllerMutex.RUnlock()
-	argsForCall := fake.updateUIFeatureControllerArgsForCall[i]
+func (fake *ConfigureOpsmanService) UpdateUIFeatureArgsForCall(i int) api.UIFeatureSettings {
+	fake.updateUIFeatureMutex.RLock()
+	defer fake.updateUIFeatureMutex.RUnlock()
+	argsForCall := fake.updateUIFeatureArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *ConfigureOpsmanService) UpdateUIFeatureControllerReturns(result1 error) {
-	fake.updateUIFeatureControllerMutex.Lock()
-	defer fake.updateUIFeatureControllerMutex.Unlock()
-	fake.UpdateUIFeatureControllerStub = nil
-	fake.updateUIFeatureControllerReturns = struct {
+func (fake *ConfigureOpsmanService) UpdateUIFeatureReturns(result1 error) {
+	fake.updateUIFeatureMutex.Lock()
+	defer fake.updateUIFeatureMutex.Unlock()
+	fake.UpdateUIFeatureStub = nil
+	fake.updateUIFeatureReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *ConfigureOpsmanService) UpdateUIFeatureControllerReturnsOnCall(i int, result1 error) {
-	fake.updateUIFeatureControllerMutex.Lock()
-	defer fake.updateUIFeatureControllerMutex.Unlock()
-	fake.UpdateUIFeatureControllerStub = nil
-	if fake.updateUIFeatureControllerReturnsOnCall == nil {
-		fake.updateUIFeatureControllerReturnsOnCall = make(map[int]struct {
+func (fake *ConfigureOpsmanService) UpdateUIFeatureReturnsOnCall(i int, result1 error) {
+	fake.updateUIFeatureMutex.Lock()
+	defer fake.updateUIFeatureMutex.Unlock()
+	fake.UpdateUIFeatureStub = nil
+	if fake.updateUIFeatureReturnsOnCall == nil {
+		fake.updateUIFeatureReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.updateUIFeatureControllerReturnsOnCall[i] = struct {
+	fake.updateUIFeatureReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -524,8 +524,8 @@ func (fake *ConfigureOpsmanService) Invocations() map[string][][]interface{} {
 	defer fake.updateSyslogSettingsMutex.RUnlock()
 	fake.updateTokensExpirationMutex.RLock()
 	defer fake.updateTokensExpirationMutex.RUnlock()
-	fake.updateUIFeatureControllerMutex.RLock()
-	defer fake.updateUIFeatureControllerMutex.RUnlock()
+	fake.updateUIFeatureMutex.RLock()
+	defer fake.updateUIFeatureMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

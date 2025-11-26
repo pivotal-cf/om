@@ -16,12 +16,11 @@ type ConfigureOpsman struct {
 	logger      logger
 	environFunc func() []string
 	Options     struct {
-		ConfigFile             string   `long:"config"                        short:"c"         description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)"`
-		VarsFile               []string `long:"vars-file"                     short:"l"         description:"load variables from a YAML file"`
-		VarsEnv                []string `long:"vars-env"                      env:"OM_VARS_ENV" description:"load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
-		Vars                   []string `long:"var"                           short:"v"         description:"load variable from the command line. Format: VAR=VAL"`
-		OpsFile                []string `long:"ops-file"                                        description:"YAML operations file"`
-		EnableFoundationCoreUI string   `long:"enable-foundation-core-ui"                       description:"enable or disable the foundation core Ops Manager UI (true or false)"`
+		ConfigFile string   `long:"config"    short:"c"         description:"path to yml file containing all config fields (see docs/configure-director/README.md for format)" required:"true"`
+		VarsFile   []string `long:"vars-file" short:"l"         description:"load variables from a YAML file"`
+		VarsEnv    []string `long:"vars-env"  env:"OM_VARS_ENV" description:"load variables from environment variables (e.g.: 'MY' to load MY_var=value)"`
+		Vars       []string `long:"var"       short:"v"         description:"load variable from the command line. Format: VAR=VAL"`
+		OpsFile    []string `long:"ops-file"                    description:"YAML operations file"`
 	}
 }
 
@@ -44,6 +43,9 @@ type opsmanConfig struct {
 	TokenExpirations *struct {
 		Settings api.TokensExpiration `yaml:",inline"`
 	} `yaml:"tokens-expiration"`
+	UIFeature *struct {
+		Settings api.UIFeatureSettings `yaml:",inline"`
+	} `yaml:"ui-feature-settings"`
 	Field map[string]interface{} `yaml:",inline"`
 }
 
@@ -55,7 +57,7 @@ type configureOpsmanService interface {
 	EnableRBAC(rbacSettings api.RBACSettings) error
 	UpdateSyslogSettings(syslogSettings api.SyslogSettings) error
 	UpdateTokensExpiration(tokenExpirations api.TokensExpiration) error
-	UpdateUIFeatureController(settings api.UIFeatureControllerSettings) error
+	UpdateUIFeature(settings api.UIFeatureSettings) error
 }
 
 func NewConfigureOpsman(environFunc func() []string, service configureOpsmanService, logger logger) *ConfigureOpsman {
@@ -67,42 +69,6 @@ func NewConfigureOpsman(environFunc func() []string, service configureOpsmanServ
 }
 
 func (c ConfigureOpsman) Execute(args []string) error {
-	if c.Options.ConfigFile == "" && c.Options.EnableFoundationCoreUI == "" {
-		return errors.New("either --config or --enable-foundation-core-ui must be provided")
-	}
-
-	if c.Options.ConfigFile != "" && c.Options.EnableFoundationCoreUI != "" {
-		return errors.New("--config and --enable-foundation-core-ui cannot be used together")
-	}
-
-	// Handle --enable-foundation-core-ui flag (standalone usage without config file)
-	if c.Options.ConfigFile == "" && c.Options.EnableFoundationCoreUI != "" {
-		var enableUI bool
-		switch c.Options.EnableFoundationCoreUI {
-		case "true":
-			enableUI = true
-		case "false":
-			enableUI = false
-		default:
-			return fmt.Errorf("invalid value for --enable-foundation-core-ui: %s (must be 'true' or 'false')", c.Options.EnableFoundationCoreUI)
-		}
-
-		c.logger.Printf("Updating foundation core UI setting...\n")
-		err := c.service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
-			EnableFoundationCoreUI: enableUI,
-		})
-		if err != nil {
-			return err
-		}
-		if enableUI {
-			c.logger.Printf("Successfully enabled foundation core Ops Manager UI.\n")
-		} else {
-			c.logger.Printf("Successfully disabled foundation core Ops Manager UI.\n")
-		}
-		return nil
-	}
-
-	// Load and process config file
 	config, err := c.interpolateConfig()
 	if err != nil {
 		return err
@@ -168,6 +134,15 @@ func (c ConfigureOpsman) Execute(args []string) error {
 			return err
 		}
 		c.logger.Printf("Successfully updated tokens expiration.\n")
+	}
+
+	if config.UIFeature != nil {
+		c.logger.Printf("Updating UI Feature...\n")
+		err = c.service.UpdateUIFeature(config.UIFeature.Settings)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("Successfully updated UI Feature.\n")
 	}
 
 	return nil

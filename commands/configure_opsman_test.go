@@ -206,58 +206,54 @@ tokens-expiration:
 			Expect(fakeService.UpdatePivnetTokenCallCount()).To(Equal(0))
 		})
 
-		It("can enable the foundation core UI using flag", func() {
+		It("updates UI Feature from config file", func() {
+			uiFeatureConfig := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: false
+`
+			configFileName := writeTestConfigFile(uiFeatureConfig)
+
 			err := executeCommand(command, []string{
-				"--enable-foundation-core-ui", "true",
+				"--config", configFileName,
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(fakeService.UpdateUIFeatureControllerCallCount()).To(Equal(1))
-			Expect(fakeService.UpdateUIFeatureControllerArgsForCall(0)).To(Equal(api.UIFeatureControllerSettings{
-				EnableFoundationCoreUI: true,
-			}))
-		})
-
-		It("can disable the foundation core UI using flag", func() {
-			err := executeCommand(command, []string{
-				"--enable-foundation-core-ui", "false",
-			})
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(fakeService.UpdateUIFeatureControllerCallCount()).To(Equal(1))
-			Expect(fakeService.UpdateUIFeatureControllerArgsForCall(0)).To(Equal(api.UIFeatureControllerSettings{
+			Expect(fakeService.UpdateUIFeatureCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateUIFeatureArgsForCall(0)).To(Equal(api.UIFeatureSettings{
 				EnableFoundationCoreUI: false,
 			}))
 		})
 
-		It("returns an error for invalid --enable-foundation-core-ui value", func() {
-			err := executeCommand(command, []string{
-				"--enable-foundation-core-ui", "invalid",
-			})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("invalid value for --enable-foundation-core-ui: invalid"))
-			Expect(err.Error()).To(ContainSubstring("must be 'true' or 'false'"))
-		})
-
-		It("returns an error when neither config nor flag is provided", func() {
-			err := executeCommand(command, []string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("either --config or --enable-foundation-core-ui must be provided"))
-		})
-
-		It("returns an error when both config and flag are provided", func() {
-			config := `
-banner-settings:
-  ui_banner_contents: example UI banner
+		It("can enable UI Feature from config file", func() {
+			uiFeatureConfig := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: true
 `
-			configFileName := writeTestConfigFile(config)
+			configFileName := writeTestConfigFile(uiFeatureConfig)
 
 			err := executeCommand(command, []string{
 				"--config", configFileName,
-				"--enable-foundation-core-ui", "true",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.UpdateUIFeatureCallCount()).To(Equal(1))
+			Expect(fakeService.UpdateUIFeatureArgsForCall(0)).To(Equal(api.UIFeatureSettings{
+				EnableFoundationCoreUI: true,
+			}))
+		})
+
+		It("returns an error for invalid boolean value in ui-feature-settings", func() {
+			invalidConfig := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: invalid
+`
+			configFileName := writeTestConfigFile(invalidConfig)
+
+			err := executeCommand(command, []string{
+				"--config", configFileName,
 			})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("--config and --enable-foundation-core-ui cannot be used together"))
+			Expect(err.Error()).To(ContainSubstring("could not be parsed as valid configuration"))
 		})
 
 		It("returns an error if both ldap and saml keys provided", func() {
@@ -459,16 +455,22 @@ syslog-settings:
 				Expect(fakeService.UpdateSyslogSettingsCallCount()).To(Equal(1))
 			})
 
-			It("returns an error when UI Feature Controller api fails", func() {
-				fakeService.UpdateUIFeatureControllerReturns(errors.New("some error"))
+			It("returns an error when UI Feature api fails", func() {
+				fakeService.UpdateUIFeatureReturns(errors.New("some error"))
+
+				config := `
+ui-feature-settings:
+  enable_foundation_core_ops_manager_ui: true
+`
+				configFileName := writeTestConfigFile(config)
 
 				err := executeCommand(command, []string{
-					"--enable-foundation-core-ui", "true",
+					"--config", configFileName,
 				})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("some error"))
 
-				Expect(fakeService.UpdateUIFeatureControllerCallCount()).To(Equal(1))
+				Expect(fakeService.UpdateUIFeatureCallCount()).To(Equal(1))
 			})
 		})
 	})

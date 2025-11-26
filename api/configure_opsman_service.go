@@ -41,7 +41,7 @@ type TokensExpiration struct {
 	SessionIdleTimeout     int `json:"session_idle_timeout,omitempty" yaml:"session_idle_timeout"`
 }
 
-type UIFeatureControllerSettings struct {
+type UIFeatureSettings struct {
 	EnableFoundationCoreUI bool `json:"enable_foundation_core_ops_manager_ui" yaml:"enable_foundation_core_ops_manager_ui"`
 }
 
@@ -169,7 +169,7 @@ func (a Api) UpdateTokensExpiration(tokenExpirations TokensExpiration) error {
 	return a.updateSettings(body, "uaa/tokens_expiration")
 }
 
-func (a Api) UpdateUIFeatureController(settings UIFeatureControllerSettings) error {
+func (a Api) UpdateUIFeature(settings UIFeatureSettings) error {
 	payload, err := json.Marshal(settings)
 	if err != nil {
 		return err // not tested

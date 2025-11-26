@@ -394,8 +394,8 @@ var _ = Describe("ConfigureOpsmanService", func() {
 		})
 	})
 
-	Describe("UpdateUIFeatureController", func() {
-		It("Updates the UI Feature Controller in ops manager", func() {
+	Describe("UpdateUIFeature", func() {
+		It("Updates the UI Feature in ops manager", func() {
 			client.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("PUT", "/api/v0/settings/ui_feature"),
@@ -406,7 +406,7 @@ var _ = Describe("ConfigureOpsmanService", func() {
 				),
 			)
 
-			err := service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
+			err := service.UpdateUIFeature(api.UIFeatureSettings{
 				EnableFoundationCoreUI: false,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -423,7 +423,7 @@ var _ = Describe("ConfigureOpsmanService", func() {
 				),
 			)
 
-			err := service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
+			err := service.UpdateUIFeature(api.UIFeatureSettings{
 				EnableFoundationCoreUI: true,
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -438,7 +438,7 @@ var _ = Describe("ConfigureOpsmanService", func() {
 					),
 				)
 
-				err := service.UpdateUIFeatureController(api.UIFeatureControllerSettings{
+				err := service.UpdateUIFeature(api.UIFeatureSettings{
 					EnableFoundationCoreUI: false,
 				})
 				Expect(err).To(HaveOccurred())
