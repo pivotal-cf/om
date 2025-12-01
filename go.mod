@@ -26,6 +26,11 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/pivotal-cf/go-pivnet/v7 v7.0.1
 	github.com/pivotal-cf/pivnet-cli/v3 v3.0.1
+)
+
+replace github.com/pivotal-cf/go-pivnet/v7 => github.com/pivotal-cf/go-pivnet/v7 v7.0.0-20251204164559-6e6bbd93ed3b
+
+require (
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
 	github.com/pivotal-cf/winfs-injector v0.0.0-20200827170301-91411420d92f
 	github.com/vmware/govmomi v0.46.0
@@ -104,7 +109,14 @@ require (
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
+	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
+	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
+	github.com/jcmturner/gofork v1.7.6 // indirect
+	github.com/jcmturner/goidentity/v6 v6.0.1 // indirect
+	github.com/jcmturner/gokrb5/v8 v8.4.4 // indirect
+	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/jhoonb/archivex v0.0.0-20201016144719-6a343cdae81d // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
