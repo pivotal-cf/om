@@ -17,6 +17,11 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 		token,
 		skipSSL,
 		host,
+		"", // proxyURL
+		"", // proxyUsername
+		"", // proxyPassword
+		"", // proxyAuthType
+		"", // proxyKrb5Config
 	)
 
 	return &PivnetProvider{
