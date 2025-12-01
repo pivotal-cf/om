@@ -26,6 +26,11 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/pivotal-cf/go-pivnet/v7 v7.0.1
 	github.com/pivotal-cf/pivnet-cli/v3 v3.0.1
+)
+
+replace github.com/pivotal-cf/go-pivnet/v7 => /Users/hyayi/work/go-pivnet
+
+require (
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
 	github.com/pivotal-cf/winfs-injector v0.0.0-20200827170301-91411420d92f
 	github.com/vmware/govmomi v0.46.0

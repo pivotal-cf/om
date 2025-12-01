@@ -30,7 +30,7 @@ type PivnetDownloader interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string) ProductDownloader {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyAuthType string, proxyKrb5Config string) ProductDownloader {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
@@ -42,10 +42,30 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		skipSSL,
 		userAgent,
 	)
+	
+	// Create base config without proxy settings
 	config := pivnet.ClientConfig{
 		Host:              pivnetHost,
 		UserAgent:         userAgent,
 		SkipSSLValidation: skipSSL,
+	}
+	
+	// Only configure proxy settings if proxy URL is provided
+	// If proxy flags are not passed, create client normally without proxy configuration
+	if proxyURL != "" {
+		config.ProxyURL = proxyURL
+		
+		// Set proxy authentication if auth type is provided
+		if proxyAuthType != "" {
+			config.ProxyAuthType = pivnet.ProxyAuthType(proxyAuthType)
+			config.ProxyUsername = proxyUsername
+			config.ProxyPassword = proxyPassword
+			
+			// Set Kerberos config file path if provided (for SPNEGO authentication)
+			if proxyKrb5Config != "" {
+				config.ProxyKrb5Config = proxyKrb5Config
+			}
+		}
 	}
 	downloader := factory(
 		tokenGenerator,
