@@ -41,12 +41,3 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: false
           DOCKER_HOST: unix:///var/run/docker.sock
           PIVNET_TOKEN: ${{ secrets.PIVNET_TOKEN }}
-
-      - name: Upload Test Logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-test-logs
-          path: |
-            /tmp/*.log
-          retention-days: 7

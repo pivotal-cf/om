@@ -14,10 +14,9 @@ import (
 
 // SPNEGOEnv holds the SPNEGO test infrastructure state.
 type SPNEGOEnv struct {
-	ProxyURL    string // URL to connect to proxy from host
-	SPNProxyURL string // URL for SPN construction
-	KRB5Path    string // Path to krb5.conf
-	TempDir     string
+	ProxyURL string // URL to connect to proxy from host (localhost:mappedPort)
+	KRB5Path string // Path to krb5.conf
+	TempDir  string
 
 	ctx        context.Context
 	network    *testcontainers.DockerNetwork
@@ -124,7 +123,8 @@ func startSPNEGOInfraInternal(logger Logger, tmpDir string) (*SPNEGOEnv, error) 
 	}
 
 	logger.Log("Creating HTTP service principal for proxy...")
-	if err := CreateServicePrincipal(ctx, kdc, "HTTP", ProxyHostname); err != nil {
+	// Use "localhost" for SPN since the test connects via localhost:mappedPort
+	if err := CreateServicePrincipal(ctx, kdc, "HTTP", "localhost"); err != nil {
 		kdc.Terminate(ctx)
 		testNetwork.Remove(ctx)
 		return nil, fmt.Errorf("failed to create service principal: %w", err)
@@ -174,7 +174,6 @@ func startSPNEGOInfraInternal(logger Logger, tmpDir string) (*SPNEGOEnv, error) 
 		return nil, fmt.Errorf("failed to write krb5.conf: %w", err)
 	}
 	env.KRB5Path = krb5Path
-	env.SPNProxyURL = fmt.Sprintf("http://%s:%s", ProxyHostname, ProxyPort)
 	logger.Logf("KRB5_CONFIG: %s", krb5Path)
 
 	return env, nil
@@ -202,11 +201,6 @@ func (e *SPNEGOEnv) PrintInstructions() {
 	fmt.Println()
 	fmt.Println("=== SPNEGO Test Infrastructure Running ===")
 	fmt.Println()
-	fmt.Println("Set environment variables:")
-	fmt.Printf("  export KRB5_CONFIG=%s\n", e.KRB5Path)
-	fmt.Printf("  export HTTP_PROXY=%s\n", e.ProxyURL)
-	fmt.Printf("  export HTTPS_PROXY=%s\n", e.ProxyURL)
-	fmt.Println()
 	fmt.Println("Run om with:")
 	fmt.Printf("  go run ./main.go download-product \\\n")
 	fmt.Printf("    --pivnet-api-token $PIVNET_TOKEN \\\n")
@@ -214,11 +208,11 @@ func (e *SPNEGOEnv) PrintInstructions() {
 	fmt.Printf("    --product-version-regex \".*\" \\\n")
 	fmt.Printf("    --file-glob \"*.tgz\" \\\n")
 	fmt.Printf("    --output-directory /tmp/downloads \\\n")
-	fmt.Printf("    --proxy-url %s \\\n", e.SPNProxyURL)
+	fmt.Printf("    --proxy-url %s \\\n", e.ProxyURL)
 	fmt.Printf("    --proxy-username %s \\\n", TestUsername)
 	fmt.Printf("    --proxy-password %s \\\n", TestPassword)
-	fmt.Printf("    --proxy-domain %s \\\n", TestRealm)
-	fmt.Printf("    --proxy-auth-type spnego\n")
+	fmt.Printf("    --proxy-auth-type spnego \\\n")
+	fmt.Printf("    --proxy-krb5-config %s\n", e.KRB5Path)
 	fmt.Println()
 	fmt.Println("Press Ctrl+C to stop...")
 }
