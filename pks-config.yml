@@ -1,0 +1,7 @@
+pivnet-api-token: 96dd70b2a7464170a610
+pivnet-file-glob: pivotal-container-service-*.pivotal
+pivnet-product-slug: pivotal-container-service
+product-version: 1.19.2
+stemcell-iaas: google
+stemcell-slug: stemcells-windows-server
+

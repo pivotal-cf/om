@@ -42,36 +42,44 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		skipSSL,
 		userAgent,
 	)
-	
-	// Create base config without proxy settings
+
+	// Create base config
 	config := pivnet.ClientConfig{
 		Host:              pivnetHost,
 		UserAgent:         userAgent,
 		SkipSSLValidation: skipSSL,
 	}
-	
-	// Only configure proxy settings if proxy URL is provided
-	// If proxy flags are not passed, create client normally without proxy configuration
+
+	// Configure proxy settings if proxy URL is provided
 	if proxyURL != "" {
-		config.ProxyURL = proxyURL
-		
+		proxyConfig := pivnet.ProxyAuthConfig{
+			ProxyURL: proxyURL,
+		}
+
 		// Set proxy authentication if auth type is provided
 		if proxyAuthType != "" {
-			config.ProxyAuthType = pivnet.ProxyAuthType(proxyAuthType)
-			config.ProxyUsername = proxyUsername
-			config.ProxyPassword = proxyPassword
-			
+			proxyConfig.AuthType = pivnet.ProxyAuthType(proxyAuthType)
+			proxyConfig.Username = proxyUsername
+			proxyConfig.Password = proxyPassword
+
 			// Set Kerberos config file path if provided (for SPNEGO authentication)
 			if proxyKrb5Config != "" {
-				config.ProxyKrb5Config = proxyKrb5Config
+				proxyConfig.Krb5Config = proxyKrb5Config
 			}
 		}
+
+		config.Proxy = proxyConfig
 	}
+
+	// Create downloader with config (includes proxy settings if configured)
 	downloader := factory(
 		tokenGenerator,
 		config,
 		logger,
 	)
+
+	// Create client with same config (includes proxy settings if configured)
+	// This client is used for metadata extraction in PivnetFileArtifact
 	client := pivnet.NewClient(
 		tokenGenerator,
 		config,
