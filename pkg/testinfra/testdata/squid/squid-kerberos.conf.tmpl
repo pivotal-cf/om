@@ -1,0 +1,38 @@
+# Squid configuration requiring Kerberos/SPNEGO authentication
+# Template variables: {{.ProxyHostname}}, {{.Realm}}
+http_port 3128
+
+# ACLs
+acl localnet src all
+acl SSL_ports port 443
+acl Safe_ports port 80
+acl Safe_ports port 443
+acl CONNECT method CONNECT
+
+# Deny unsafe ports
+http_access deny !Safe_ports
+http_access deny CONNECT !SSL_ports
+
+# Kerberos/SPNEGO authentication configuration
+# The negotiate_kerberos_auth helper validates SPNEGO tokens
+auth_param negotiate program /usr/lib/squid/negotiate_kerberos_auth -d -s HTTP/{{.ProxyHostname}}@{{.Realm}}
+auth_param negotiate children 10 startup=2 idle=2
+auth_param negotiate keep_alive on
+
+# Require authentication for all requests
+acl authenticated proxy_auth REQUIRED
+http_access allow authenticated
+
+# Deny everything else
+http_access deny all
+
+# Logging
+access_log /var/log/squid/access.log squid
+cache_log /var/log/squid/cache.log
+
+# Cache settings
+cache deny all
+coredump_dir /var/spool/squid
+
+# Performance tuning
+shutdown_lifetime 1 seconds
