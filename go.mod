@@ -28,7 +28,7 @@ require (
 	github.com/pivotal-cf/pivnet-cli/v3 v3.0.1
 )
 
-replace github.com/pivotal-cf/go-pivnet/v7 => github.com/pivotal-cf/go-pivnet/v7 v7.0.0-20251204164559-6e6bbd93ed3b
+replace github.com/pivotal-cf/go-pivnet/v7 => github.com/pivotal-cf/go-pivnet/v7 v7.0.0-20251207082402-392174c47f88
 
 require (
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
