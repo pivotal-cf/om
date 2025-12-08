@@ -16,20 +16,15 @@ import (
 )
 
 type PivnetOptions struct {
-	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true" json:"pivnet_product_slug,omitempty"`
-	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network" json:"pivnet_disable_ssl,omitempty"`
-	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet." json:"pivnet_token,omitempty"`
-	PivnetHost          string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io" json:"pivnet_host,omitempty"`
-	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." json:"file_glob,omitempty"`
-	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag." json:"product_version,omitempty"`
-	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag." json:"product_version_regex,omitempty"`
-	ProxyURL            string `long:"proxy-url"                                                description:"proxy URL for downloading products from Pivnet" json:"proxy_url,omitempty"`
-	ProxyUsername       string `long:"proxy-username"                                           description:"username for proxy authentication" json:"proxy_username,omitempty"`
-	ProxyPassword       string `long:"proxy-password"                                           description:"password for proxy authentication" json:"proxy_password,omitempty"`
-	ProxyAuthType       string `long:"proxy-auth-type"                                          description:"type of proxy authentication (basic, spnego)" json:"proxy_auth_type,omitempty"`
-	ProxyKrb5Config     string `long:"proxy-krb5-config"                                        description:"path to Kerberos config file (krb5.conf) for SPNEGO authentication" json:"proxy_krb_5_config,omitempty"`
+	PivnetProductSlug   string `long:"pivnet-product-slug"   short:"p"                          description:"path to product" required:"true"`
+	PivnetDisableSSL    bool   `long:"pivnet-disable-ssl"                                       description:"whether to disable ssl validation when contacting the Pivotal Network"`
+	PivnetToken         string `long:"pivnet-api-token"      short:"t"                          description:"API token to use when interacting with Pivnet. Can be retrieved from your profile page in Pivnet."`
+	PivnetHost          string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
+	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded."`
+	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag."`
+	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag."`
 
-	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true" json:"pivnet_file_glob_support,omitempty"`
+	PivnetFileGlobSupport string `long:"pivnet-file-glob" hidden:"true"`
 }
 
 type GCSOptions struct {
@@ -634,11 +629,6 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 			c.PivnetToken,
 			c.PivnetDisableSSL,
 			c.PivnetHost,
-			c.ProxyURL,
-			c.ProxyUsername,
-			c.ProxyPassword,
-			c.ProxyAuthType,
-			c.ProxyKrb5Config,
 		), nil
 	}
 
