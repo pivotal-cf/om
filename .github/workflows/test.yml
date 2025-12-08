@@ -31,7 +31,7 @@ jobs:
         run: |
           go install github.com/onsi/ginkgo/v2
           ginkgo -r -race -succinct -randomizeAllSpecs -randomizeSuites -keepGoing \
-              -skipPackage acceptance,vmlifecyclecommands,vmmanagers,integration \
+              -skipPackage acceptance,vmlifecyclecommands,vmmanagers \
               -covermode=atomic -coverprofile=coverage.out .
           mkdir -p ../coverage
           find . -type f -name '*.out' | xargs -I{} bash -c 'mv {} "../coverage/$(echo {} | sha1sum | head -c 40 ).out"'
