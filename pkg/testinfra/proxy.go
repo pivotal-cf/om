@@ -30,19 +30,12 @@ func StartKerberosProxy(ctx context.Context, networkName string, keytabPath stri
 	}
 	krb5File.Close()
 
-	// Generate Squid config from template - use "localhost" since test connects via localhost:mappedPort
-	squidConfig, err := GetSquidKerberosConfig("localhost", TestRealm)
-	if err != nil {
-		os.Remove(krb5File.Name())
-		return nil, fmt.Errorf("failed to generate squid config: %w", err)
-	}
-
 	squidFile, err := os.CreateTemp("", "squid-kerberos-*.conf")
 	if err != nil {
 		os.Remove(krb5File.Name())
 		return nil, fmt.Errorf("failed to create temp squid.conf: %w", err)
 	}
-	if _, err := squidFile.WriteString(squidConfig); err != nil {
+	if _, err := squidFile.WriteString(SquidKerberosConfig); err != nil {
 		squidFile.Close()
 		os.Remove(squidFile.Name())
 		os.Remove(krb5File.Name())
@@ -99,7 +92,7 @@ func StartSimpleProxy(ctx context.Context, networkName string) (testcontainers.C
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp squid.conf: %w", err)
 	}
-	if _, err := squidFile.WriteString(GetSquidSimpleConfig()); err != nil {
+	if _, err := squidFile.WriteString(SquidSimpleConfig); err != nil {
 		squidFile.Close()
 		os.Remove(squidFile.Name())
 		return nil, fmt.Errorf("failed to write squid.conf: %w", err)

@@ -1,12 +1,7 @@
 // Package testinfra provides shared test infrastructure for SPNEGO/Kerberos proxy testing.
 package testinfra
 
-import (
-	"bytes"
-	_ "embed"
-	"fmt"
-	"text/template"
-)
+import "fmt"
 
 const (
 	TestUsername  = "testuser"
@@ -19,59 +14,6 @@ const (
 	SquidImage    = "ubuntu/squid:latest"
 	ProxyPort     = "3128"
 )
-
-// Embedded config templates from testdata directory.
-// These files are easier to read and maintain than inline strings.
-var (
-	//go:embed testdata/squid/squid-kerberos.conf.tmpl
-	squidKerberosTemplate string
-
-	//go:embed testdata/squid/squid-simple.conf
-	squidSimpleConfig string
-)
-
-// SquidKerberosTemplateData holds the data for the Kerberos squid config template.
-type SquidKerberosTemplateData struct {
-	ProxyHostname string
-	Realm         string
-}
-
-// GetSquidKerberosConfig returns the Squid config with Kerberos/SPNEGO auth enabled.
-// Uses template substitution for ProxyHostname and Realm.
-func GetSquidKerberosConfig(proxyHostname, realm string) (string, error) {
-	tmpl, err := template.New("squid-kerberos").Parse(squidKerberosTemplate)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse squid kerberos template: %w", err)
-	}
-
-	data := SquidKerberosTemplateData{
-		ProxyHostname: proxyHostname,
-		Realm:         realm,
-	}
-
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute squid kerberos template: %w", err)
-	}
-
-	return buf.String(), nil
-}
-
-// GetSquidSimpleConfig returns the Squid config that allows all traffic without auth.
-func GetSquidSimpleConfig() string {
-	return squidSimpleConfig
-}
-
-// SquidKerberosConfig is kept for backward compatibility.
-// Deprecated: Use GetSquidKerberosConfig() instead for proper template substitution.
-var SquidKerberosConfig = func() string {
-	config, _ := GetSquidKerberosConfig(ProxyHostname, TestRealm)
-	return config
-}()
-
-// SquidSimpleConfig is kept for backward compatibility.
-// Use GetSquidSimpleConfig() for explicit function call.
-var SquidSimpleConfig = squidSimpleConfig
 
 // GetKRB5Config returns a krb5.conf for the client to connect to the KDC.
 func GetKRB5Config(kdcHost string, kdcPort string) string {
@@ -114,3 +56,67 @@ func GetProxyKRB5Config(kdcIP string) string {
     example.com = %s
 `, TestRealm, TestRealm, kdcIP, kdcIP, TestRealm, TestRealm)
 }
+
+// SquidKerberosConfig is the Squid config with Kerberos/SPNEGO auth enabled.
+const SquidKerberosConfig = `# Squid configuration requiring Kerberos/SPNEGO authentication
+http_port 3128
+
+# ACLs
+acl localnet src all
+acl SSL_ports port 443
+acl Safe_ports port 80
+acl Safe_ports port 443
+acl CONNECT method CONNECT
+
+# Deny unsafe ports
+http_access deny !Safe_ports
+http_access deny CONNECT !SSL_ports
+
+# Kerberos/SPNEGO authentication configuration
+# The negotiate_kerberos_auth helper validates SPNEGO tokens
+auth_param negotiate program /usr/lib/squid/negotiate_kerberos_auth -d -s HTTP/proxy.example.com@EXAMPLE.COM
+auth_param negotiate children 10 startup=2 idle=2
+auth_param negotiate keep_alive on
+
+# Require authentication for all requests
+acl authenticated proxy_auth REQUIRED
+http_access allow authenticated
+
+# Deny everything else
+http_access deny all
+
+# Logging
+access_log /var/log/squid/access.log squid
+cache_log /var/log/squid/cache.log
+
+# Cache settings
+cache deny all
+coredump_dir /var/spool/squid
+
+# Performance tuning
+shutdown_lifetime 1 seconds
+`
+
+// SquidSimpleConfig is a Squid config that allows all traffic without auth.
+const SquidSimpleConfig = `# Simple Squid configuration for testing - allows all traffic
+http_port 3128
+
+# Allow all source networks
+acl localnet src all
+acl Safe_ports port 80
+acl Safe_ports port 443
+acl CONNECT method CONNECT
+
+# Allow all traffic for testing
+http_access allow all
+
+# Logging - use proper log files instead of stdio
+access_log /var/log/squid/access.log squid
+cache_log /var/log/squid/cache.log
+
+# Minimal cache
+cache deny all
+
+# Disable coredumps
+coredump_dir /var/spool/squid
+`
