@@ -45,11 +45,7 @@ func setupSPNEGOTestEnv(t *testing.T) (*spnegoTestEnv, func()) {
 }
 
 // TestSPNEGOProxy runs full E2E SPNEGO proxy tests with PivNet download.
-// Currently skipped because PivNet uses HTTPS and go-pivnet library doesn't support
-// HTTPS connections through authenticated proxies (SPNEGO or otherwise).
 func TestSPNEGOProxy(t *testing.T) {
-	t.Skip("Skipping SPNEGO proxy tests: PivNet uses HTTPS and go-pivnet library doesn't support HTTPS through authenticated proxies")
-
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
