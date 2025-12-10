@@ -639,7 +639,7 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 			c.ProxyPassword,
 			c.ProxyAuthType,
 			c.ProxyKrb5Config,
-		), nil
+		)
 	}
 
 	return nil, errors.New("could not find a plugin")

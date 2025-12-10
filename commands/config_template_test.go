@@ -26,10 +26,10 @@ var _ = Describe("ConfigTemplate", func() {
 
 	Describe("Execute", func() {
 		BeforeEach(func() {
-			command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+			command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) (commands.MetadataProvider, error) {
 				f := &fakes.MetadataProvider{}
 				f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-				return f
+				return f, nil
 			})
 		})
 
@@ -168,7 +168,7 @@ var _ = Describe("ConfigTemplate", func() {
 
 		When("the product has a collection", func() {
 			BeforeEach(func() {
-				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) (commands.MetadataProvider, error) {
 					f := &fakes.MetadataProvider{}
 					f.MetadataBytesReturns([]byte(`---
 name: example-product
@@ -185,7 +185,7 @@ property_blueprints:
   - name: name
     type: string
 `), nil)
-					return f
+					return f, nil
 				})
 			})
 
@@ -246,10 +246,10 @@ property_blueprints:
 	Describe("flag handling", func() {
 		When("pivnet and product path args are provided", func() {
 			BeforeEach(func() {
-				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) (commands.MetadataProvider, error) {
 					f := &fakes.MetadataProvider{}
 					f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-					return f
+					return f, nil
 				})
 			})
 			It("returns an error", func() {
@@ -264,10 +264,10 @@ property_blueprints:
 
 		When("the cli args arg not provided", func() {
 			BeforeEach(func() {
-				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+				command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) (commands.MetadataProvider, error) {
 					f := &fakes.MetadataProvider{}
 					f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-					return f
+					return f, nil
 				})
 			})
 			DescribeTable("returns an error", func(required, message string) {
@@ -296,10 +296,10 @@ property_blueprints:
 		Describe("metadata extraction and parsing failures", func() {
 			When("the metadata cannot be extracted", func() {
 				BeforeEach(func() {
-					command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+					command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) (commands.MetadataProvider, error) {
 						f := &fakes.MetadataProvider{}
 						f.MetadataBytesReturns(nil, errors.New("cannot get metadata"))
-						return f
+						return f, nil
 					})
 				})
 
@@ -319,10 +319,10 @@ property_blueprints:
 			})
 			When("The returned metadata's version is an empty string", func() {
 				BeforeEach(func() {
-					command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) commands.MetadataProvider {
+					command = commands.NewConfigTemplate(func(*commands.ConfigTemplate) (commands.MetadataProvider, error) {
 						f := &fakes.MetadataProvider{}
 						f.MetadataBytesReturns([]byte(`{name: example-product, product_version: ""}`), nil)
-						return f
+						return f, nil
 					})
 				})
 				It("errors", func() {

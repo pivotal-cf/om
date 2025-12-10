@@ -24,11 +24,9 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.21.0
 	github.com/onsi/gomega v1.35.1
-	github.com/pivotal-cf/go-pivnet/v7 v7.0.1
+	github.com/pivotal-cf/go-pivnet/v7 v7.0.3-0.20251210214834-422885a2f23e
 	github.com/pivotal-cf/pivnet-cli/v3 v3.0.1
 )
-
-replace github.com/pivotal-cf/go-pivnet/v7 => github.com/pivotal-cf/go-pivnet/v7 v7.0.0-20251208182213-e4da9e9a60a8
 
 require (
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
@@ -156,8 +154,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/shirou/gopsutil/v3 v3.23.12 // indirect
+	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/testify v1.11.0 // indirect
@@ -167,7 +164,7 @@ require (
 	github.com/vito/go-interact v1.0.0 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	github.com/yusufpapurcu/wmi v1.2.3 // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0 // indirect

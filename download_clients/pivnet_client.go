@@ -15,7 +15,6 @@ import (
 
 	"github.com/pivotal-cf/go-pivnet/v7/download"
 	pivnetlog "github.com/pivotal-cf/go-pivnet/v7/logger"
-	"github.com/pivotal-cf/pivnet-cli/v3/gp"
 )
 
 //counterfeiter:generate -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
@@ -28,9 +27,9 @@ type PivnetDownloader interface {
 	AcceptEULA(productSlug string, releaseID int) error
 }
 
-type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader
+type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) (PivnetDownloader, error)
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyAuthType string, proxyKrb5Config string) ProductDownloader {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyAuthType string, proxyKrb5Config string) (ProductDownloader, error) {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
@@ -72,26 +71,33 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 	}
 
 	// Create downloader with config (includes proxy settings if configured)
-	downloader := factory(
+	downloader, err := factory(
+		tokenGenerator,
+		config,
+		logger,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Pivnet downloader: %w", err)
+	}
+
+	// Create client with same config (includes proxy settings if configured)
+	// This client is used for metadata extraction in PivnetFileArtifact
+	client, err := pivnet.NewClientWithProxy(
 		tokenGenerator,
 		config,
 		logger,
 	)
 
-	// Create client with same config (includes proxy settings if configured)
-	// This client is used for metadata extraction in PivnetFileArtifact
-	client := pivnet.NewClient(
-		tokenGenerator,
-		config,
-		logger,
-	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Pivnet client: %w", err)
+	}
 
 	return &pivnetClient{
 		filter:     filter.NewFilter(logger),
 		downloader: downloader,
 		stderr:     stderr,
 		client:     client,
-	}
+	}, nil
 }
 
 type pivnetClient struct {
@@ -296,6 +302,66 @@ func stemcellVersionPartsFromString(version string) (int, int, error) {
 	return major, minor, nil
 }
 
-func DefaultPivnetFactory(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) PivnetDownloader {
-	return gp.NewClient(ts, config, logger)
+func DefaultPivnetFactory(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) (PivnetDownloader, error) {
+	// Always use NewClientWithProxy as it handles both proxy and non-proxy cases
+	// It uses proxy authentication if AuthType is set, otherwise falls back to standard transport
+	pivnetClient, err := pivnet.NewClientWithProxy(ts, config, logger)
+	if err != nil {
+		return nil, err
+	}
+	// Wrap the pivnet.Client in a gp.Client-compatible structure
+	// We need to create a wrapper that implements PivnetDownloader interface
+	return &pivnetDownloaderWrapper{
+		client: pivnetClient,
+	}, nil
+}
+
+// pivnetDownloaderWrapper wraps a pivnet.Client to implement PivnetDownloader interface
+// This is needed when using NewClientWithProxy which returns pivnet.Client directly
+type pivnetDownloaderWrapper struct {
+	client pivnet.Client
+}
+
+func (w *pivnetDownloaderWrapper) ReleasesForProductSlug(slug string, params ...pivnet.QueryParameter) ([]pivnet.Release, error) {
+	return w.client.Releases.List(slug, params...)
+}
+
+func (w *pivnetDownloaderWrapper) ReleaseForVersion(productSlug string, releaseVersion string) (pivnet.Release, error) {
+	releases, err := w.client.Releases.List(productSlug)
+	if err != nil {
+		return pivnet.Release{}, err
+	}
+	for _, r := range releases {
+		if r.Version == releaseVersion {
+			return w.client.Releases.Get(productSlug, r.ID)
+		}
+	}
+	return pivnet.Release{}, fmt.Errorf("release not found for version: '%s'", releaseVersion)
+}
+
+func (w *pivnetDownloaderWrapper) ProductFilesForRelease(productSlug string, releaseID int) ([]pivnet.ProductFile, error) {
+	productFiles, err := w.client.ProductFiles.ListForRelease(productSlug, releaseID)
+	if err != nil {
+		return nil, err
+	}
+	fileGroups, err := w.client.FileGroups.ListForRelease(productSlug, releaseID)
+	if err != nil {
+		return nil, err
+	}
+	for _, fileGroup := range fileGroups {
+		productFiles = append(productFiles, fileGroup.ProductFiles...)
+	}
+	return productFiles, nil
+}
+
+func (w *pivnetDownloaderWrapper) DownloadProductFile(location *download.FileInfo, productSlug string, releaseID int, productFileID int, progressWriter io.Writer) error {
+	return w.client.ProductFiles.DownloadForRelease(location, productSlug, releaseID, productFileID, progressWriter)
+}
+
+func (w *pivnetDownloaderWrapper) ReleaseDependencies(productSlug string, releaseID int) ([]pivnet.ReleaseDependency, error) {
+	return w.client.ReleaseDependencies.List(productSlug, releaseID)
+}
+
+func (w *pivnetDownloaderWrapper) AcceptEULA(productSlug string, releaseID int) error {
+	return w.client.EULA.Accept(productSlug, releaseID)
 }
