@@ -27,17 +27,17 @@ type ProductMetadata struct {
 	}
 }
 
-var DefaultProductMetadataProvider = func() func(c *ProductMetadata) MetadataProvider {
-	return func(c *ProductMetadata) MetadataProvider {
+var DefaultProductMetadataProvider = func() func(c *ProductMetadata) (MetadataProvider, error) {
+	return func(c *ProductMetadata) (MetadataProvider, error) {
 		options := c.Options
 		if options.ProductPath != "" {
-			return metadata.NewFileProvider(options.ProductPath)
+			return metadata.NewFileProvider(options.ProductPath), nil
 		}
 		return metadata.NewPivnetProvider(options.PivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.PivnetProductVersion, options.FileGlob, options.PivnetDisableSSL)
 	}
 }
 
-type productMetadataBuildProvider func(*ProductMetadata) MetadataProvider
+type productMetadataBuildProvider func(*ProductMetadata) (MetadataProvider, error)
 
 func NewProductMetadata(bp productMetadataBuildProvider, stdout logger) *ProductMetadata {
 	return newProductMetadata(bp, stdout)
@@ -56,7 +56,10 @@ func (t ProductMetadata) Execute(args []string) error {
 		return err
 	}
 
-	metadataSource := t.newMetadataSource()
+	metadataSource, err := t.newMetadataSource()
+	if err != nil {
+		return fmt.Errorf("error creating metadata provider: %s", err)
+	}
 	metadataBytes, err := metadataSource.MetadataBytes()
 	if err != nil {
 		return fmt.Errorf("error getting metadata for %s at version %s: %s", t.Options.PivnetProductSlug, t.Options.PivnetProductVersion, err)
@@ -78,7 +81,7 @@ func (t ProductMetadata) Execute(args []string) error {
 	return nil
 }
 
-func (t *ProductMetadata) newMetadataSource() (metadataSource MetadataProvider) {
+func (t *ProductMetadata) newMetadataSource() (MetadataProvider, error) {
 	return t.buildProvider(t)
 }
 

@@ -6,11 +6,11 @@ import (
 	"os"
 )
 
-func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Provider {
+func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) (Provider, error) {
 	stderr := log.New(os.Stderr, "", 0)
 	stdout := log.New(os.Stdout, "", 0)
 
-	downloadClient := download_clients.NewPivnetClient(
+	downloadClient, err := download_clients.NewPivnetClient(
 		stdout,
 		stderr,
 		download_clients.DefaultPivnetFactory,
@@ -23,6 +23,9 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 		"", // proxyAuthType
 		"", // proxyKrb5Config
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return &PivnetProvider{
 		downloadClient: downloadClient,
@@ -30,7 +33,7 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) Pr
 		version:        version,
 		glob:           glob,
 		stderr:         stderr,
-	}
+	}, nil
 }
 
 type PivnetProvider struct {

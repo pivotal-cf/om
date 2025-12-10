@@ -37,18 +37,18 @@ type MetadataProvider interface {
 	MetadataBytes() ([]byte, error)
 }
 
-var DefaultConfigTemplateProvider = func() func(c *ConfigTemplate) MetadataProvider {
-	return func(c *ConfigTemplate) MetadataProvider {
+var DefaultConfigTemplateProvider = func() func(c *ConfigTemplate) (MetadataProvider, error) {
+	return func(c *ConfigTemplate) (MetadataProvider, error) {
 		options := c.Options
 		if options.ProductPath != "" {
-			return metadata.NewFileProvider(options.ProductPath)
+			return metadata.NewFileProvider(options.ProductPath), nil
 		}
 		return metadata.NewPivnetProvider(options.PivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.FileGlob, options.PivnetDisableSSL)
 	}
 }
 
 type (
-	configTemplateBuildProvider func(*ConfigTemplate) MetadataProvider
+	configTemplateBuildProvider func(*ConfigTemplate) (MetadataProvider, error)
 	envProvider                 func() []string
 )
 
@@ -82,7 +82,10 @@ func (c *ConfigTemplate) Execute(args []string) error {
 		c.Options.SizeOfCollections = 10
 	}
 
-	metadataSource := c.newMetadataSource()
+	metadataSource, err := c.newMetadataSource()
+	if err != nil {
+		return fmt.Errorf("error creating metadata provider: %s", err)
+	}
 	metadataBytes, err := metadataSource.MetadataBytes()
 	if err != nil {
 		return fmt.Errorf("error getting metadata for %s at version %s: %s", c.Options.PivnetProductSlug, c.Options.ProductVersion, err)
@@ -98,7 +101,7 @@ func (c *ConfigTemplate) Execute(args []string) error {
 	).Generate()
 }
 
-func (c *ConfigTemplate) newMetadataSource() (metadataSource MetadataProvider) {
+func (c *ConfigTemplate) newMetadataSource() (MetadataProvider, error) {
 	return c.buildProvider(c)
 }
 

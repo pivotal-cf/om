@@ -49,8 +49,9 @@ var _ = Describe("Pivnet Client", func() {
 				}),
 			)
 
-			provider := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
-			_, err := provider.MetadataBytes()
+			provider, err := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
+			Expect(err).NotTo(HaveOccurred())
+			_, err = provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("for product version 1.1.1"))
 		})
@@ -94,9 +95,10 @@ var _ = Describe("Pivnet Client", func() {
 				}),
 			)
 
-			provider := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
+			provider, err := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
+			Expect(err).NotTo(HaveOccurred())
 
-			_, err := provider.MetadataBytes()
+			_, err = provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("could not fetch the release for example-product 1.1.1: release not found for version: '1.1.1'"))
 		})

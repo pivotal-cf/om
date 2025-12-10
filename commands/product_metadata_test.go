@@ -21,10 +21,10 @@ var _ = Describe("ProductMetadata", func() {
 		BeforeEach(func() {
 			stdout = &fakes.Logger{}
 
-			command = commands.NewProductMetadata(func(*commands.ProductMetadata) commands.MetadataProvider {
+			command = commands.NewProductMetadata(func(*commands.ProductMetadata) (commands.MetadataProvider, error) {
 				f := &fakes.MetadataProvider{}
 				f.MetadataBytesReturns([]byte(`{name: example-product, product_version: "1.1.1"}`), nil)
-				return f
+				return f, nil
 			}, stdout)
 		})
 
@@ -74,10 +74,10 @@ var _ = Describe("ProductMetadata", func() {
 
 		When("the specified product file is not found", func() {
 			BeforeEach(func() {
-				command = commands.NewProductMetadata(func(*commands.ProductMetadata) commands.MetadataProvider {
+				command = commands.NewProductMetadata(func(*commands.ProductMetadata) (commands.MetadataProvider, error) {
 					f := &fakes.MetadataProvider{}
 					f.MetadataBytesReturns(nil, errors.New("open non-existent-file"))
-					return f
+					return f, nil
 				}, stdout)
 			})
 
