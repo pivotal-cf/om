@@ -60,6 +60,12 @@ Help Options:
                                  product slug (default: *.pivotal)
           --pivnet-disable-ssl   whether to disable ssl validation when
                                  contacting the Pivotal Network
+          --proxy-url=           proxy URL for downloading products from Pivnet
+          --proxy-username=      username for proxy authentication
+          --proxy-password=      password for proxy authentication
+          --proxy-auth-type=     type of proxy authentication (basic, spnego)
+          --proxy-krb5-config=   path to Kerberos config file (krb5.conf) for
+                                 SPNEGO authentication
           --product-path=        path to product file
           --output-directory=    a directory to create templates under. must
                                  already exist.

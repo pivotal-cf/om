@@ -49,7 +49,7 @@ var _ = Describe("Pivnet Client", func() {
 				}),
 			)
 
-			provider, err := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
+			provider, err := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false, "", "", "", "", "")
 			Expect(err).NotTo(HaveOccurred())
 			_, err = provider.MetadataBytes()
 			Expect(err).To(HaveOccurred())
@@ -95,7 +95,7 @@ var _ = Describe("Pivnet Client", func() {
 				}),
 			)
 
-			provider, err := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false)
+			provider, err := metadata.NewPivnetProvider(server.URL(), "some-token", "example-product", "1.1.1", "*.pivotal", false, "", "", "", "", "")
 			Expect(err).NotTo(HaveOccurred())
 
 			_, err = provider.MetadataBytes()
