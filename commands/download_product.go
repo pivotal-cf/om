@@ -23,7 +23,7 @@ type PivnetOptions struct {
 	FileGlob            string `long:"file-glob"             short:"f"  description:"glob to match files within Pivotal Network product to be downloaded." json:"file_glob,omitempty"`
 	ProductVersion      string `long:"product-version"                                          description:"version of the product-slug to download files from. Incompatible with --product-version-regex flag." json:"product_version,omitempty"`
 	ProductVersionRegex string `long:"product-version-regex" short:"r"                          description:"regex pattern matching versions of the product-slug to download files from. Highest-versioned match will be used. Incompatible with --product-version flag." json:"product_version_regex,omitempty"`
-	ProxyURL            string `long:"proxy-url"                                                description:"proxy URL for downloading products from Pivnet" json:"proxy_url,omitempty"`
+	ProxyURL            string `long:"proxy-url"                                                description:"HTTP/HTTPS proxy server URL to use when connecting to Pivnet" json:"proxy_url,omitempty"`
 	ProxyUsername       string `long:"proxy-username"                                           description:"username for proxy authentication" json:"proxy_username,omitempty"`
 	ProxyPassword       string `long:"proxy-password"                                           description:"password for proxy authentication" json:"proxy_password,omitempty"`
 	ProxyAuthType       string `long:"proxy-auth-type"                                          description:"type of proxy authentication (basic, spnego)" json:"proxy_auth_type,omitempty"`
