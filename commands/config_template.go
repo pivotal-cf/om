@@ -21,6 +21,11 @@ type ConfigTemplate struct {
 		PivnetHost        string `long:"pivnet-host" description:"the API endpoint for Pivotal Network" default:"https://network.pivotal.io"`
 		FileGlob          string `long:"file-glob" short:"f" description:"a glob to match exactly one file in the pivnet product slug"  default:"*.pivotal"`
 		PivnetDisableSSL  bool   `long:"pivnet-disable-ssl"                           description:"whether to disable ssl validation when contacting the Pivotal Network"`
+		ProxyURL          string `long:"proxy-url"                                    description:"proxy URL for downloading products from Pivnet"`
+		ProxyUsername     string `long:"proxy-username"                               description:"username for proxy authentication"`
+		ProxyPassword     string `long:"proxy-password"                               description:"password for proxy authentication"`
+		ProxyAuthType     string `long:"proxy-auth-type"                              description:"type of proxy authentication (basic, spnego)"`
+		ProxyKrb5Config   string `long:"proxy-krb5-config"                            description:"path to Kerberos config file (krb5.conf) for SPNEGO authentication"`
 
 		ProductPath string `long:"product-path" description:"path to product file"`
 
@@ -43,7 +48,7 @@ var DefaultConfigTemplateProvider = func() func(c *ConfigTemplate) (MetadataProv
 		if options.ProductPath != "" {
 			return metadata.NewFileProvider(options.ProductPath), nil
 		}
-		return metadata.NewPivnetProvider(options.PivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.FileGlob, options.PivnetDisableSSL)
+		return metadata.NewPivnetProvider(options.PivnetHost, options.PivnetApiToken, options.PivnetProductSlug, options.ProductVersion, options.FileGlob, options.PivnetDisableSSL, options.ProxyURL, options.ProxyUsername, options.ProxyPassword, options.ProxyAuthType, options.ProxyKrb5Config)
 	}
 }
 

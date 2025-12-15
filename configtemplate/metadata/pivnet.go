@@ -1,12 +1,13 @@
 package metadata
 
 import (
-	"github.com/pivotal-cf/om/download_clients"
 	"log"
 	"os"
+
+	"github.com/pivotal-cf/om/download_clients"
 )
 
-func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) (Provider, error) {
+func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool, proxyURL, proxyUsername, proxyPassword, proxyAuthType, proxyKrb5Config string) (Provider, error) {
 	stderr := log.New(os.Stderr, "", 0)
 	stdout := log.New(os.Stdout, "", 0)
 
@@ -17,11 +18,11 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool) (P
 		token,
 		skipSSL,
 		host,
-		"", // proxyURL
-		"", // proxyUsername
-		"", // proxyPassword
-		"", // proxyAuthType
-		"", // proxyKrb5Config
+		proxyURL,
+		proxyUsername,
+		proxyPassword,
+		proxyAuthType,
+		proxyKrb5Config,
 	)
 	if err != nil {
 		return nil, err
