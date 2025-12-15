@@ -96,6 +96,14 @@ Help Options:
                                        profile page in Pivnet.
           --pivnet-host=               the API endpoint for Pivotal Network
                                        (default: https://network.pivotal.io)
+          --proxy-url=                 HTTP/HTTPS proxy server URL to use when
+                                       connecting to Pivnet
+          --proxy-username=            username for proxy authentication
+          --proxy-password=            password for proxy authentication
+          --proxy-auth-type=           type of proxy authentication (basic,
+                                       spnego)
+          --proxy-krb5-config=         path to Kerberos config file (krb5.conf)
+                                       for SPNEGO authentication
       -f, --file-glob=                 glob to match files within Pivotal
                                        Network product to be downloaded.
           --product-version=           version of the product-slug to download
