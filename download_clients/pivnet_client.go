@@ -35,25 +35,11 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 		stderr,
 		false,
 	)
-	tokenGenerator := pivnet.NewAccessTokenOrLegacyToken(
-		token,
-		pivnetHost,
-		skipSSL,
-		userAgent,
-	)
 
-	// Create base config
-	config := pivnet.ClientConfig{
-		Host:              pivnetHost,
-		UserAgent:         userAgent,
-		SkipSSLValidation: skipSSL,
-	}
-
-	// Configure proxy settings if proxy URL is provided
+	// Configure proxy settings
+	proxyConfig := pivnet.ProxyAuthConfig{}
 	if proxyURL != "" {
-		proxyConfig := pivnet.ProxyAuthConfig{
-			ProxyURL: proxyURL,
-		}
+		proxyConfig.ProxyURL = proxyURL
 
 		// Set proxy authentication if auth type is provided
 		if proxyAuthType != "" {
@@ -66,8 +52,23 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 				proxyConfig.Krb5Config = proxyKrb5Config
 			}
 		}
+	}
 
-		config.ProxyAuthConfig = proxyConfig
+	// Create token generator with proxy config
+	tokenGenerator := pivnet.NewAccessTokenOrLegacyTokenWithProxy(
+		token,
+		pivnetHost,
+		skipSSL,
+		proxyConfig,
+		userAgent,
+	)
+
+	// Create base config
+	config := pivnet.ClientConfig{
+		Host:              pivnetHost,
+		UserAgent:         userAgent,
+		SkipSSLValidation: skipSSL,
+		ProxyAuthConfig:   proxyConfig,
 	}
 
 	// Create downloader with config (includes proxy settings if configured)
