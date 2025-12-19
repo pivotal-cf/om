@@ -24,9 +24,9 @@ type DiagnosticReport struct {
 }
 
 type Stemcell struct {
-	Filename string
-	OS       string
-	Version  string
+	Filename string `json:"filename"`
+	OS       string `json:"os"`
+	Version  string `json:"version"`
 }
 
 type DiagnosticReportUnavailable struct{}
