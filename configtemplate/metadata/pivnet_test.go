@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-cf/go-pivnet/v7"
+	"github.com/pivotal-cf/go-pivnet/v9"
 
 	"github.com/pivotal-cf/om/configtemplate/metadata"
 )

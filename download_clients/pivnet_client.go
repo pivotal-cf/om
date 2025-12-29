@@ -6,15 +6,15 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/pivotal-cf/go-pivnet/v7"
-	"github.com/pivotal-cf/go-pivnet/v7/logshim"
-	"github.com/pivotal-cf/pivnet-cli/v3/filter"
+	"github.com/pivotal-cf/go-pivnet/v9"
+	"github.com/pivotal-cf/go-pivnet/v9/logshim"
 
-	"github.com/pivotal-cf/go-pivnet/v7/download"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/v7/logger"
+	"github.com/pivotal-cf/go-pivnet/v9/download"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v9/logger"
 )
 
 //counterfeiter:generate -o ./fakes/pivnet_downloader_service.go --fake-name PivnetDownloader . PivnetDownloader
@@ -94,7 +94,6 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 	}
 
 	return &pivnetClient{
-		filter:     filter.NewFilter(logger),
 		downloader: downloader,
 		stderr:     stderr,
 		client:     client,
@@ -103,7 +102,6 @@ var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory Pivne
 
 type pivnetClient struct {
 	downloader PivnetDownloader
-	filter     *filter.Filter
 	stderr     *log.Logger
 	client     pivnet.Client
 }
@@ -143,7 +141,7 @@ func (p *pivnetClient) GetLatestProductFile(slug, version, glob string) (FileArt
 		return nil, fmt.Errorf("could not fetch the product files for %s %s: %s", slug, version, err)
 	}
 
-	productFiles, err = p.filter.ProductFileKeysByGlobs(productFiles, []string{glob})
+	productFiles, err = filterProductFilesByGlob(productFiles, []string{glob})
 	if err != nil {
 		return nil, fmt.Errorf("could not glob product files: %s", err)
 	}
@@ -301,6 +299,27 @@ func stemcellVersionPartsFromString(version string) (int, int, error) {
 	}
 
 	return major, minor, nil
+}
+
+// filterProductFilesByGlob filters product files by matching their AWSObjectKey against a glob pattern
+func filterProductFilesByGlob(productFiles []pivnet.ProductFile, globs []string) ([]pivnet.ProductFile, error) {
+	filtered := []pivnet.ProductFile{}
+	for _, p := range productFiles {
+		parts := strings.Split(p.AWSObjectKey, "/")
+		fileName := parts[len(parts)-1]
+
+		for _, pattern := range globs {
+			matched, err := filepath.Match(pattern, fileName)
+			if err != nil {
+				return nil, err
+			}
+
+			if matched {
+				filtered = append(filtered, p)
+			}
+		}
+	}
+	return filtered, nil
 }
 
 func DefaultPivnetFactory(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) (PivnetDownloader, error) {
