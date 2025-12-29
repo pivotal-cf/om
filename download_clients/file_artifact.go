@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pivotal-cf/go-pivnet/v7"
+	"github.com/pivotal-cf/go-pivnet/v9"
 
 	"github.com/pivotal-cf/om/extractor"
 )

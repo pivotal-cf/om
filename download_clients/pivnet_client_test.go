@@ -12,8 +12,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-cf/go-pivnet/v7"
-	pivnetlog "github.com/pivotal-cf/go-pivnet/v7/logger"
+	"github.com/pivotal-cf/go-pivnet/v9"
+	pivnetlog "github.com/pivotal-cf/go-pivnet/v9/logger"
 
 	"github.com/pivotal-cf/om/download_clients"
 	"github.com/pivotal-cf/om/download_clients/fakes"

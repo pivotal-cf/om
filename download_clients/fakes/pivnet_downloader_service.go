@@ -5,8 +5,8 @@ import (
 	"io"
 	"sync"
 
-	pivnet "github.com/pivotal-cf/go-pivnet/v7"
-	"github.com/pivotal-cf/go-pivnet/v7/download"
+	pivnet "github.com/pivotal-cf/go-pivnet/v9"
+	"github.com/pivotal-cf/go-pivnet/v9/download"
 	"github.com/pivotal-cf/om/download_clients"
 )
 
