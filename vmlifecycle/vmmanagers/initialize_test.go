@@ -44,7 +44,7 @@ var _ = Describe("select the correct vmmanager instance given the correct config
 	Context("valid aws config", func() {
 		It("returns the aws vmmanager instance", func() {
 			configContent := &vmmanagers.OpsmanConfigFilePayload{
-				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: &vmmanagers.AWSConfig{}, Azure: nil, Openstack: nil},
+				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: &vmmanagers.AWSConfig{}, Azure: nil, Openstack: nil, VCF9: nil},
 			}
 			create, err := vmmanagers.NewCreateVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
 			Expect(err).ToNot(HaveOccurred())
@@ -59,7 +59,7 @@ var _ = Describe("select the correct vmmanager instance given the correct config
 	Context("valid azure config", func() {
 		It("returns the azure vmmanager instance", func() {
 			configContent := &vmmanagers.OpsmanConfigFilePayload{
-				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: nil, Azure: &vmmanagers.AzureConfig{}, Openstack: nil},
+				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: nil, Azure: &vmmanagers.AzureConfig{}, Openstack: nil, VCF9: nil},
 			}
 			create, err := vmmanagers.NewCreateVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
 			Expect(err).ToNot(HaveOccurred())
@@ -74,7 +74,7 @@ var _ = Describe("select the correct vmmanager instance given the correct config
 	Context("valid openstack config", func() {
 		It("returns the openstack vmmanager instance", func() {
 			configContent := &vmmanagers.OpsmanConfigFilePayload{
-				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: nil, Azure: nil, Openstack: &vmmanagers.OpenstackConfig{}},
+				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: nil, Azure: nil, Openstack: &vmmanagers.OpenstackConfig{}, VCF9: nil},
 			}
 			create, err := vmmanagers.NewCreateVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
 			Expect(err).ToNot(HaveOccurred())
@@ -83,6 +83,21 @@ var _ = Describe("select the correct vmmanager instance given the correct config
 			delete, err := vmmanagers.NewDeleteVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(reflect.TypeOf(delete)).To(Equal(reflect.TypeOf(&vmmanagers.OpenstackVMManager{})))
+		})
+	})
+
+	Context("valid vcf9 config", func() {
+		It("returns the vcf9 vmmanager instance", func() {
+			configContent := &vmmanagers.OpsmanConfigFilePayload{
+				OpsmanConfig: vmmanagers.OpsmanConfig{GCP: nil, Vsphere: nil, AWS: nil, Azure: nil, Openstack: nil, VCF9: &vmmanagers.VCF9Config{}},
+			}
+			create, err := vmmanagers.NewCreateVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(reflect.TypeOf(create)).To(Equal(reflect.TypeOf(&vmmanagers.VCF9VMManager{})))
+
+			delete, err := vmmanagers.NewDeleteVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(reflect.TypeOf(delete)).To(Equal(reflect.TypeOf(&vmmanagers.VCF9VMManager{})))
 		})
 	})
 
@@ -96,8 +111,9 @@ var _ = Describe("select the correct vmmanager instance given the correct config
 						AWS       *vmmanagers.AWSConfig       `yaml:"aws,omitempty"`
 						Azure     *vmmanagers.AzureConfig     `yaml:"azure,omitempty"`
 						Openstack *vmmanagers.OpenstackConfig `yaml:"openstack,omitempty"`
+						VCF9      *vmmanagers.VCF9Config      `yaml:"vcf9,omitempty"`
 						Unknown   map[string]interface{}      `yaml:",inline"`
-					}{GCP: nil, Vsphere: nil, AWS: nil, Azure: &vmmanagers.AzureConfig{}, Openstack: &vmmanagers.OpenstackConfig{}},
+					}{GCP: nil, Vsphere: nil, AWS: nil, Azure: &vmmanagers.AzureConfig{}, Openstack: &vmmanagers.OpenstackConfig{}, VCF9: nil},
 				}
 				_, err := vmmanagers.NewCreateVMManager(configContent, "", vmmanagers.StateInfo{}, gbytes.NewBuffer(), gbytes.NewBuffer())
 				Expect(err).To(MatchError("more than one iaas matched, only one in config allowed"))

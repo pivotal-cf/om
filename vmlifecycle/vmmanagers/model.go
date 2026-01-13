@@ -2,6 +2,7 @@ package vmmanagers
 
 import (
 	"fmt"
+
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -26,6 +27,7 @@ type OpsmanConfig struct {
 	AWS       *AWSConfig             `yaml:"aws,omitempty"`
 	Azure     *AzureConfig           `yaml:"azure,omitempty"`
 	Openstack *OpenstackConfig       `yaml:"openstack,omitempty"`
+	VCF9      *VCF9Config            `yaml:"vcf9,omitempty"`
 	Unknown   map[string]interface{} `yaml:",inline"`
 }
 

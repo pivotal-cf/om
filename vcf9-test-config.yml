@@ -1,0 +1,35 @@
+# VCF9 Configuration for VM Creation
+# Using pre-uploaded VMImage (no vCenter access required)
+
+opsman-configuration:
+  vcf9:
+    # VCF CLI Authentication
+    endpoint: tpe-hamsa-auto1a.lvn.broadcom.net
+    api_token: some_token_here
+    tenant_name: org05-tnz-bosh-dev 
+    ca_certificate: /Users/ic005198/Projects/om/vcf9cert.pem
+
+    # Context Configuration
+    context_name: tpe-vcf-om
+    namespace: ns01-org05-tnz-bosh-dev-vvrzj
+    project: default-project
+
+    # VM Configuration
+    vm_name: vm-test-om-create-vm
+    vm_class: best-effort-small
+    storage_class: tpe-hamsa-cl01-vsan-storage-policy
+
+    # Network (optional)
+    network_name: ""
+
+    # SSH Configuration (optional but recommended)
+    ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIISC3IT1GGUgwnmyle6/fRa73fjngEvrR7ARDOkxES/z"
+    # Friendly image name: noble-server-cloudimg-amd64
+    image_name: vmi-8c7521b657ed146fa
+    
+    # If you have vCenter admin credentials, you can leave image_name empty
+    # and specify these fields instead:
+    # content_library: dev-lib
+    # vcenter_endpoint: https://your-vcenter.example.com
+    # vcenter_username: administrator@vsphere.local
+    # vcenter_password: YourPassword

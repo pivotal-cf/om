@@ -7,9 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pivotal-cf/om/vmlifecycle/runner"
 	"reflect"
 	"time"
+
+	"github.com/pivotal-cf/om/vmlifecycle/runner"
 )
 
 type vmManager interface {
@@ -118,6 +119,38 @@ func initializeVMManager(config *OpsmanConfigFilePayload, image string, state St
 			image,
 			state,
 			openstackCLI,
+		), nil
+	}
+
+	if config.OpsmanConfig.VCF9 != nil {
+		_, _ = outWriter.Write([]byte(fmt.Sprintln("Using VMware Cloud Foundation 9.0...")))
+		vcfCLI, err := runner.NewRunner("vcf", outWriter, errWriter)
+		if err != nil {
+			return nil, err
+		}
+		kubectlCLI, err := runner.NewRunner("kubectl", outWriter, errWriter)
+		if err != nil {
+			return nil, err
+		}
+
+		// govc is optional - only needed for OVA upload mode
+		// If not available, OVA mode will fail with a clear error message
+		govcCLI, err := runner.NewRunner("govc", outWriter, errWriter)
+		if err != nil {
+			// Don't fail initialization - let VCF9VMManager handle the error if OVA mode is used
+			_, _ = outWriter.Write([]byte("Warning: govc not found - OVA upload mode will not be available\n"))
+			govcCLI = nil
+		}
+
+		return NewVCF9VMManager(
+			config,
+			image, // image can be YAML file (image map) or OVA file (to upload)
+			state,
+			outWriter,
+			errWriter,
+			vcfCLI,
+			kubectlCLI,
+			govcCLI,
 		), nil
 	}
 

@@ -16,7 +16,7 @@ type CreateVM struct {
 	stderr      io.Writer
 	initService initCreateFunc
 	StateFile   string   `long:"state-file" description:"File to output VM identifier info" default:"state.yml"`
-	ImageFile   string   `long:"image-file" description:"VM image or yaml map of image locations depending on IaaS" required:"true"`
+	ImageFile   string   `long:"image-file" description:"VM image or yaml map of image locations depending on IaaS"`
 	Config      string   `long:"config"     description:"The YAML configuration file" required:"true"`
 	VarsFile    []string `long:"vars-file"  description:"Load variables from a YAML file for interpolation into config"`
 	VarsEnv     []string `long:"vars-env"   env:"OM_VARS_ENV"  description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
@@ -31,12 +31,13 @@ func NewCreateVMCommand(stdout, stderr io.Writer, initService initCreateFunc) Cr
 }
 
 func (c *CreateVM) Execute(args []string) error {
-	err := c.checkImageExists()
+	config, state, err := loadConfigAndState(c.Config, c.StateFile, false, c.VarsEnv, c.VarsFile)
 	if err != nil {
 		return err
 	}
 
-	config, state, err := loadConfigAndState(c.Config, c.StateFile, false, c.VarsEnv, c.VarsFile)
+	// Check if image file is required for this IaaS
+	err = c.checkImageExists(config)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,18 @@ func writeStatefile(filename string, info vmmanagers.StateInfo) error {
 	return os.WriteFile(filename, []byte(fmt.Sprintf("iaas: %s\nvm_id: %s", info.IAAS, info.ID)), 0644)
 }
 
-func (c *CreateVM) checkImageExists() (err error) {
+func (c *CreateVM) checkImageExists(config *vmmanagers.OpsmanConfigFilePayload) (err error) {
+	// For VCF9, image file is optional if image_name is specified
+	if config.OpsmanConfig.VCF9 != nil && config.OpsmanConfig.VCF9.ImageName != "" {
+		// Using pre-uploaded image by name, no image file needed
+		return nil
+	}
+
+	// For all other cases, image file is required
+	if c.ImageFile == "" {
+		return fmt.Errorf("--image-file is required (or specify image_name in config for VCF9)")
+	}
+
 	_, err = os.Stat(c.ImageFile)
 	if err != nil {
 		return fmt.Errorf("could not read image file: %s", err)
