@@ -38,7 +38,7 @@ type AWSConfig struct {
 	VMName                    string            `yaml:"vm_name"`
 	BootDiskSize              string            `yaml:"boot_disk_size"`
 	BootDiskType              string            `yaml:"boot_disk_type"`
-	Encrypted                 string            `yaml:"encrypted"`
+	Encrypted                 bool              `yaml:"encrypted"`
 	KmsKeyId                  string            `yaml:"kms_key_id"`
 	InstanceType              string            `yaml:"instance_type"`
 	Tags                      map[string]string `yaml:"tags"`
@@ -250,7 +250,7 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 	}
 
 	ebsConfig := fmt.Sprintf(`"VolumeType": "%s", "VolumeSize": %s`, config.BootDiskType, config.BootDiskSize)
-	if config.Encrypted == "true" {
+	if config.Encrypted {
 		ebsConfig += `, "Encrypted": true`
 		if config.KmsKeyId != "" {
 			ebsConfig += fmt.Sprintf(`, "KmsKeyId": "%s"`, config.KmsKeyId)
