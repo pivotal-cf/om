@@ -38,6 +38,8 @@ type AWSConfig struct {
 	VMName                    string            `yaml:"vm_name"`
 	BootDiskSize              string            `yaml:"boot_disk_size"`
 	BootDiskType              string            `yaml:"boot_disk_type"`
+	Encrypted                 bool              `yaml:"encrypted"`
+	KmsKeyId                  string            `yaml:"kms_key_id"`
 	InstanceType              string            `yaml:"instance_type"`
 	Tags                      map[string]string `yaml:"tags"`
 	AuthenticationType        string            `yaml:"authentication_type"`
@@ -245,12 +247,19 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 		),
 		"--image-id", ami,
 		"--subnet-id", config.VPCSubnetId,
-		"--block-device-mappings", fmt.Sprintf(
-			"[{\"DeviceName\": \"/dev/xvda\", \"Ebs\": {\"VolumeType\": \"%s\", \"VolumeSize\": %s}}]",
-			a.Config.OpsmanConfig.AWS.BootDiskType, a.Config.OpsmanConfig.AWS.BootDiskSize,
-		),
-		"--security-group-ids",
 	}
+
+	ebsConfig := fmt.Sprintf(`"VolumeType": "%s", "VolumeSize": %s`, config.BootDiskType, config.BootDiskSize)
+	if config.Encrypted {
+		ebsConfig += `, "Encrypted": true`
+		if config.KmsKeyId != "" {
+			ebsConfig += fmt.Sprintf(`, "KmsKeyId": "%s"`, config.KmsKeyId)
+		}
+	}
+	args = append(args, "--block-device-mappings", fmt.Sprintf(
+		`[{"DeviceName": "/dev/xvda", "Ebs": {%s}}]`, ebsConfig))
+
+	args = append(args, "--security-group-ids")
 	for _, sgID := range config.SecurityGroupIds {
 		args = append(args, sgID)
 	}

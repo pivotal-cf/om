@@ -538,6 +538,96 @@ credential_source = Ec2InstanceMetadata`)), comment)
 			})
 		})
 
+		When("enables volume encrypted options", func() {
+			It("set encrypted=true and kms_key_id params", func() {
+				command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    encrypted: true
+    kms_key_id: some-kms-key-id
+`)
+				runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+				runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+				runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+				_, _, err := command.CreateVM()
+				Expect(err).ToNot(HaveOccurred())
+
+				_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+				Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+				Expect(args).To(ContainElement(MatchRegexp("Encrypted")))
+				Expect(args).To(ContainElement(MatchRegexp("KmsKeyId")))
+			})
+
+			It("set only encrypted=true param", func() {
+				command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    encrypted: true
+`)
+				runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+				runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+				runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+				_, _, err := command.CreateVM()
+				Expect(err).ToNot(HaveOccurred())
+
+				_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+				Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+				Expect(args).To(ContainElement(MatchRegexp("Encrypted")))
+				Expect(args).ToNot(ContainElement(MatchRegexp("KmsKeyId")))
+			})
+
+			It("set encrypted=false param", func() {
+				command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    encrypted: false
+`)
+				runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+				runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+				runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+				_, _, err := command.CreateVM()
+				Expect(err).ToNot(HaveOccurred())
+
+				_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+				Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+				Expect(args).ToNot(ContainElement(MatchRegexp("Encrypted")))
+				Expect(args).ToNot(ContainElement(MatchRegexp("KmsKeyId")))
+			})
+		})
+
 		It("defaulting any missing optional params", func() {
 			command, runner := createCommand(`
 opsman-configuration:

@@ -84,11 +84,13 @@ func testPropertiesExist(vst reflect.Value, filename string) {
 		case reflect.Struct:
 			testPropertiesExist(vst.Field(i), filename)
 		case reflect.Bool:
-			if tst.Field(i).Name != "UseUnmanagedDiskDEPRECATED" && tst.Field(i).Name != "UseInstanceProfileDEPRECATED" {
+			if tst.Field(i).Name != "UseUnmanagedDiskDEPRECATED" && tst.Field(i).Name != "UseInstanceProfileDEPRECATED" && tst.Field(i).Name != "Encrypted" {
 				Expect(field.Bool()).ToNot(Equal(false), errorMsg)
 			}
 		case reflect.String:
-			Expect(field.String()).ToNot(Equal(""), errorMsg)
+			if tst.Field(i).Name != "KmsKeyId" {
+				Expect(field.String()).ToNot(Equal(""), errorMsg)
+			}
 		case reflect.Int:
 			Expect(field.Int()).ToNot(Equal(0), errorMsg)
 		case reflect.Slice:
