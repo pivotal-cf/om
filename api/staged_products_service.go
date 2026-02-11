@@ -16,6 +16,8 @@ import (
 type StageProductInput struct {
 	ProductName    string `json:"name"`
 	ProductVersion string `json:"product_version"`
+	Replicate      bool   `json:"replicate,omitempty"`
+	ReplicaSuffix string `json:"replica_suffix,omitempty"`
 }
 
 type StagedProductsOutput struct {
@@ -75,49 +77,64 @@ type ConfigurationRequest struct {
 }
 
 func (a Api) Stage(input StageProductInput, deployedGUID string) error {
-	stagedGUID, err := a.checkStagedProducts(input.ProductName)
-	if err != nil {
-		return err
-	}
-
 	var stReq *http.Request
-	if deployedGUID == "" && stagedGUID == "" {
+
+	if input.Replicate {
+		if input.ReplicaSuffix == "" {
+			return errors.New("replica_suffix is required when replicate is true")
+		}
 		stagedProductBody, err := json.Marshal(input)
 		if err != nil {
 			return err
 		}
-
 		stReq, err = http.NewRequest("POST", "/api/v0/staged/products", bytes.NewBuffer(stagedProductBody))
 		if err != nil {
 			return err
 		}
-	} else if deployedGUID != "" {
-		upgradeReq := UpgradeRequest{
-			ToVersion: input.ProductVersion,
-		}
-
-		upgradeReqBody, err := json.Marshal(upgradeReq)
+	} else {
+		stagedGUID, err := a.checkStagedProducts(input.ProductName)
 		if err != nil {
 			return err
 		}
 
-		stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", deployedGUID), bytes.NewBuffer(upgradeReqBody))
-		if err != nil {
-			return err
-		}
-	} else if stagedGUID != "" {
-		upgradeReq := UpgradeRequest{
-			ToVersion: input.ProductVersion,
-		}
+		if deployedGUID == "" && stagedGUID == "" {
+			stagedProductBody, err := json.Marshal(input)
+			if err != nil {
+				return err
+			}
 
-		upgradeReqBody, err := json.Marshal(upgradeReq)
-		if err != nil {
-			return err
-		}
+			stReq, err = http.NewRequest("POST", "/api/v0/staged/products", bytes.NewBuffer(stagedProductBody))
+			if err != nil {
+				return err
+			}
+		} else if deployedGUID != "" {
+			upgradeReq := UpgradeRequest{
+				ToVersion: input.ProductVersion,
+			}
 
-		stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), bytes.NewBuffer(upgradeReqBody))
-		if err != nil {
-			return err
+			upgradeReqBody, err := json.Marshal(upgradeReq)
+			if err != nil {
+				return err
+			}
+
+			stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", deployedGUID), bytes.NewBuffer(upgradeReqBody))
+			if err != nil {
+				return err
+			}
+		} else if stagedGUID != "" {
+			upgradeReq := UpgradeRequest{
+				ToVersion: input.ProductVersion,
+			}
+
+			upgradeReqBody, err := json.Marshal(upgradeReq)
+			if err != nil {
+				return err
+			}
+
+			stReq, err = http.NewRequest("PUT", fmt.Sprintf("/api/v0/staged/products/%s", stagedGUID), bytes.NewBuffer(upgradeReqBody))
+			if err != nil {
+				return err
+			}
 		}
 	}
 
