@@ -17,7 +17,7 @@ type StageProductInput struct {
 	ProductName    string `json:"name"`
 	ProductVersion string `json:"product_version"`
 	Replicate      bool   `json:"replicate,omitempty"`
-	ReplicaSuffix string `json:"replica_suffix,omitempty"`
+	ReplicaSuffix  string `json:"replica_suffix,omitempty"`
 }
 
 type StagedProductsOutput struct {
