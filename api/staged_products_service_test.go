@@ -163,6 +163,48 @@ var _ = Describe("StagedProducts", func() {
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
+
+		When("replicate is true and replica_suffix is set", func() {
+			It("POSTs to staged products with replicate and replica_suffix without calling GET staged products", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/staged/products"),
+						ghttp.VerifyJSON(`{
+							"name": "p-isolation-segment",
+							"product_version": "10.4.0-build.7",
+							"replicate": true,
+							"replica_suffix": "fun-suffix-2"
+						}`),
+						ghttp.RespondWith(http.StatusOK, ``),
+					),
+				)
+
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "p-isolation-segment",
+					ProductVersion: "10.4.0-build.7",
+					Replicate:      true,
+					ReplicaSuffix:  "fun-suffix-2",
+				}, "")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(client.ReceivedRequests()).To(HaveLen(1))
+				Expect(client.ReceivedRequests()[0].URL.Path).To(Equal("/api/v0/staged/products"))
+				Expect(client.ReceivedRequests()[0].Method).To(Equal("POST"))
+			})
+		})
+
+		When("replicate is true but replica_suffix is empty", func() {
+			It("returns an error without making any HTTP request", func() {
+				err := service.Stage(api.StageProductInput{
+					ProductName:    "p-isolation-segment",
+					ProductVersion: "10.4.0-build.7",
+					Replicate:      true,
+					ReplicaSuffix:  "",
+				}, "")
+				Expect(err).To(MatchError("replica_suffix is required when replicate is true"))
+				Expect(client.ReceivedRequests()).To(BeEmpty())
+			})
+		})
+
 	})
 
 	Describe("GetStagedProductJobMaxInFlight", func() {
