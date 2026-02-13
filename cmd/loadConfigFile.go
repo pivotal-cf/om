@@ -27,6 +27,7 @@ func loadConfigFile(args []string, envFunc func() []string) ([]string, error) {
 		"credentials",
 		"interpolate",
 		"nom",
+		"replicate-product",
 		"stage-product",
 		"staged-config",
 		"vm-lifecycle",
