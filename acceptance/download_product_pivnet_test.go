@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"archive/tar"
+	"compress/gzip"
+
 	"cloud.google.com/go/storage"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -228,7 +231,7 @@ var _ = Describe("download-product command", func() {
 				)
 				opsmanServer.RouteToHandler("GET", "/api/v0/diagnostic_report",
 					ghttp.RespondWith(http.StatusOK, `{
-						"stemcells": ["light-bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz"]
+						"stemcells": ["bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz"]
 					}`),
 				)
 				opsmanServer.RouteToHandler("GET", "/api/v0/info",
@@ -237,6 +240,18 @@ var _ = Describe("download-product command", func() {
 
 				tmpDir, err := os.MkdirTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
+
+				// Create the expected stemcell tarball in the output directory
+				outputStemcell := filepath.Join(tmpDir, "bosh-stemcell-621.77-google-kvm-ubuntu-xenial-go_agent.tgz")
+				manifest := `---
+operating_system: ubuntu-xenial
+version: '621.77'
+cloud_properties:
+  infrastructure: google
+`
+				err = createFakeStemcellTarballAt(outputStemcell, manifest)
+				Expect(err).ToNot(HaveOccurred())
+
 				command := exec.Command(pathToMain,
 					"-k",
 					"--target", opsmanServer.URL(),
@@ -253,6 +268,7 @@ var _ = Describe("download-product command", func() {
 					"--output-directory", tmpDir,
 					"--check-already-uploaded",
 				)
+				command.Dir = tmpDir
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(session, "10s").Should(gexec.Exit(0))
@@ -309,4 +325,28 @@ func uploadGCSFile(localFile, serviceAccountKey, bucketName, objectName string) 
 
 	err = wc.Close()
 	Expect(err).ToNot(HaveOccurred())
+}
+
+func createFakeStemcellTarballAt(path string, manifest string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	gz := gzip.NewWriter(f)
+	tarWriter := tar.NewWriter(gz)
+	hdr := &tar.Header{
+		Name: "stemcell.MF",
+		Mode: 0600,
+		Size: int64(len(manifest)),
+	}
+	if err := tarWriter.WriteHeader(hdr); err != nil {
+		return err
+	}
+	if _, err := tarWriter.Write([]byte(manifest)); err != nil {
+		return err
+	}
+	tarWriter.Close()
+	gz.Close()
+	return nil
 }
