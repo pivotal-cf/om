@@ -320,6 +320,10 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 			placementOptions = append(placementOptions, fmt.Sprintf("HostResourceGroupArn=%s", config.AWSPlacementOption.HostResourceGroupArn))
 		}
 
+		if config.AWSPlacementOption.Tenancy != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("Tenancy=%s", config.AWSPlacementOption.Tenancy))
+		}
+
 		args = append(args, "--placement", strings.Join(placementOptions, ", "))
 	}
 
