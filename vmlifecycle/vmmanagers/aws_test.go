@@ -657,6 +657,95 @@ opsman-configuration:
 			Expect(args).To(ContainElement(MatchRegexp("gp2")))
 
 		})
+
+		When("enables placement options", func() {
+			Context("tenancy options", func() {
+				It("set tenancy param to host", func() {
+					command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: host
+`)
+					runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+					runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+					Expect(args).To(ContainElement(MatchRegexp("Tenancy=host")))
+				})
+				It("set tenancy param to dedicated", func() {
+					command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: dedicated
+`)
+					runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+					runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+					Expect(args).To(ContainElement(MatchRegexp("Tenancy=dedicated")))
+				})
+				It("set tenancy param to default", func() {
+					command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: default
+`)
+					runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+					runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+					Expect(args).To(ContainElement(MatchRegexp("Tenancy=default")))
+				})
+			})
+		})
 	})
 
 	Context("delete vm", func() {
