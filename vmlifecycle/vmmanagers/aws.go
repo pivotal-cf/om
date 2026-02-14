@@ -7,12 +7,24 @@ import (
 	"io"
 	"math"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
 )
+
+type AWSPlacementOption struct {
+	AvailabilityZoneId   string `yaml:"availability_zone_id,omitempty"`
+	Affinity             string `yaml:"affinity,omitempty"`
+	GroupName            string `yaml:"group_name,omitempty"`
+	HostId               string `yaml:"host_id,omitempty"`
+	Tenancy              string `yaml:"tenancy,omitempty"`
+	HostResourceGroupArn string `yaml:"host_resource_group_arn,omitempty"`
+	GroupId              string `yaml:"group_id,omitempty"`
+	AvailabilityZone     string `yaml:"availability_zone,omitempty"`
+}
 
 type AWSCredential struct {
 	AWSInstanceProfile `yaml:",inline"`
@@ -28,6 +40,7 @@ type AWSInstanceProfile struct {
 
 type AWSConfig struct {
 	AWSCredential             `yaml:",inline"`
+	AWSPlacementOption        `yaml:"placement_options,omitempty"`
 	VPCSubnetId               string            `yaml:"vpc_subnet_id" validate:"required"`
 	SecurityGroupIdDEPRECATED string            `yaml:"security_group_id,omitempty"`
 	SecurityGroupIds          []string          `yaml:"security_group_ids"`
@@ -275,6 +288,41 @@ func (a *AWSVMManager) createVM(ami string) (string, error) {
 	if config.PrivateIP != "" {
 		args = append(args, "--private-ip-address", config.PrivateIP)
 	}
+
+	if config.AWSPlacementOption != (AWSPlacementOption{}) {
+		placementOptions := []string{}
+
+		if config.AWSPlacementOption.AvailabilityZoneId != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("AvailabilityZoneId=%s", config.AWSPlacementOption.AvailabilityZoneId))
+		}
+
+		if config.AWSPlacementOption.AvailabilityZone != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("AvailabilityZone=%s", config.AWSPlacementOption.AvailabilityZone))
+		}
+
+		if config.AWSPlacementOption.Affinity != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("Affinity=%s", config.AWSPlacementOption.Affinity))
+		}
+
+		if config.AWSPlacementOption.GroupId != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("GroupId=%s", config.AWSPlacementOption.GroupId))
+		}
+
+		if config.AWSPlacementOption.GroupName != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("GroupName=%s", config.AWSPlacementOption.GroupName))
+		}
+
+		if config.AWSPlacementOption.HostId != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("HostId=%s", config.AWSPlacementOption.HostId))
+		}
+
+		if config.AWSPlacementOption.HostResourceGroupArn != "" {
+			placementOptions = append(placementOptions, fmt.Sprintf("HostResourceGroupArn=%s", config.AWSPlacementOption.HostResourceGroupArn))
+		}
+
+		args = append(args, "--placement", strings.Join(placementOptions, ", "))
+	}
+
 	instanceID, _, err := a.ExecuteWithInstanceProfile(a.addEnvVars(), args)
 	if err != nil {
 		return "", fmt.Errorf("aws error creating the vm: %s", err)
@@ -446,6 +494,11 @@ func (a *AWSConfig) validateConfig() error {
 		return err
 	}
 
+	err = a.validatePlacementOption()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -458,6 +511,32 @@ func (a *AWSConfig) validateDeprecations() error {
 	}
 	if a.SecurityGroupIdDEPRECATED != "" && len(a.SecurityGroupIds) == 0 {
 		a.SecurityGroupIds = []string{a.SecurityGroupIdDEPRECATED}
+	}
+
+	return nil
+}
+
+func (a *AWSConfig) validatePlacementOption() error {
+	if a.AWSPlacementOption == (AWSPlacementOption{}) {
+		return nil
+	}
+
+	validTenancy := [4]string{"default", "dedicated", "host", ""}
+
+	if !slices.Contains(validTenancy[:], a.AWSPlacementOption.Tenancy) {
+		return fmt.Errorf("tenancy option '%s' is not valid. Valid options are 'default', 'dedicated', 'host', or omitted.", a.AWSPlacementOption.Tenancy)
+	}
+
+	if a.AWSPlacementOption.AvailabilityZone != "" && a.AWSPlacementOption.AvailabilityZoneId != "" {
+		return errors.New(`Cannot use "availability_zone" and "availability_zone_id" together.`)
+	}
+
+	if a.AWSPlacementOption.GroupName != "" && a.AWSPlacementOption.GroupId != "" {
+		return errors.New(`Cannot use "group_name" and "group_id" together.`)
+	}
+
+	if a.AWSPlacementOption.HostResourceGroupArn != "" && !(a.AWSPlacementOption.Tenancy == "host" || a.AWSPlacementOption.Tenancy == "") {
+		return errors.New(`Cannot use "host_resource_group_arn" with tenancy other than omitted or host.`)
 	}
 
 	return nil
