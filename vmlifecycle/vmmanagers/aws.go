@@ -539,8 +539,8 @@ func (a *AWSConfig) validatePlacementOption() error {
 		return errors.New(`Cannot use "group_name" and "group_id" together.`)
 	}
 
-	if a.AWSPlacementOption.HostResourceGroupArn != "" && !(a.AWSPlacementOption.Tenancy == "host" || a.AWSPlacementOption.Tenancy == "") {
-		return errors.New(`Cannot use "host_resource_group_arn" with tenancy other than omitted or host.`)
+	if a.AWSPlacementOption.HostResourceGroupArn != "" && (a.AWSPlacementOption.HostId != "" || a.AWSPlacementOption.Affinity != "") {
+		return errors.New(`Cannot use "host_resource_group_arn" with Host ID or Affinity.`)
 	}
 
 	return nil
