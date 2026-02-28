@@ -83,6 +83,18 @@ type StageProductService struct {
 	stageReturnsOnCall map[int]struct {
 		result1 error
 	}
+	InfoStub        func() (api.Info, error)
+	infoMutex       sync.RWMutex
+	infoArgsForCall []struct {
+	}
+	infoReturns struct {
+		result1 api.Info
+		result2 error
+	}
+	infoReturnsOnCall map[int]struct {
+		result1 api.Info
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -440,6 +452,61 @@ func (fake *StageProductService) StageReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *StageProductService) Info() (api.Info, error) {
+	fake.infoMutex.Lock()
+	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
+	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Info", []interface{}{})
+	fake.infoMutex.Unlock()
+	if fake.InfoStub != nil {
+		return fake.InfoStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.infoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StageProductService) InfoCallCount() int {
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
+	return len(fake.infoArgsForCall)
+}
+
+func (fake *StageProductService) InfoCalls(stub func() (api.Info, error)) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = stub
+}
+
+func (fake *StageProductService) InfoReturns(result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	fake.infoReturns = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StageProductService) InfoReturnsOnCall(i int, result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	if fake.infoReturnsOnCall == nil {
+		fake.infoReturnsOnCall = make(map[int]struct {
+			result1 api.Info
+			result2 error
+		})
+	}
+	fake.infoReturnsOnCall[i] = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StageProductService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -449,6 +516,8 @@ func (fake *StageProductService) Invocations() map[string][][]interface{} {
 	defer fake.getDiagnosticReportMutex.RUnlock()
 	fake.getLatestAvailableVersionMutex.RLock()
 	defer fake.getLatestAvailableVersionMutex.RUnlock()
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
 	fake.listDeployedProductsMutex.RLock()
 	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.listInstallationsMutex.RLock()

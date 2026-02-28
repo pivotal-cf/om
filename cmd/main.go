@@ -583,7 +583,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 	}
 	_, err = parser.AddCommand(
 		"replicate-product",
-		"stages a product as a replica (e.g. isolation segment)",
+		"stages a product as a replica (only for products that support replicas, requires Ops Manager 3.3 or newer)",
 		"This command stages a product as a replica in the Ops Manager with a unique replica-suffix.",
 		commands.NewReplicateProduct(api, stdout),
 	)
