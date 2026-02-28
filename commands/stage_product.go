@@ -23,10 +23,11 @@ type StageProduct struct {
 type stageProductService interface {
 	CheckProductAvailability(productName string, productVersion string) (bool, error)
 	GetDiagnosticReport() (api.DiagnosticReport, error)
+	GetLatestAvailableVersion(productName string) (string, error)
+	Info() (api.Info, error)
 	ListDeployedProducts() ([]api.DeployedProductOutput, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	Stage(api.StageProductInput, string) error
-	GetLatestAvailableVersion(productName string) (string, error)
 }
 
 func NewStageProduct(service stageProductService, logger logger) *StageProduct {

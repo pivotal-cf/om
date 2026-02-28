@@ -22,11 +22,12 @@ var _ = Describe("ReplicateProduct", func() {
 	BeforeEach(func() {
 		fakeService = &fakes.StageProductService{}
 		logger = &fakes.Logger{}
+		// replicate-product requires Ops Manager 3.3+; default to a supported version
+		fakeService.InfoReturns(api.Info{Version: "3.3.0"}, nil)
 	})
 
 	It("replicates a product with product-name, product-version, and replica-suffix", func() {
 		fakeService.CheckProductAvailabilityReturns(true, nil)
-		fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{StagedProducts: []api.DiagnosticProduct{}}, nil)
 
 		command := commands.NewReplicateProduct(fakeService, logger)
 
@@ -100,7 +101,6 @@ var _ = Describe("ReplicateProduct", func() {
 	When("a config file is provided", func() {
 		It("loads product-name, product-version, and replica-suffix from the config file", func() {
 			fakeService.CheckProductAvailabilityReturns(true, nil)
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{StagedProducts: []api.DiagnosticProduct{}}, nil)
 
 			configFile, err := os.CreateTemp("", "replicate-config.yml")
 			Expect(err).ToNot(HaveOccurred())
@@ -131,7 +131,6 @@ replica-suffix: my-suffix
 	When("the product-version is latest", func() {
 		It("uses the latest available product version", func() {
 			fakeService.CheckProductAvailabilityReturns(true, nil)
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{StagedProducts: []api.DiagnosticProduct{}}, nil)
 			fakeService.GetLatestAvailableVersionReturns("10.4.0-build.9", nil)
 
 			command := commands.NewReplicateProduct(fakeService, logger)
@@ -180,7 +179,6 @@ replica-suffix: my-suffix
 	When("the product is not available", func() {
 		BeforeEach(func() {
 			fakeService.CheckProductAvailabilityReturns(false, nil)
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{StagedProducts: []api.DiagnosticProduct{}}, nil)
 		})
 		It("returns an error", func() {
 			command := commands.NewReplicateProduct(fakeService, logger)
@@ -199,7 +197,6 @@ replica-suffix: my-suffix
 	When("the product availability cannot be determined", func() {
 		BeforeEach(func() {
 			fakeService.CheckProductAvailabilityReturns(false, errors.New("failed to check availability"))
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{StagedProducts: []api.DiagnosticProduct{}}, nil)
 		})
 		It("returns an error", func() {
 			command := commands.NewReplicateProduct(fakeService, logger)
@@ -218,7 +215,6 @@ replica-suffix: my-suffix
 	When("Staging the product returns an error", func() {
 		It("returns the error", func() {
 			fakeService.CheckProductAvailabilityReturns(true, nil)
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{StagedProducts: []api.DiagnosticProduct{}}, nil)
 			fakeService.StageReturns(errors.New("some product error"))
 
 			command := commands.NewReplicateProduct(fakeService, logger)
@@ -232,29 +228,38 @@ replica-suffix: my-suffix
 		})
 	})
 
-	When("the replica is already staged", func() {
-		It("no-ops and returns successfully", func() {
-			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
-				StagedProducts: []api.DiagnosticProduct{
-					{
-						Name:    "p-isolation-segment-fun-suffix-2",
-						Version: "10.4.0-build.7",
-					},
-				},
-			}, nil)
+	When("Ops Manager version is older than 3.3", func() {
+		It("returns an error with a clear message", func() {
+			fakeService.InfoReturns(api.Info{Version: "3.2.0"}, nil)
 
 			command := commands.NewReplicateProduct(fakeService, logger)
 
 			err := executeCommand(command, []string{
 				"--product-name", "p-isolation-segment",
 				"--product-version", "10.4.0-build.7",
-				"--replica-suffix", "fun-suffix-2",
+				"--replica-suffix", "my-suffix",
 			})
-			Expect(err).ToNot(HaveOccurred())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("replicate-product requires Ops Manager 3.3 or newer"))
+			Expect(err.Error()).To(ContainSubstring("3.2.0"))
+			Expect(fakeService.StageCallCount()).To(Equal(0))
+		})
+	})
 
-			format, v := logger.PrintfArgsForCall(0)
-			Expect(fmt.Sprintf(format, v...)).To(Equal("p-isolation-segment 10.4.0-build.7 with suffix fun-suffix-2 is already staged"))
+	When("fetching the Ops Manager version fails", func() {
+		It("returns an error and does not call Stage", func() {
+			fakeService.InfoReturns(api.Info{}, errors.New("could not make request to info endpoint"))
 
+			command := commands.NewReplicateProduct(fakeService, logger)
+
+			err := executeCommand(command, []string{
+				"--product-name", "p-isolation-segment",
+				"--product-version", "10.4.0-build.7",
+				"--replica-suffix", "my-suffix",
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Failed to get Ops Manager version"))
+			Expect(err.Error()).To(ContainSubstring("could not make request to info endpoint"))
 			Expect(fakeService.StageCallCount()).To(Equal(0))
 		})
 	})

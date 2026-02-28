@@ -21,12 +21,12 @@ var _ = Describe("replicate-product command", func() {
 		server = createTLSServer()
 		server.AppendHandlers(
 			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("GET", "/api/v0/installations"),
-				ghttp.RespondWith(http.StatusOK, `{"installations": []}`),
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{"info": {"version": "3.3.0"}}`),
 			),
 			ghttp.CombineHandlers(
-				ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
-				ghttp.RespondWith(http.StatusOK, `{}`),
+				ghttp.VerifyRequest("GET", "/api/v0/installations"),
+				ghttp.RespondWith(http.StatusOK, `{"installations": []}`),
 			),
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/api/v0/available_products"),

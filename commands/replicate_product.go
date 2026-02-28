@@ -37,22 +37,20 @@ func (rp ReplicateProduct) Execute(args []string) error {
 	productVersion := rp.Options.Version
 	replicaSuffix := rp.Options.ReplicaSuffix
 
+	info, err := rp.service.Info()
+	if err != nil {
+		return fmt.Errorf("Failed to get Ops Manager version: %s", err)
+	}
+	if ok, verErr := info.VersionAtLeast(3, 3); !ok {
+		if verErr != nil {
+			return fmt.Errorf("replicate-product requires Ops Manager 3.3 or newer: %w", verErr)
+		}
+		return fmt.Errorf("replicate-product requires Ops Manager 3.3 or newer (current version: %s)", info.Version)
+	}
+
 	err = checkRunningInstallation(rp.service.ListInstallations)
 	if err != nil {
 		return err
-	}
-
-	diagnosticReport, err := rp.service.GetDiagnosticReport()
-	if err != nil {
-		return fmt.Errorf("failed to replicate product: %s", err)
-	}
-
-	replicaType := productName + "-" + replicaSuffix
-	for _, stagedProduct := range diagnosticReport.StagedProducts {
-		if stagedProduct.Name == replicaType && stagedProduct.Version == productVersion {
-			rp.logger.Printf("%s %s with suffix %s is already staged", productName, productVersion, replicaSuffix)
-			return nil
-		}
 	}
 
 	if productVersion == "latest" {
