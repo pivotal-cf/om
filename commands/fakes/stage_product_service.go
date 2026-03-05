@@ -47,6 +47,18 @@ type StageProductService struct {
 		result1 string
 		result2 error
 	}
+	InfoStub        func() (api.Info, error)
+	infoMutex       sync.RWMutex
+	infoArgsForCall []struct {
+	}
+	infoReturns struct {
+		result1 api.Info
+		result2 error
+	}
+	infoReturnsOnCall map[int]struct {
+		result1 api.Info
+		result2 error
+	}
 	ListDeployedProductsStub        func() ([]api.DeployedProductOutput, error)
 	listDeployedProductsMutex       sync.RWMutex
 	listDeployedProductsArgsForCall []struct {
@@ -71,6 +83,18 @@ type StageProductService struct {
 		result1 []api.InstallationsServiceOutput
 		result2 error
 	}
+	ListStagedProductsStub        func() (api.StagedProductsOutput, error)
+	listStagedProductsMutex       sync.RWMutex
+	listStagedProductsArgsForCall []struct {
+	}
+	listStagedProductsReturns struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}
+	listStagedProductsReturnsOnCall map[int]struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}
 	StageStub        func(api.StageProductInput, string) error
 	stageMutex       sync.RWMutex
 	stageArgsForCall []struct {
@@ -82,18 +106,6 @@ type StageProductService struct {
 	}
 	stageReturnsOnCall map[int]struct {
 		result1 error
-	}
-	InfoStub        func() (api.Info, error)
-	infoMutex       sync.RWMutex
-	infoArgsForCall []struct {
-	}
-	infoReturns struct {
-		result1 api.Info
-		result2 error
-	}
-	infoReturnsOnCall map[int]struct {
-		result1 api.Info
-		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -281,6 +293,61 @@ func (fake *StageProductService) GetLatestAvailableVersionReturnsOnCall(i int, r
 	}{result1, result2}
 }
 
+func (fake *StageProductService) Info() (api.Info, error) {
+	fake.infoMutex.Lock()
+	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
+	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Info", []interface{}{})
+	fake.infoMutex.Unlock()
+	if fake.InfoStub != nil {
+		return fake.InfoStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.infoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StageProductService) InfoCallCount() int {
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
+	return len(fake.infoArgsForCall)
+}
+
+func (fake *StageProductService) InfoCalls(stub func() (api.Info, error)) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = stub
+}
+
+func (fake *StageProductService) InfoReturns(result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	fake.infoReturns = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StageProductService) InfoReturnsOnCall(i int, result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	if fake.infoReturnsOnCall == nil {
+		fake.infoReturnsOnCall = make(map[int]struct {
+			result1 api.Info
+			result2 error
+		})
+	}
+	fake.infoReturnsOnCall[i] = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StageProductService) ListDeployedProducts() ([]api.DeployedProductOutput, error) {
 	fake.listDeployedProductsMutex.Lock()
 	ret, specificReturn := fake.listDeployedProductsReturnsOnCall[len(fake.listDeployedProductsArgsForCall)]
@@ -391,6 +458,61 @@ func (fake *StageProductService) ListInstallationsReturnsOnCall(i int, result1 [
 	}{result1, result2}
 }
 
+func (fake *StageProductService) ListStagedProducts() (api.StagedProductsOutput, error) {
+	fake.listStagedProductsMutex.Lock()
+	ret, specificReturn := fake.listStagedProductsReturnsOnCall[len(fake.listStagedProductsArgsForCall)]
+	fake.listStagedProductsArgsForCall = append(fake.listStagedProductsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListStagedProducts", []interface{}{})
+	fake.listStagedProductsMutex.Unlock()
+	if fake.ListStagedProductsStub != nil {
+		return fake.ListStagedProductsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listStagedProductsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *StageProductService) ListStagedProductsCallCount() int {
+	fake.listStagedProductsMutex.RLock()
+	defer fake.listStagedProductsMutex.RUnlock()
+	return len(fake.listStagedProductsArgsForCall)
+}
+
+func (fake *StageProductService) ListStagedProductsCalls(stub func() (api.StagedProductsOutput, error)) {
+	fake.listStagedProductsMutex.Lock()
+	defer fake.listStagedProductsMutex.Unlock()
+	fake.ListStagedProductsStub = stub
+}
+
+func (fake *StageProductService) ListStagedProductsReturns(result1 api.StagedProductsOutput, result2 error) {
+	fake.listStagedProductsMutex.Lock()
+	defer fake.listStagedProductsMutex.Unlock()
+	fake.ListStagedProductsStub = nil
+	fake.listStagedProductsReturns = struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *StageProductService) ListStagedProductsReturnsOnCall(i int, result1 api.StagedProductsOutput, result2 error) {
+	fake.listStagedProductsMutex.Lock()
+	defer fake.listStagedProductsMutex.Unlock()
+	fake.ListStagedProductsStub = nil
+	if fake.listStagedProductsReturnsOnCall == nil {
+		fake.listStagedProductsReturnsOnCall = make(map[int]struct {
+			result1 api.StagedProductsOutput
+			result2 error
+		})
+	}
+	fake.listStagedProductsReturnsOnCall[i] = struct {
+		result1 api.StagedProductsOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *StageProductService) Stage(arg1 api.StageProductInput, arg2 string) error {
 	fake.stageMutex.Lock()
 	ret, specificReturn := fake.stageReturnsOnCall[len(fake.stageArgsForCall)]
@@ -452,61 +574,6 @@ func (fake *StageProductService) StageReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *StageProductService) Info() (api.Info, error) {
-	fake.infoMutex.Lock()
-	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
-	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Info", []interface{}{})
-	fake.infoMutex.Unlock()
-	if fake.InfoStub != nil {
-		return fake.InfoStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.infoReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *StageProductService) InfoCallCount() int {
-	fake.infoMutex.RLock()
-	defer fake.infoMutex.RUnlock()
-	return len(fake.infoArgsForCall)
-}
-
-func (fake *StageProductService) InfoCalls(stub func() (api.Info, error)) {
-	fake.infoMutex.Lock()
-	defer fake.infoMutex.Unlock()
-	fake.InfoStub = stub
-}
-
-func (fake *StageProductService) InfoReturns(result1 api.Info, result2 error) {
-	fake.infoMutex.Lock()
-	defer fake.infoMutex.Unlock()
-	fake.InfoStub = nil
-	fake.infoReturns = struct {
-		result1 api.Info
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *StageProductService) InfoReturnsOnCall(i int, result1 api.Info, result2 error) {
-	fake.infoMutex.Lock()
-	defer fake.infoMutex.Unlock()
-	fake.InfoStub = nil
-	if fake.infoReturnsOnCall == nil {
-		fake.infoReturnsOnCall = make(map[int]struct {
-			result1 api.Info
-			result2 error
-		})
-	}
-	fake.infoReturnsOnCall[i] = struct {
-		result1 api.Info
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *StageProductService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -522,6 +589,8 @@ func (fake *StageProductService) Invocations() map[string][][]interface{} {
 	defer fake.listDeployedProductsMutex.RUnlock()
 	fake.listInstallationsMutex.RLock()
 	defer fake.listInstallationsMutex.RUnlock()
+	fake.listStagedProductsMutex.RLock()
+	defer fake.listStagedProductsMutex.RUnlock()
 	fake.stageMutex.RLock()
 	defer fake.stageMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

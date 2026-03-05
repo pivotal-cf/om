@@ -262,4 +262,120 @@ properties:
 			Eventually(session.Err).Should(gbytes.Say("cannot find product bosh 2.0"))
 		})
 	})
+
+	When("--stage-all-replicas is set", func() {
+		var replicaServer *ghttp.Server
+
+		BeforeEach(func() {
+			replicaServer = createTLSServer()
+
+			stagedProductsResponse := `[{
+				"type": "p-isolation-segment",
+				"guid": "ist-primary-guid",
+				"product_template_name": "p-isolation-segment"
+			}, {
+				"type": "p-isolation-segment-replica1",
+				"guid": "ist-replica1-guid",
+				"product_template_name": "p-isolation-segment"
+			}]`
+
+			replicaServer.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/info"),
+					ghttp.RespondWith(http.StatusOK, `{"info": {"version": "3.3.0"}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/installations"),
+					ghttp.RespondWith(http.StatusOK, `{"installations": []}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/diagnostic_report"),
+					ghttp.RespondWith(http.StatusOK, `{}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+					ghttp.RespondWith(http.StatusOK, `[{"type": "bosh", "guid": "bosh-guid"}]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/available_products"),
+					ghttp.RespondWith(http.StatusOK, `[{"name": "p-isolation-segment", "product_version": "10.4.0-build.7"}]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, stagedProductsResponse),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, stagedProductsResponse),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/ist-primary-guid"),
+					ghttp.VerifyJSON(`{"to_version": "10.4.0-build.7"}`),
+					ghttp.RespondWith(http.StatusOK, ``),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, stagedProductsResponse),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v0/staged/products/ist-replica1-guid"),
+					ghttp.VerifyJSON(`{"to_version": "10.4.0-build.7"}`),
+					ghttp.RespondWith(http.StatusOK, ``),
+				),
+			)
+		})
+
+		It("stages all products matching product_template_name including the primary", func() {
+			command := exec.Command(pathToMain,
+				"--target", replicaServer.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"stage-product",
+				"--product-name", "p-isolation-segment",
+				"--product-version", "10.4.0-build.7",
+				"--stage-all-replicas",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+			Eventually(session.Out).Should(gbytes.Say("staging replica"))
+			Eventually(session.Out).Should(gbytes.Say("finished staging replicas"))
+		})
+	})
+
+	When("--stage-all-replicas is set but Ops Manager is older than 3.3", func() {
+		var oldServer *ghttp.Server
+
+		BeforeEach(func() {
+			oldServer = createTLSServer()
+			oldServer.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/info"),
+					ghttp.RespondWith(http.StatusOK, `{"info": {"version": "3.2.0"}}`),
+				),
+			)
+		})
+
+		It("returns an error", func() {
+			command := exec.Command(pathToMain,
+				"--target", oldServer.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"stage-product",
+				"--product-name", "p-isolation-segment",
+				"--product-version", "10.4.0-build.7",
+				"--stage-all-replicas",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(1))
+			Eventually(session.Err).Should(gbytes.Say("stage-product replica flags require Ops Manager 3.3 or newer"))
+		})
+	})
 })
