@@ -14,10 +14,11 @@ type LicenseMetadata struct {
 	PropertyReference string `json:"property_reference"`
 }
 type DeployedProductOutput struct {
-	Type            string
-	GUID            string
-	LicenseMetadata []LicenseMetadata `json:"license_metadata"`
-	ProductVersion  string            `json:"product_version"`
+	Type                string
+	GUID                string
+	ProductTemplateName string            `json:"product_template_name"`
+	LicenseMetadata     []LicenseMetadata `json:"license_metadata"`
+	ProductVersion      string            `json:"product_version"`
 }
 
 func (a Api) GetDeployedProductManifest(guid string) (string, error) {
