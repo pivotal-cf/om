@@ -87,13 +87,6 @@ func (sp StageProduct) Execute(args []string) error {
 		productVersion = latestVersion
 	}
 
-	for _, stagedProduct := range diagnosticReport.StagedProducts {
-		if stagedProduct.Name == productName && stagedProduct.Version == productVersion {
-			sp.logger.Printf("%s %s is already staged", productName, productVersion)
-			return nil
-		}
-	}
-
 	available, err := sp.service.CheckProductAvailability(productName, productVersion)
 	if err != nil {
 		return fmt.Errorf("failed to stage product: cannot check availability of product %s %s", productName, productVersion)
@@ -105,6 +98,13 @@ func (sp StageProduct) Execute(args []string) error {
 
 	if replicaFlagsUsed {
 		return sp.stageReplicas(productName, productVersion)
+	}
+
+	for _, stagedProduct := range diagnosticReport.StagedProducts {
+		if stagedProduct.Name == productName && stagedProduct.Version == productVersion {
+			sp.logger.Printf("%s %s is already staged", productName, productVersion)
+			return nil
+		}
 	}
 
 	sp.logger.Printf("staging %s %s", productName, productVersion)

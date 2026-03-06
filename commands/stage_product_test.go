@@ -475,6 +475,27 @@ var _ = Describe("StageProduct", func() {
 			Expect([]string{guid0, guid1}).To(ConsistOf("ist-primary-guid", "ist-replica1-guid"))
 		})
 
+		It("still stages requested replicas when the main tile is already at the requested version", func() {
+			fakeService.GetDiagnosticReportReturns(api.DiagnosticReport{
+				StagedProducts: []api.DiagnosticProduct{
+					{Name: "p-isolation-segment", Version: "10.4.0-build.14"},
+				},
+			}, nil)
+
+			command := commands.NewStageProduct(fakeService, logger)
+
+			err := executeCommand(command, []string{
+				"--product-name", "p-isolation-segment",
+				"--product-version", "10.4.0-build.14",
+				"--stage-replicas", "p-isolation-segment-replica1",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.StageCallCount()).To(Equal(1))
+			_, guid := fakeService.StageArgsForCall(0)
+			Expect(guid).To(Equal("ist-replica1-guid"))
+		})
+
 		When("a requested replica name is not found", func() {
 			It("returns an error", func() {
 				command := commands.NewStageProduct(fakeService, logger)
