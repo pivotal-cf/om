@@ -383,6 +383,37 @@ var _ = Describe("StageProduct", func() {
 				Expect(err.Error()).To(ContainSubstring("failed to stage replica"))
 			})
 		})
+
+		When("a replica is already at the requested version", func() {
+			It("logs a friendly message and skips staging that replica", func() {
+				fakeService.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "ist-primary-guid", Type: "p-isolation-segment", ProductTemplateName: "p-isolation-segment", ProductVersion: "10.4.0-build.6"},
+						{GUID: "ist-replica1-guid", Type: "p-isolation-segment-replica1", ProductTemplateName: "p-isolation-segment", ProductVersion: "10.4.0-build.7"},
+						{GUID: "ist-replica2-guid", Type: "p-isolation-segment-replica2", ProductTemplateName: "p-isolation-segment", ProductVersion: "10.4.0-build.6"},
+					},
+				}, nil)
+
+				command := commands.NewStageProduct(fakeService, logger)
+
+				err := executeCommand(command, []string{
+					"--product-name", "p-isolation-segment",
+					"--product-version", "10.4.0-build.7",
+					"--stage-all-replicas",
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(fakeService.StageCallCount()).To(Equal(2))
+
+				var logMessages []string
+				for i := 0; i < logger.PrintfCallCount(); i++ {
+					format, v := logger.PrintfArgsForCall(i)
+					logMessages = append(logMessages, fmt.Sprintf(format, v...))
+				}
+				Expect(logMessages).To(ContainElement("p-isolation-segment-replica1 10.4.0-build.7 is already staged"))
+				Expect(logMessages).To(ContainElement("finished staging replicas"))
+			})
+		})
 	})
 
 	When("--stage-replicas is set", func() {
@@ -425,6 +456,23 @@ var _ = Describe("StageProduct", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fakeService.StageCallCount()).To(Equal(2))
+		})
+
+		It("stages the main tile when it is included in --stage-replicas", func() {
+			command := commands.NewStageProduct(fakeService, logger)
+
+			err := executeCommand(command, []string{
+				"--product-name", "p-isolation-segment",
+				"--product-version", "10.4.0-build.14",
+				"--stage-replicas", "p-isolation-segment,p-isolation-segment-replica1",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fakeService.StageCallCount()).To(Equal(2))
+
+			_, guid0 := fakeService.StageArgsForCall(0)
+			_, guid1 := fakeService.StageArgsForCall(1)
+			Expect([]string{guid0, guid1}).To(ConsistOf("ist-primary-guid", "ist-replica1-guid"))
 		})
 
 		When("a requested replica name is not found", func() {

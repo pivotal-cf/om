@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -123,55 +124,62 @@ func (sp StageProduct) Execute(args []string) error {
 
 func (sp StageProduct) stageReplicas(productName, productVersion string) error {
 	type replicaInfo struct {
-		Type string
-		GUID string
+		Type    string
+		GUID    string
+		Version string
 	}
 
-	var replicas []replicaInfo
+	var existingReplicas []replicaInfo
 
 	stagedProducts, err := sp.service.ListStagedProducts()
 	if err != nil {
 		return fmt.Errorf("failed to list staged products: %s", err)
 	}
-	includeAll := sp.Options.StageAllReplicas
 
 	for _, p := range stagedProducts.Products {
 		templateName := p.ProductTemplateName
 		if templateName == "" {
 			templateName = p.Type
 		}
-		if templateName == productName && (includeAll || p.Type != productName) {
-			replicas = append(replicas, replicaInfo{Type: p.Type, GUID: p.GUID})
+		if templateName == productName {
+			existingReplicas = append(existingReplicas, replicaInfo{Type: p.Type, GUID: p.GUID, Version: p.ProductVersion})
 		}
 	}
 
-	if sp.Options.StageReplicas != "" {
+	var replicasToStage []replicaInfo
+	if sp.Options.StageAllReplicas {
+		replicasToStage = existingReplicas
+	} else {
 		requestedNames := strings.Split(sp.Options.StageReplicas, ",")
-		requestedSet := make(map[string]bool)
+		for i, name := range requestedNames {
+			requestedNames[i] = strings.TrimSpace(name)
+		}
+
+		foundNames := make(map[string]bool)
+		for _, r := range existingReplicas {
+			if slices.Contains(requestedNames, r.Type) {
+				replicasToStage = append(replicasToStage, r)
+				foundNames[r.Type] = true
+			}
+		}
+
+		var notFoundReplicas []string
 		for _, name := range requestedNames {
-			requestedSet[strings.TrimSpace(name)] = true
-		}
-
-		var filtered []replicaInfo
-		for _, r := range replicas {
-			if requestedSet[r.Type] {
-				filtered = append(filtered, r)
-				delete(requestedSet, r.Type)
+			if !foundNames[name] {
+				notFoundReplicas = append(notFoundReplicas, name)
 			}
 		}
-
-		if len(requestedSet) > 0 {
-			var missing []string
-			for name := range requestedSet {
-				missing = append(missing, name)
-			}
-			return fmt.Errorf("failed to stage replicas: could not find replicas with type(s): %s", strings.Join(missing, ", "))
+		if len(notFoundReplicas) > 0 {
+			return fmt.Errorf("failed to stage replicas: could not find replicas with type(s): %s", strings.Join(notFoundReplicas, ", "))
 		}
-
-		replicas = filtered
 	}
 
-	for _, replica := range replicas {
+	for _, replica := range replicasToStage {
+		if replica.Version == productVersion {
+			sp.logger.Printf("%s %s is already staged", replica.Type, productVersion)
+			continue
+		}
+
 		sp.logger.Printf("staging replica %s %s", replica.Type, productVersion)
 		err := sp.service.Stage(api.StageProductInput{
 			ProductName:    productName,
@@ -182,9 +190,7 @@ func (sp StageProduct) stageReplicas(productName, productVersion string) error {
 		}
 	}
 
-	if len(replicas) > 0 {
-		sp.logger.Printf("finished staging replicas")
-	}
+	sp.logger.Printf("finished staging replicas")
 
 	return nil
 }
