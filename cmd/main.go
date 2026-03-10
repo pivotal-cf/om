@@ -414,7 +414,7 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"download-product",
 		"downloads a specified product file from Pivotal Network",
 		"This command attempts to download a single product file from Pivotal Network. The API token used must be associated with a user account that has already accepted the EULA for the specified product",
-		commands.NewDownloadProduct(os.Environ, stdout, stderr, os.Stderr, api),
+		commands.NewDownloadProduct(stdout, stderr, global.Trace, api),
 	)
 	if err != nil {
 		return err
