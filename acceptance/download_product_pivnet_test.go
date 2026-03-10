@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -116,7 +115,7 @@ var _ = Describe("download-product command", func() {
 				}`),
 			)
 
-			stemcellContents := `stemcell contents that should do nothing`
+			stemcellContents := MinimalStemcellTgz()
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases",
 				ghttp.RespondWith(http.StatusOK, `{
 					  "releases": [
@@ -179,12 +178,12 @@ var _ = Describe("download-product command", func() {
 			)
 			server.RouteToHandler("HEAD", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
 				func(w http.ResponseWriter, r *http.Request) {
-					http.ServeContent(w, r, "download", modTime, strings.NewReader(stemcellContents))
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(stemcellContents))
 				},
 			)
 			server.RouteToHandler("GET", "/api/v2/products/xenial-stemcells/releases/24/product_files/1/download",
 				func(w http.ResponseWriter, r *http.Request) {
-					http.ServeContent(w, r, "download", modTime, strings.NewReader(stemcellContents))
+					http.ServeContent(w, r, "download", modTime, bytes.NewReader(stemcellContents))
 				},
 			)
 		})

@@ -303,7 +303,56 @@ cloud_properties:
 						Expect(err).NotTo(HaveOccurred())
 						Expect(found).To(BeTrue())
 					})
+
+					It("falls back to filename matching when manifest extraction fails (e.g. file is not a valid .tgz)", func() {
+						// File is not a valid stemcell .tgz (no stemcell.MF), so manifest extraction fails.
+						// Should fall back to filename match; report has this filename in available_stemcells.
+						invalidPath := filepath.Join(os.TempDir(), "light-bosh-stemcell-621.80-google-kvm-ubuntu-xenial-go_agent.tgz")
+						Expect(os.WriteFile(invalidPath, []byte("not a tgz"), 0600)).To(Succeed())
+						defer os.Remove(invalidPath)
+
+						server.AppendHandlers(
+							ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+						)
+
+						found, err := service.CheckStemcellAvailability(invalidPath)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(found).To(BeTrue())
+					})
 				})
+			})
+		})
+
+		When("the diagnostic report has different infrastructure than stemcell manifest", func() {
+			It("returns false when same OS and version but different infrastructure", func() {
+				// Report says google-kvm; stemcell manifest says vsphere-esxi -> no match.
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `{"stemcells": [], "infrastructure_type": "google-kvm", "available_stemcells": [{"filename": "bosh-google-kvm-ubuntu-jammy-1.1016.tgz", "os": "ubuntu-jammy", "version": "1.1016"}]}`),
+					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				)
+
+				manifestContent := `name: bosh-vsphere-esxi-ubuntu-jammy
+version: "1.1016"
+operating_system: ubuntu-jammy
+cloud_properties:
+  infrastructure: vsphere-esxi
+`
+				var buf bytes.Buffer
+				gw := gzip.NewWriter(&buf)
+				tw := tar.NewWriter(gw)
+				Expect(tw.WriteHeader(&tar.Header{Name: "stemcell.MF", Size: int64(len(manifestContent))})).To(Succeed())
+				_, err := tw.Write([]byte(manifestContent))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(tw.Close()).To(Succeed())
+				Expect(gw.Close()).To(Succeed())
+
+				stemcellPath := filepath.Join(os.TempDir(), "bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-go_agent.tgz")
+				Expect(os.WriteFile(stemcellPath, buf.Bytes(), 0600)).To(Succeed())
+				defer os.Remove(stemcellPath)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
 			})
 		})
 
