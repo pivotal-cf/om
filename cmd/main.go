@@ -528,6 +528,15 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		return err
 	}
 	_, err = parser.AddCommand(
+		"kubernetes-distributions",
+		"lists kubernetes distributions known to Ops Manager",
+		"This command lists all kubernetes distributions in Ops Manager, showing which products have them staged or deployed",
+		commands.NewKubernetesDistributions(api, os.Stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
 		"pending-changes",
 		"checks for pending changes",
 		"This authenticated command lists all products and will display whether they are unchanged (no pending changes) or changed (has pending changes).",
