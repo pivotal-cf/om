@@ -168,6 +168,15 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		return err
 	}
 	_, err = parser.AddCommand(
+		"assign-kubernetes-distribution",
+		"assigns a kubernetes distribution to a product in the targeted Ops Manager",
+		"This command will assign a kubernetes distribution to a specific kubernetes product in Ops Manager",
+		commands.NewAssignKubernetesDistribution(api, stdout),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
 		"available-products",
 		"**DEPRECATED** lists available products. Use 'products --available' instead.",
 		"**DEPRECATED** This authenticated command lists all available products. Use 'products --available' instead.",
@@ -514,6 +523,15 @@ func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationStri
 		"interpolates variables into a manifest",
 		"interpolates variables into a manifest",
 		commands.NewInterpolate(os.Environ, stdout, os.Stdin),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = parser.AddCommand(
+		"kubernetes-distributions",
+		"lists kubernetes distributions known to Ops Manager",
+		"This command lists all kubernetes distributions in Ops Manager, showing which products have them staged or deployed",
+		commands.NewKubernetesDistributions(api, os.Stdout),
 	)
 	if err != nil {
 		return err
