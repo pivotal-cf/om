@@ -104,6 +104,7 @@ properties-configuration:
     some-iaas-assignment: iaas
   director_configuration:
     some-director-assignment: director
+    product_deploy_parallelism: 3
 vmtypes-configuration:
   custom_only: true
   vm_types:
@@ -135,7 +136,7 @@ vmtypes-configuration:
 			Expect(service.UpdateStagedDirectorPropertiesCallCount()).To(Equal(1))
 			Expect(string(service.UpdateStagedDirectorPropertiesArgsForCall(0))).To(MatchJSON(
 				`{
-					"director_configuration":{"some-director-assignment":"director"},
+					"director_configuration":{"some-director-assignment":"director","product_deploy_parallelism":3},
 					"iaas_configuration":{"some-iaas-assignment":"iaas"},
 					"security_configuration":{"some-security-assignment":"security"},
 					"syslog_configuration":{"some-syslog-assignment":"syslog"},

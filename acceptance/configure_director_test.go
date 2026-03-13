@@ -124,7 +124,8 @@ var _ = Describe("configure-director command", func() {
 						"ntp_servers_string": "us.example.org, time.something.com",
 						"resurrector_enabled": false,
 						"director_hostname": "foo.example.com",
-						"max_threads": 5
+						"max_threads": 5,
+						"product_deploy_parallelism": 3
 					},
 					"security_configuration": {
 						"trusted_certificates": "some-certificate",
@@ -261,6 +262,7 @@ properties-configuration:
     resurrector_enabled: false
     director_hostname: foo.example.com
     max_threads: 5
+    product_deploy_parallelism: 3
 iaas-configurations:
 - name: some-iaas 
   project: some-project
