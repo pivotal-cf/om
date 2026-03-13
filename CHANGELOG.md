@@ -51,6 +51,12 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
 
 ### Features
 
+- Add `deploy-in-parallel` support to `configure-product` and `staged-config`.
+  This Ops Manager 3.3+ setting allows configuring whether a staged product should deploy in parallel
+  with other products during Apply Changes. Set `deploy-in-parallel: true` in the product config YAML.
+  The `staged-config` command now outputs the current `deploy-in-parallel` setting when present.
+  Uses the new `PUT /api/v1/staged/products/{product_guid}` endpoint.
+
 - Add documentation and test coverage for `product_deploy_parallelism` in `configure-director` and `staged-director-config`.
   This Ops Manager 3.3+ property controls the maximum number of product deployment tasks that run in parallel during Apply Changes.
   Set it under `properties-configuration.director_configuration.product_deploy_parallelism` in the director config YAML.

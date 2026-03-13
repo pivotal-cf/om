@@ -4,6 +4,7 @@ import "github.com/pivotal-cf/om/api"
 
 type ProductConfiguration struct {
 	ProductName              string                    `yaml:"product-name,omitempty"`
+	DeployInParallel         *bool                     `yaml:"deploy-in-parallel,omitempty"`
 	ProductProperties        map[string]interface{}    `yaml:"product-properties,omitempty"`
 	NetworkProperties        map[string]interface{}    `yaml:"network-properties,omitempty"`
 	ResourceConfigProperties map[string]ResourceConfig `yaml:"resource-config,omitempty"`

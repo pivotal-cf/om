@@ -419,6 +419,126 @@ syslog-properties:
 		})
 	})
 
+	When("the product has deploy-in-parallel set", func() {
+		BeforeEach(func() {
+			internalSelector = api.ResponseProperty{
+				Value:        "internal",
+				Type:         "selector",
+				Configurable: true,
+			}
+			fakeService = setFakeService(internalSelector, true)
+			deployTrue := true
+			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
+				Product: api.StagedProduct{
+					GUID:             "some-product-guid",
+					DeployInParallel: &deployTrue,
+				},
+			}, nil)
+		})
+
+		It("includes deploy-in-parallel in the output", func() {
+			command := commands.NewStagedConfig(fakeService, logger)
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`---
+product-name: some-product
+deploy-in-parallel: true
+product-properties:
+  .properties.collection:
+    value:
+    - name: Certificate
+  .properties.some-string-property:
+    value: some-value
+  .properties.some-selector:
+    value: internal
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+resource-config:
+  some-job:
+    additional_vm_extensions: ["some-vm-extension"]
+    instances: 1
+    instance_type:
+      id: automatic
+    max_in_flight: 2
+errand-config:
+  first-errand:
+    post-deploy-state: true
+    pre-delete-state: do-something
+  second-errand:
+    post-deploy-state: false
+syslog-properties:
+  enabled: true
+  host: tcp://1.1.1.1
+`)))
+		})
+	})
+
+	When("the product has deploy-in-parallel set to false", func() {
+		BeforeEach(func() {
+			internalSelector = api.ResponseProperty{
+				Value:        "internal",
+				Type:         "selector",
+				Configurable: true,
+			}
+			fakeService = setFakeService(internalSelector, true)
+			deployFalse := false
+			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
+				Product: api.StagedProduct{
+					GUID:             "some-product-guid",
+					DeployInParallel: &deployFalse,
+				},
+			}, nil)
+		})
+
+		It("includes deploy-in-parallel: false in the output", func() {
+			command := commands.NewStagedConfig(fakeService, logger)
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).To(ContainElement(MatchYAML(`---
+product-name: some-product
+deploy-in-parallel: false
+product-properties:
+  .properties.collection:
+    value:
+    - name: Certificate
+  .properties.some-string-property:
+    value: some-value
+  .properties.some-selector:
+    value: internal
+network-properties:
+  singleton_availability_zone:
+    name: az-one
+resource-config:
+  some-job:
+    additional_vm_extensions: ["some-vm-extension"]
+    instances: 1
+    instance_type:
+      id: automatic
+    max_in_flight: 2
+errand-config:
+  first-errand:
+    post-deploy-state: true
+    pre-delete-state: do-something
+  second-errand:
+    post-deploy-state: false
+syslog-properties:
+  enabled: true
+  host: tcp://1.1.1.1
+`)))
+		})
+	})
+
 	When("an arbitrarily long non-selector property path is present", func() {
 		It("preserves that path", func() {
 			fakeService := &fakes.StagedConfigService{}

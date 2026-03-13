@@ -184,3 +184,25 @@ Note: If the tile does not support OpsManager's consistent syslog feature, you m
 ```json
 {"errors":{"syslog_configuration":["This product does not support the Ops Manager consistent syslog configuration feature. If the product supports custom syslog configuration, those properties can be set via the /api/v0/staged/products/:product_guid/properties endpoint.\n"]}}
 ```
+
+#### Configuring `deploy-in-parallel` for parallel deployment (Ops Manager 3.3+)
+
+Ops Manager 3.3 introduced the ability to deploy products in parallel during an Apply Changes operation.
+Products that support parallel deployment can be configured with the `deploy-in-parallel` top-level key:
+
+```yaml
+product-name: some-product
+deploy-in-parallel: true
+```
+
+Set `deploy-in-parallel: false` to disable parallel deployment for a product that was previously configured for it.
+
+This setting is only valid for products that have `supports_parallel_deploys: true` in their tile metadata.
+The BOSH Director product does not support parallel deployment.
+
+If a product does not support parallel deployment, you will see this error:
+```json
+{"errors": {"deploy_in_parallel": ["This product does not support deploying in parallel"]}}
+```
+
+The `om staged-config` command will output the current `deploy-in-parallel` setting for products that have it configured.
