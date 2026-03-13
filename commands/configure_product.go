@@ -33,10 +33,12 @@ type ConfigureProduct struct {
 //counterfeiter:generate -o ./fakes/configure_product_service.go --fake-name ConfigureProductService . configureProductService
 type configureProductService interface {
 	ConfigureJobResourceConfig(productGUID string, config map[string]interface{}) error
+	Info() (api.Info, error)
 	ListInstallations() ([]api.InstallationsServiceOutput, error)
 	ListStagedPendingChanges() (api.PendingChangesOutput, error)
 	ListStagedProductJobs(productGUID string) (map[string]string, error)
 	ListStagedProducts() (api.StagedProductsOutput, error)
+	UpdateStagedProductDeployInParallel(api.UpdateStagedProductDeployInParallelInput) error
 	UpdateStagedProductErrands(productID, errandName string, postDeployState, preDeleteState interface{}) error
 	UpdateStagedProductNetworksAndAZs(api.UpdateStagedProductNetworksAndAZsInput) error
 	UpdateStagedProductProperties(api.UpdateStagedProductPropertiesInput) error
@@ -110,6 +112,11 @@ func (cp ConfigureProduct) Execute(args []string) error {
 	}
 
 	err = cp.configureErrands(cfg, productGUID)
+	if err != nil {
+		return err
+	}
+
+	err = cp.configureDeployInParallel(cfg, productGUID)
 	if err != nil {
 		return err
 	}
@@ -308,6 +315,36 @@ func (cp *ConfigureProduct) configureErrands(cfg configureProduct, productGUID s
 			return fmt.Errorf("failed to set errand state for errand %s: %s", name, err)
 		}
 	}
+
+	return nil
+}
+
+func (cp *ConfigureProduct) configureDeployInParallel(cfg configureProduct, productGUID string) error {
+	if cfg.DeployInParallel == nil {
+		cp.logger.Println("deploy-in-parallel is not provided, nothing to do here")
+		return nil
+	}
+
+	info, err := cp.service.Info()
+	if err != nil {
+		return fmt.Errorf("could not retrieve Ops Manager version: %s", err)
+	}
+	if ok, verErr := info.VersionAtLeast(3, 3); !ok {
+		if verErr != nil {
+			return fmt.Errorf("deploy-in-parallel requires Ops Manager 3.3 or newer: %w", verErr)
+		}
+		return fmt.Errorf("deploy-in-parallel requires Ops Manager 3.3 or newer (current: %s)", info.Version)
+	}
+
+	cp.logger.Printf("setting deploy-in-parallel to %t", *cfg.DeployInParallel)
+	err = cp.service.UpdateStagedProductDeployInParallel(api.UpdateStagedProductDeployInParallelInput{
+		GUID:             productGUID,
+		DeployInParallel: *cfg.DeployInParallel,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to configure deploy-in-parallel: %s", err)
+	}
+	cp.logger.Printf("finished setting deploy-in-parallel")
 
 	return nil
 }

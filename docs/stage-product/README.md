@@ -13,44 +13,51 @@ Usage:
 This command attempts to stage a product in the Ops Manager
 
 Application Options:
-      --ca-cert=               OpsManager CA certificate path or value
-                               [$OM_CA_CERT]
-  -c, --client-id=             Client ID for the Ops Manager VM (not required
-                               for unauthenticated commands) [$OM_CLIENT_ID]
-  -s, --client-secret=         Client Secret for the Ops Manager VM (not
-                               required for unauthenticated commands)
-                               [$OM_CLIENT_SECRET]
-  -o, --connect-timeout=       timeout in seconds to make TCP connections
-                               (default: 10) [$OM_CONNECT_TIMEOUT]
-  -d, --decryption-passphrase= Passphrase to decrypt the installation if the
-                               Ops Manager VM has been rebooted (optional for
-                               most commands) [$OM_DECRYPTION_PASSPHRASE]
-  -e, --env=                   env file with login credentials
-  -p, --password=              admin password for the Ops Manager VM (not
-                               required for unauthenticated commands)
-                               [$OM_PASSWORD]
-  -r, --request-timeout=       timeout in seconds for HTTP requests to Ops
-                               Manager (default: 1800) [$OM_REQUEST_TIMEOUT]
-  -k, --skip-ssl-validation    skip ssl certificate validation during http
-                               requests [$OM_SKIP_SSL_VALIDATION]
-  -t, --target=                location of the Ops Manager VM [$OM_TARGET]
-      --trace                  prints HTTP requests and response payloads
-                               [$OM_TRACE]
-  -u, --username=              admin username for the Ops Manager VM (not
-                               required for unauthenticated commands)
-                               [$OM_USERNAME]
-      --vars-env=              load vars from environment variables by
-                               specifying a prefix (e.g.: 'MY' to load
-                               MY_var=value) [$OM_VARS_ENV]
-  -v, --version                prints the om release version
+      --ca-cert=                OpsManager CA certificate path or value
+                                [$OM_CA_CERT]
+  -c, --client-id=              Client ID for the Ops Manager VM (not required
+                                for unauthenticated commands) [$OM_CLIENT_ID]
+  -s, --client-secret=          Client Secret for the Ops Manager VM (not
+                                required for unauthenticated commands)
+                                [$OM_CLIENT_SECRET]
+  -o, --connect-timeout=        timeout in seconds to make TCP connections
+                                (default: 10) [$OM_CONNECT_TIMEOUT]
+  -d, --decryption-passphrase=  Passphrase to decrypt the installation if the
+                                Ops Manager VM has been rebooted (optional for
+                                most commands) [$OM_DECRYPTION_PASSPHRASE]
+  -e, --env=                    env file with login credentials
+  -p, --password=               admin password for the Ops Manager VM (not
+                                required for unauthenticated commands)
+                                [$OM_PASSWORD]
+  -r, --request-timeout=        timeout in seconds for HTTP requests to Ops
+                                Manager (default: 1800) [$OM_REQUEST_TIMEOUT]
+  -k, --skip-ssl-validation     skip ssl certificate validation during http
+                                requests [$OM_SKIP_SSL_VALIDATION]
+  -t, --target=                 location of the Ops Manager VM [$OM_TARGET]
+      --uaa-target=             optional location of the Ops Manager UAA
+                                [$OM_UAA_TARGET]
+      --trace                   prints HTTP requests and response payloads
+                                [$OM_TRACE]
+  -u, --username=               admin username for the Ops Manager VM (not
+                                required for unauthenticated commands)
+                                [$OM_USERNAME]
+      --vars-env=               load vars from environment variables by
+                                specifying a prefix (e.g.: 'MY' to load
+                                MY_var=value) [$OM_VARS_ENV]
+  -v, --version                 prints the om release version
 
 Help Options:
-  -h, --help                   Show this help message
+  -h, --help                    Show this help message
 
 [stage-product command options]
-          --config=            the config file to load product name and version
-                               (can be same as the product configuration file)
-      -p, --product-name=      name of product
-          --product-version=   version of product
+          --config=             the config file to load product name and
+                                version (can be same as the product
+                                configuration file)
+      -p, --product-name=       name of product
+          --product-version=    version of product
+          --stage-all-replicas  stage this product for all replicas of this
+                                product, default false
+          --stage-replicas=     accepts a comma-separated list of tile names of
+                                a replicated product to stage
 ```
 

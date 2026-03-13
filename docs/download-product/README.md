@@ -43,6 +43,8 @@ Application Options:
                                        http requests [$OM_SKIP_SSL_VALIDATION]
   -t, --target=                        location of the Ops Manager VM
                                        [$OM_TARGET]
+      --uaa-target=                    optional location of the Ops Manager UAA
+                                       [$OM_UAA_TARGET]
       --trace                          prints HTTP requests and response
                                        payloads [$OM_TRACE]
   -u, --username=                      admin username for the Ops Manager VM
@@ -96,14 +98,6 @@ Help Options:
                                        profile page in Pivnet.
           --pivnet-host=               the API endpoint for Pivotal Network
                                        (default: https://network.pivotal.io)
-          --proxy-url=                 HTTP/HTTPS proxy server URL to use when
-                                       connecting to Pivnet
-          --proxy-username=            username for proxy authentication
-          --proxy-password=            password for proxy authentication
-          --proxy-auth-type=           type of proxy authentication (basic,
-                                       spnego)
-          --proxy-krb5-config=         path to Kerberos config file (krb5.conf)
-                                       for SPNEGO authentication
       -f, --file-glob=                 glob to match files within Pivotal
                                        Network product to be downloaded.
           --product-version=           version of the product-slug to download
@@ -113,6 +107,14 @@ Help Options:
                                        product-slug to download files from.
                                        Highest-versioned match will be used.
                                        Incompatible with --product-version flag.
+          --proxy-url=                 HTTP/HTTPS proxy server URL to use when
+                                       connecting to Pivnet
+          --proxy-username=            username for proxy authentication
+          --proxy-password=            password for proxy authentication
+          --proxy-auth-type=           type of proxy authentication (basic,
+                                       spnego)
+          --proxy-krb5-config=         path to Kerberos config file (krb5.conf)
+                                       for SPNEGO authentication
           --s3-access-key-id=          access key for the s3 compatible
                                        blobstore
           --s3-auth-type=              can be set to "iam" in order to allow
@@ -126,8 +128,9 @@ Help Options:
           --s3-endpoint=               the endpoint to access the s3 compatible
                                        blobstore. If not using AWS, this is
                                        required
-          --s3-disable-ssl             whether to disable ssl validation when
-                                       contacting the s3 compatible blobstore
+          --s3-disable-ssl             whether to disable ssl (https or http)
+                                       when contacting the s3 compatible
+                                       blobstore
           --s3-enable-v2-signing       whether to use v2 signing with your s3
                                        compatible blobstore. (if you don't know
                                        what this is, leave blank, or set to
@@ -143,6 +146,9 @@ Help Options:
                                        download (ie 458.61)
           --stemcell-heavy             force the downloading of a heavy
                                        stemcell, will fail if non exists
+          --stemcell-slug=             download the stemcell for the product
+                                       that matches with the specified stemcell
+                                       slug on Pivnet
 
     config file interpolation:
       -c, --config=                    path to yml file for configuration (keys

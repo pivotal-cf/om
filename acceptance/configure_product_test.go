@@ -278,6 +278,156 @@ var _ = Describe("configure-product command", func() {
 	})
 })
 
+var _ = Describe("configure-product deploy-in-parallel", func() {
+	var (
+		server     *ghttp.Server
+		configFile *os.File
+	)
+
+	BeforeEach(func() {
+		server = createTLSServer()
+	})
+
+	AfterEach(func() {
+		server.Close()
+	})
+
+	It("successfully configures deploy-in-parallel for a product", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations"),
+				ghttp.RespondWith(http.StatusOK, `{"installations": []}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+				ghttp.RespondWith(http.StatusOK, `[{"guid": "some-product-guid", "type": "cf"}]`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{"info": {"version": "3.3.0"}}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v1/staged/products/some-product-guid"),
+				ghttp.VerifyJSON(`{"deploy_in_parallel": true}`),
+				ghttp.VerifyContentType("application/json"),
+				ghttp.RespondWith(http.StatusOK, ``),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/pending_changes"),
+				ghttp.RespondWith(http.StatusOK, `{}`),
+			),
+		)
+
+		configFile, _ = os.CreateTemp("", "")
+		_, _ = configFile.WriteString(`---
+product-name: cf
+deploy-in-parallel: true
+`)
+		configFile.Close()
+
+		command := exec.Command(pathToMain,
+			"--target", server.URL(),
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"configure-product",
+			"--config", configFile.Name(),
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session, "10s").Should(gexec.Exit(0))
+
+		Expect(session.Out).To(gbytes.Say("setting deploy-in-parallel to true"))
+		Expect(session.Out).To(gbytes.Say("finished setting deploy-in-parallel"))
+	})
+
+	It("returns an error when deploy-in-parallel is not supported by the tile", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations"),
+				ghttp.RespondWith(http.StatusOK, `{"installations": []}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+				ghttp.RespondWith(http.StatusOK, `[{"guid": "some-product-guid", "type": "cf"}]`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{"info": {"version": "3.3.0"}}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("PUT", "/api/v1/staged/products/some-product-guid"),
+				ghttp.RespondWith(http.StatusUnprocessableEntity, `{"errors": {"deploy_in_parallel": ["This product does not support deploying in parallel"]}}`),
+			),
+		)
+
+		configFile, _ = os.CreateTemp("", "")
+		_, _ = configFile.WriteString(`---
+product-name: cf
+deploy-in-parallel: true
+`)
+		configFile.Close()
+
+		command := exec.Command(pathToMain,
+			"--target", server.URL(),
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"configure-product",
+			"--config", configFile.Name(),
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session, "10s").Should(gexec.Exit(1))
+
+		Expect(session.Err).To(gbytes.Say("failed to configure deploy-in-parallel"))
+	})
+
+	It("returns an error when Ops Manager is older than 3.3", func() {
+		server.AppendHandlers(
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/installations"),
+				ghttp.RespondWith(http.StatusOK, `{"installations": []}`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+				ghttp.RespondWith(http.StatusOK, `[{"guid": "some-product-guid", "type": "cf"}]`),
+			),
+			ghttp.CombineHandlers(
+				ghttp.VerifyRequest("GET", "/api/v0/info"),
+				ghttp.RespondWith(http.StatusOK, `{"info": {"version": "3.2.1"}}`),
+			),
+		)
+
+		configFile, _ = os.CreateTemp("", "")
+		_, _ = configFile.WriteString(`---
+product-name: cf
+deploy-in-parallel: true
+`)
+		configFile.Close()
+
+		command := exec.Command(pathToMain,
+			"--target", server.URL(),
+			"--username", "some-username",
+			"--password", "some-password",
+			"--skip-ssl-validation",
+			"configure-product",
+			"--config", configFile.Name(),
+		)
+
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(session, "10s").Should(gexec.Exit(1))
+
+		Expect(session.Err).To(gbytes.Say("deploy-in-parallel requires Ops Manager 3.3 or newer"))
+	})
+})
+
 const propertiesJSON = `{
 	".properties.something": {"value": "configure-me"},
 	".a-job.job-property": {"value": {"identity": "username", "password": "example-new-password"} },

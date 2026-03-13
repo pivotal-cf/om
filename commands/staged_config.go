@@ -176,6 +176,7 @@ func (ec StagedConfig) Execute(args []string) error {
 
 	config := config.ProductConfiguration{
 		ProductName:              ec.Options.Product,
+		DeployInParallel:         findOutput.Product.DeployInParallel,
 		ProductProperties:        configurableProperties,
 		NetworkProperties:        networks,
 		ResourceConfigProperties: resourceConfig,

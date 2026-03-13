@@ -34,6 +34,8 @@ Application Options:
   -k, --skip-ssl-validation    skip ssl certificate validation during http
                                requests [$OM_SKIP_SSL_VALIDATION]
   -t, --target=                location of the Ops Manager VM [$OM_TARGET]
+      --uaa-target=            optional location of the Ops Manager UAA
+                               [$OM_UAA_TARGET]
       --trace                  prints HTTP requests and response payloads
                                [$OM_TRACE]
   -u, --username=              admin username for the Ops Manager VM (not
@@ -51,7 +53,8 @@ Help Options:
       -p, --path=              path to api endpoint
       -x, --request=           http verb (defaults to GET, POST when 'data'
                                specified
-      -d, --data=              api request payload
+      -d, --data=              api request payload (prefix with @ to read file
+                               contents)
       -s, --silent             only write response headers to stderr if
                                response status is 4XX or 5XX
       -H, --header=            used to specify custom headers with your command

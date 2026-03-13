@@ -15,56 +15,63 @@ This authenticated command kicks off an install of any staged changes on the
 Ops Manager.
 
 Application Options:
-      --ca-cert=                  OpsManager CA certificate path or value
-                                  [$OM_CA_CERT]
-  -c, --client-id=                Client ID for the Ops Manager VM (not
-                                  required for unauthenticated commands)
-                                  [$OM_CLIENT_ID]
-  -s, --client-secret=            Client Secret for the Ops Manager VM (not
-                                  required for unauthenticated commands)
-                                  [$OM_CLIENT_SECRET]
-  -o, --connect-timeout=          timeout in seconds to make TCP connections
-                                  (default: 10) [$OM_CONNECT_TIMEOUT]
-  -d, --decryption-passphrase=    Passphrase to decrypt the installation if the
-                                  Ops Manager VM has been rebooted (optional
-                                  for most commands) [$OM_DECRYPTION_PASSPHRASE]
-  -e, --env=                      env file with login credentials
-  -p, --password=                 admin password for the Ops Manager VM (not
-                                  required for unauthenticated commands)
-                                  [$OM_PASSWORD]
-  -r, --request-timeout=          timeout in seconds for HTTP requests to Ops
-                                  Manager (default: 1800) [$OM_REQUEST_TIMEOUT]
-  -k, --skip-ssl-validation       skip ssl certificate validation during http
-                                  requests [$OM_SKIP_SSL_VALIDATION]
-  -t, --target=                   location of the Ops Manager VM [$OM_TARGET]
-      --trace                     prints HTTP requests and response payloads
-                                  [$OM_TRACE]
-  -u, --username=                 admin username for the Ops Manager VM (not
-                                  required for unauthenticated commands)
-                                  [$OM_USERNAME]
-      --vars-env=                 load vars from environment variables by
-                                  specifying a prefix (e.g.: 'MY' to load
-                                  MY_var=value) [$OM_VARS_ENV]
-  -v, --version                   prints the om release version
+      --ca-cert=                    OpsManager CA certificate path or value
+                                    [$OM_CA_CERT]
+  -c, --client-id=                  Client ID for the Ops Manager VM (not
+                                    required for unauthenticated commands)
+                                    [$OM_CLIENT_ID]
+  -s, --client-secret=              Client Secret for the Ops Manager VM (not
+                                    required for unauthenticated commands)
+                                    [$OM_CLIENT_SECRET]
+  -o, --connect-timeout=            timeout in seconds to make TCP connections
+                                    (default: 10) [$OM_CONNECT_TIMEOUT]
+  -d, --decryption-passphrase=      Passphrase to decrypt the installation if
+                                    the Ops Manager VM has been rebooted
+                                    (optional for most commands)
+                                    [$OM_DECRYPTION_PASSPHRASE]
+  -e, --env=                        env file with login credentials
+  -p, --password=                   admin password for the Ops Manager VM (not
+                                    required for unauthenticated commands)
+                                    [$OM_PASSWORD]
+  -r, --request-timeout=            timeout in seconds for HTTP requests to Ops
+                                    Manager (default: 1800)
+                                    [$OM_REQUEST_TIMEOUT]
+  -k, --skip-ssl-validation         skip ssl certificate validation during http
+                                    requests [$OM_SKIP_SSL_VALIDATION]
+  -t, --target=                     location of the Ops Manager VM [$OM_TARGET]
+      --uaa-target=                 optional location of the Ops Manager UAA
+                                    [$OM_UAA_TARGET]
+      --trace                       prints HTTP requests and response payloads
+                                    [$OM_TRACE]
+  -u, --username=                   admin username for the Ops Manager VM (not
+                                    required for unauthenticated commands)
+                                    [$OM_USERNAME]
+      --vars-env=                   load vars from environment variables by
+                                    specifying a prefix (e.g.: 'MY' to load
+                                    MY_var=value) [$OM_VARS_ENV]
+  -v, --version                     prints the om release version
 
 Help Options:
-  -h, --help                      Show this help message
+  -h, --help                        Show this help message
 
 [apply-changes command options]
-      -c, --config=               path to yml file containing errand
-                                  configuration (see
-                                  docs/apply-changes/README.md for format)
-      -i, --ignore-warnings       For convenience. Use other commands to
-                                  disable particular verifiers if they are
-                                  inappropriate.
-          --reattach              reattach to an already running apply changes
-                                  (if available)
-          --recreate-vms          recreate all vms
-      -s, --skip-deploy-products  skip deploying products when applying changes
-                                  - just update the director
-      -n, --product-name=         name of the product(s) to deploy, cannot be
-                                  used in conjunction with
-                                  --skip-deploy-products (OM 2.2+)
+      -c, --config=                 path to yml file containing errand
+                                    configuration (see
+                                    docs/apply-changes/README.md for format)
+      -i, --ignore-warnings         For convenience. Use other commands to
+                                    disable particular verifiers if they are
+                                    inappropriate.
+          --reattach                reattach to an already running apply
+                                    changes (if available)
+          --recreate-vms            recreate all vms
+      -s, --skip-deploy-products    skip deploying products when applying
+                                    changes - just update the director
+          --force-latest-variables  force any certificates or other BOSH
+                                    variables to use their latest version even
+                                    when a stemcell is not being upgraded
+      -n, --product-name=           name of the product(s) to deploy, cannot be
+                                    used in conjunction with
+                                    --skip-deploy-products (OM 2.2+)
 ```
 
 ### Configuring via YAML config file
