@@ -30,6 +30,7 @@ type StagedProduct struct {
 	ProductTemplateName string            `json:"product_template_name"`
 	LicenseMetadata     []LicenseMetadata `json:"license_metadata"`
 	ProductVersion      string            `json:"product_version"`
+	DeployInParallel    *bool             `json:"deploy_in_parallel,omitempty"`
 }
 
 type UnstageProductInput struct {
@@ -515,6 +516,40 @@ func (a Api) GetStagedProductJobMaxInFlight(productGUID string) (ProductJobMaxIn
 
 	ProductJobMaxInFlights, _ = payload["max_in_flight"].(map[string]interface{})
 	return ProductJobMaxInFlights, nil
+}
+
+type UpdateStagedProductDeployInParallelInput struct {
+	GUID             string
+	DeployInParallel bool
+}
+
+func (a Api) UpdateStagedProductDeployInParallel(input UpdateStagedProductDeployInParallelInput) error {
+	body, err := json.Marshal(struct {
+		DeployInParallel bool `json:"deploy_in_parallel"`
+	}{
+		DeployInParallel: input.DeployInParallel,
+	})
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PUT", fmt.Sprintf("/api/v1/staged/products/%s", input.GUID), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not make api request to staged product deploy_in_parallel endpoint: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a Api) UpdateStagedProductJobMaxInFlight(productGUID string, jobsToMaxInFlight map[string]interface{}) error {

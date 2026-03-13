@@ -20,6 +20,18 @@ type ConfigureProductService struct {
 	configureJobResourceConfigReturnsOnCall map[int]struct {
 		result1 error
 	}
+	InfoStub        func() (api.Info, error)
+	infoMutex       sync.RWMutex
+	infoArgsForCall []struct {
+	}
+	infoReturns struct {
+		result1 api.Info
+		result2 error
+	}
+	infoReturnsOnCall map[int]struct {
+		result1 api.Info
+		result2 error
+	}
 	ListInstallationsStub        func() ([]api.InstallationsServiceOutput, error)
 	listInstallationsMutex       sync.RWMutex
 	listInstallationsArgsForCall []struct {
@@ -68,6 +80,17 @@ type ConfigureProductService struct {
 	listStagedProductsReturnsOnCall map[int]struct {
 		result1 api.StagedProductsOutput
 		result2 error
+	}
+	UpdateStagedProductDeployInParallelStub        func(api.UpdateStagedProductDeployInParallelInput) error
+	updateStagedProductDeployInParallelMutex       sync.RWMutex
+	updateStagedProductDeployInParallelArgsForCall []struct {
+		arg1 api.UpdateStagedProductDeployInParallelInput
+	}
+	updateStagedProductDeployInParallelReturns struct {
+		result1 error
+	}
+	updateStagedProductDeployInParallelReturnsOnCall map[int]struct {
+		result1 error
 	}
 	UpdateStagedProductErrandsStub        func(string, string, interface{}, interface{}) error
 	updateStagedProductErrandsMutex       sync.RWMutex
@@ -191,6 +214,61 @@ func (fake *ConfigureProductService) ConfigureJobResourceConfigReturnsOnCall(i i
 	fake.configureJobResourceConfigReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *ConfigureProductService) Info() (api.Info, error) {
+	fake.infoMutex.Lock()
+	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
+	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Info", []interface{}{})
+	fake.infoMutex.Unlock()
+	if fake.InfoStub != nil {
+		return fake.InfoStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.infoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *ConfigureProductService) InfoCallCount() int {
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
+	return len(fake.infoArgsForCall)
+}
+
+func (fake *ConfigureProductService) InfoCalls(stub func() (api.Info, error)) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = stub
+}
+
+func (fake *ConfigureProductService) InfoReturns(result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	fake.infoReturns = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *ConfigureProductService) InfoReturnsOnCall(i int, result1 api.Info, result2 error) {
+	fake.infoMutex.Lock()
+	defer fake.infoMutex.Unlock()
+	fake.InfoStub = nil
+	if fake.infoReturnsOnCall == nil {
+		fake.infoReturnsOnCall = make(map[int]struct {
+			result1 api.Info
+			result2 error
+		})
+	}
+	fake.infoReturnsOnCall[i] = struct {
+		result1 api.Info
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *ConfigureProductService) ListInstallations() ([]api.InstallationsServiceOutput, error) {
@@ -419,6 +497,66 @@ func (fake *ConfigureProductService) ListStagedProductsReturnsOnCall(i int, resu
 		result1 api.StagedProductsOutput
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductDeployInParallel(arg1 api.UpdateStagedProductDeployInParallelInput) error {
+	fake.updateStagedProductDeployInParallelMutex.Lock()
+	ret, specificReturn := fake.updateStagedProductDeployInParallelReturnsOnCall[len(fake.updateStagedProductDeployInParallelArgsForCall)]
+	fake.updateStagedProductDeployInParallelArgsForCall = append(fake.updateStagedProductDeployInParallelArgsForCall, struct {
+		arg1 api.UpdateStagedProductDeployInParallelInput
+	}{arg1})
+	fake.recordInvocation("UpdateStagedProductDeployInParallel", []interface{}{arg1})
+	fake.updateStagedProductDeployInParallelMutex.Unlock()
+	if fake.UpdateStagedProductDeployInParallelStub != nil {
+		return fake.UpdateStagedProductDeployInParallelStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateStagedProductDeployInParallelReturns
+	return fakeReturns.result1
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductDeployInParallelCallCount() int {
+	fake.updateStagedProductDeployInParallelMutex.RLock()
+	defer fake.updateStagedProductDeployInParallelMutex.RUnlock()
+	return len(fake.updateStagedProductDeployInParallelArgsForCall)
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductDeployInParallelCalls(stub func(api.UpdateStagedProductDeployInParallelInput) error) {
+	fake.updateStagedProductDeployInParallelMutex.Lock()
+	defer fake.updateStagedProductDeployInParallelMutex.Unlock()
+	fake.UpdateStagedProductDeployInParallelStub = stub
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductDeployInParallelArgsForCall(i int) api.UpdateStagedProductDeployInParallelInput {
+	fake.updateStagedProductDeployInParallelMutex.RLock()
+	defer fake.updateStagedProductDeployInParallelMutex.RUnlock()
+	argsForCall := fake.updateStagedProductDeployInParallelArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductDeployInParallelReturns(result1 error) {
+	fake.updateStagedProductDeployInParallelMutex.Lock()
+	defer fake.updateStagedProductDeployInParallelMutex.Unlock()
+	fake.UpdateStagedProductDeployInParallelStub = nil
+	fake.updateStagedProductDeployInParallelReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *ConfigureProductService) UpdateStagedProductDeployInParallelReturnsOnCall(i int, result1 error) {
+	fake.updateStagedProductDeployInParallelMutex.Lock()
+	defer fake.updateStagedProductDeployInParallelMutex.Unlock()
+	fake.UpdateStagedProductDeployInParallelStub = nil
+	if fake.updateStagedProductDeployInParallelReturnsOnCall == nil {
+		fake.updateStagedProductDeployInParallelReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateStagedProductDeployInParallelReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *ConfigureProductService) UpdateStagedProductErrands(arg1 string, arg2 string, arg3 interface{}, arg4 interface{}) error {
@@ -730,6 +868,8 @@ func (fake *ConfigureProductService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.configureJobResourceConfigMutex.RLock()
 	defer fake.configureJobResourceConfigMutex.RUnlock()
+	fake.infoMutex.RLock()
+	defer fake.infoMutex.RUnlock()
 	fake.listInstallationsMutex.RLock()
 	defer fake.listInstallationsMutex.RUnlock()
 	fake.listStagedPendingChangesMutex.RLock()
@@ -738,6 +878,8 @@ func (fake *ConfigureProductService) Invocations() map[string][][]interface{} {
 	defer fake.listStagedProductJobsMutex.RUnlock()
 	fake.listStagedProductsMutex.RLock()
 	defer fake.listStagedProductsMutex.RUnlock()
+	fake.updateStagedProductDeployInParallelMutex.RLock()
+	defer fake.updateStagedProductDeployInParallelMutex.RUnlock()
 	fake.updateStagedProductErrandsMutex.RLock()
 	defer fake.updateStagedProductErrandsMutex.RUnlock()
 	fake.updateStagedProductJobMaxInFlightMutex.RLock()

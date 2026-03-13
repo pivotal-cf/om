@@ -519,6 +519,117 @@ var _ = Describe("ConfigureProduct", func() {
 			})
 		})
 
+		When("deploy-in-parallel is provided", func() {
+			BeforeEach(func() {
+				config = `{"product-name": "cf", "deploy-in-parallel": true}`
+				service.InfoReturns(api.Info{Version: "3.3.0"}, nil)
+			})
+
+			It("configures the product's deploy-in-parallel setting", func() {
+				client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+				service.ListStagedProductsReturns(api.StagedProductsOutput{
+					Products: []api.StagedProduct{
+						{GUID: "some-product-guid", Type: "cf"},
+					},
+				}, nil)
+
+				err := executeCommand(client, []string{
+					"--config", configFile.Name(),
+				})
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(service.InfoCallCount()).To(Equal(1))
+				Expect(service.UpdateStagedProductDeployInParallelCallCount()).To(Equal(1))
+				input := service.UpdateStagedProductDeployInParallelArgsForCall(0)
+				Expect(input.GUID).To(Equal("some-product-guid"))
+				Expect(input.DeployInParallel).To(BeTrue())
+			})
+
+			When("deploy-in-parallel is set to false", func() {
+				BeforeEach(func() {
+					config = `{"product-name": "cf", "deploy-in-parallel": false}`
+				})
+
+				It("sends false to the API", func() {
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+						},
+					}, nil)
+
+					err := executeCommand(client, []string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(service.UpdateStagedProductDeployInParallelCallCount()).To(Equal(1))
+					input := service.UpdateStagedProductDeployInParallelArgsForCall(0)
+					Expect(input.GUID).To(Equal("some-product-guid"))
+					Expect(input.DeployInParallel).To(BeFalse())
+				})
+			})
+
+			When("the API returns an error", func() {
+				It("returns a descriptive error", func() {
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+						},
+					}, nil)
+					service.UpdateStagedProductDeployInParallelReturns(errors.New("This product does not support deploying in parallel"))
+
+					err := executeCommand(client, []string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(MatchError(ContainSubstring("failed to configure deploy-in-parallel")))
+					Expect(err).To(MatchError(ContainSubstring("This product does not support deploying in parallel")))
+				})
+			})
+
+			When("the Ops Manager version is older than 3.3", func() {
+				It("returns a version requirement error", func() {
+					service.InfoReturns(api.Info{Version: "3.2.1"}, nil)
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+						},
+					}, nil)
+
+					err := executeCommand(client, []string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(MatchError(ContainSubstring("deploy-in-parallel requires Ops Manager 3.3 or newer (current: 3.2.1)")))
+					Expect(service.UpdateStagedProductDeployInParallelCallCount()).To(Equal(0))
+				})
+			})
+
+			When("the Info call fails", func() {
+				It("returns an error", func() {
+					service.InfoReturns(api.Info{}, errors.New("connection refused"))
+					client := commands.NewConfigureProduct(func() []string { return nil }, service, "", logger)
+
+					service.ListStagedProductsReturns(api.StagedProductsOutput{
+						Products: []api.StagedProduct{
+							{GUID: "some-product-guid", Type: "cf"},
+						},
+					}, nil)
+
+					err := executeCommand(client, []string{
+						"--config", configFile.Name(),
+					})
+					Expect(err).To(MatchError(ContainSubstring("could not retrieve Ops Manager version")))
+					Expect(service.UpdateStagedProductDeployInParallelCallCount()).To(Equal(0))
+				})
+			})
+		})
+
 		When("certain fields are not provided in the config", func() {
 			BeforeEach(func() {
 				config = `{"product-name": "cf"}`
@@ -539,7 +650,7 @@ var _ = Describe("ConfigureProduct", func() {
 
 				Expect(service.ListStagedProductsCallCount()).To(Equal(1))
 
-				Expect(logger.PrintlnCallCount()).To(Equal(6))
+				Expect(logger.PrintlnCallCount()).To(Equal(7))
 				msg := logger.PrintlnArgsForCall(0)[0]
 				Expect(msg).To(Equal("network properties are not provided, nothing to do here"))
 				msg = logger.PrintlnArgsForCall(1)[0]
@@ -552,6 +663,8 @@ var _ = Describe("ConfigureProduct", func() {
 				Expect(msg).To(Equal("syslog configuration is not provided, nothing to do here"))
 				msg = logger.PrintlnArgsForCall(5)[0]
 				Expect(msg).To(Equal("errands are not provided, nothing to do here"))
+				msg = logger.PrintlnArgsForCall(6)[0]
+				Expect(msg).To(Equal("deploy-in-parallel is not provided, nothing to do here"))
 				format, content := logger.PrintfArgsForCall(1)
 				Expect(fmt.Sprintf(format, content...)).To(ContainSubstring("finished configuring product"))
 			})

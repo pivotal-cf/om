@@ -1154,4 +1154,71 @@ key-4: 2147483648
 			})
 		})
 	})
+
+	Describe("UpdateStagedProductDeployInParallel", func() {
+		It("makes a request to set deploy_in_parallel on the staged product", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v1/staged/products/some-product-guid"),
+					ghttp.VerifyJSON(`{"deploy_in_parallel": true}`),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.RespondWith(http.StatusOK, ``),
+				),
+			)
+
+			err := service.UpdateStagedProductDeployInParallel(api.UpdateStagedProductDeployInParallelInput{
+				GUID:             "some-product-guid",
+				DeployInParallel: true,
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("sends false when deploy_in_parallel is false", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/v1/staged/products/some-product-guid"),
+					ghttp.VerifyJSON(`{"deploy_in_parallel": false}`),
+					ghttp.RespondWith(http.StatusOK, ``),
+				),
+			)
+
+			err := service.UpdateStagedProductDeployInParallel(api.UpdateStagedProductDeployInParallelInput{
+				GUID:             "some-product-guid",
+				DeployInParallel: false,
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		Context("failure cases", func() {
+			When("the request fails", func() {
+				It("returns an error", func() {
+					client.Close()
+
+					err := service.UpdateStagedProductDeployInParallel(api.UpdateStagedProductDeployInParallelInput{
+						GUID:             "some-product-guid",
+						DeployInParallel: true,
+					})
+					Expect(err).To(HaveOccurred())
+					Expect(err).To(MatchError(ContainSubstring("could not make api request to staged product deploy_in_parallel endpoint")))
+				})
+			})
+
+			When("the server returns a non-200 status code", func() {
+				It("returns an error", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("PUT", "/api/v1/staged/products/some-product-guid"),
+							ghttp.RespondWith(http.StatusUnprocessableEntity, `{"errors": {"deploy_in_parallel": ["This product does not support deploying in parallel"]}}`),
+						),
+					)
+
+					err := service.UpdateStagedProductDeployInParallel(api.UpdateStagedProductDeployInParallelInput{
+						GUID:             "some-product-guid",
+						DeployInParallel: true,
+					})
+					Expect(err).To(MatchError(ContainSubstring("This product does not support deploying in parallel")))
+				})
+			})
+		})
+	})
 })
