@@ -47,6 +47,14 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This ensures that commands are not kept in `bash` history.
   The environment variable `OM_PASSWORD` will overwrite the password value in `env.yml`.
 
+## Unreleased
+
+### Features
+
+- Add documentation and test coverage for `product_deploy_parallelism` in `configure-director` and `staged-director-config`.
+  This Ops Manager 3.3+ property controls the maximum number of product deployment tasks that run in parallel during Apply Changes.
+  Set it under `properties-configuration.director_configuration.product_deploy_parallelism` in the director config YAML.
+
 ## 7.10.1
 
 ### Bug fixes

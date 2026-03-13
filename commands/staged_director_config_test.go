@@ -42,8 +42,9 @@ var _ = Describe("StagedDirectorConfig", func() {
 
 			expectedDirectorProperties := map[string]interface{}{
 				"director_configuration": map[string]interface{}{
-					"filtered_key": "filtered_key",
-					"max_threads":  5,
+					"filtered_key":              "filtered_key",
+					"max_threads":               5,
+					"product_deploy_parallelism": 3,
 					"encryption": map[string]interface{}{
 						"providers": map[string]interface{}{
 							"partition_password": "some_password",
@@ -168,6 +169,7 @@ properties-configuration:
     trusted_certificates: some-certificate
   director_configuration:
     max_threads: 5
+    product_deploy_parallelism: 3
     encryption:
       providers:
         client_certificate: user_provided_cert
@@ -221,6 +223,7 @@ properties-configuration:
     trusted_certificates: some-certificate
   director_configuration:
     max_threads: 5
+    product_deploy_parallelism: 3
     encryption:
       providers:
         client_certificate: user_provided_cert
@@ -285,6 +288,7 @@ properties-configuration:
     syslogconfig: awesome
   director_configuration:
     max_threads: 5
+    product_deploy_parallelism: 3
     encryption:
       providers:
         client_certificate: user_provided_cert
@@ -353,6 +357,7 @@ properties-configuration:
   director_configuration:
     filtered_key: filtered_key
     max_threads: 5
+    product_deploy_parallelism: 3
     encryption:
       providers:
         client_certificate: user_provided_cert
@@ -490,6 +495,7 @@ properties-configuration:
   director_configuration:
     filtered_key: filtered_key
     max_threads: 5
+    product_deploy_parallelism: 3
     encryption:
       providers:
         client_certificate: user_provided_cert
@@ -564,6 +570,7 @@ properties-configuration:
   director_configuration:
     filtered_key: filtered_key
     max_threads: 5
+    product_deploy_parallelism: 3
     encryption:
       providers:
         client_certificate: user_provided_cert
@@ -625,6 +632,7 @@ properties-configuration:
         client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
         partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
     max_threads: 5
+    product_deploy_parallelism: 3
   iaas_configuration:
     project: ((properties-configuration_iaas_configuration_project))
     key: ((properties-configuration_iaas_configuration_key))  
@@ -700,6 +708,7 @@ properties-configuration:
         client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
         partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
     max_threads: 5
+    product_deploy_parallelism: 3
 iaas-configurations:
   - name: ((iaas-configurations_0_name))
     project: ((iaas-configurations_0_project))
@@ -771,6 +780,7 @@ properties-configuration:
         client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
         partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
     max_threads: 5
+    product_deploy_parallelism: 3
 iaas-configurations:
   - bosh-truthy: ((iaas-configurations_0_bosh-truthy))
 vmtypes-configuration: {}
@@ -835,6 +845,7 @@ properties-configuration:
         client_user: ((properties-configuration_director_configuration_encryption_providers_client_user))
         partition_password: ((properties-configuration_director_configuration_encryption_providers_partition_password))
     max_threads: 5
+    product_deploy_parallelism: 3
 iaas-configurations:
   - iaas-int: ((iaas-configurations_0_iaas-int))
 vmtypes-configuration: {}

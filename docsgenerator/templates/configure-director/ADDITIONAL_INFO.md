@@ -11,10 +11,6 @@ top-level element in the YAML file.
 ---
 az-configuration:
 - name: some-az
-director-configuration:
-  max_threads: 5
-iaas-configuration:
-  iaas_specific_key: some-value
 network-assignment:
   network:
     name: some-network
@@ -25,10 +21,16 @@ resource-configuration:
   compilation:
     instance_type:
       id: m4.xlarge
-security-configuration:
-  trusted_certificates: some-certificate
-syslog-configuration:
-  syslogconfig: awesome
+properties-configuration:
+  director_configuration:
+    max_threads: 5
+    product_deploy_parallelism: 3
+  iaas_configuration:
+    iaas_specific_key: some-value
+  security_configuration:
+    trusted_certificates: some-certificate
+  syslog_configuration:
+    syslogconfig: awesome
 vmextensions-configuration:
 - name: a_vm_extension
   cloud_properties:
@@ -47,6 +49,19 @@ vmtypes-configuration:
     cpu: 1
     ram: 512
     ephemeral_disk: 1024
+```
+
+#### product_deploy_parallelism (Ops Manager 3.3+):
+
+Sets the maximum number of product deployment tasks that Ops Manager runs in
+parallel during an Apply Changes operation. The value must be an integer greater
+than 0 and less than `director_worker_count` (default: 5). The default
+parallelism is 1 (sequential deployment).
+
+```yaml
+properties-configuration:
+  director_configuration:
+    product_deploy_parallelism: 3
 ```
 
 #### vmtypes-configuration:
