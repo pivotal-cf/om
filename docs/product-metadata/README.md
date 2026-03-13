@@ -39,6 +39,8 @@ Application Options:
   -k, --skip-ssl-validation         skip ssl certificate validation during http
                                     requests [$OM_SKIP_SSL_VALIDATION]
   -t, --target=                     location of the Ops Manager VM [$OM_TARGET]
+      --uaa-target=                 optional location of the Ops Manager UAA
+                                    [$OM_UAA_TARGET]
       --trace                       prints HTTP requests and response payloads
                                     [$OM_TRACE]
   -u, --username=                   admin username for the Ops Manager VM (not
@@ -66,12 +68,13 @@ Help Options:
                                     pivnet product slug (default: *.pivotal)
           --pivnet-disable-ssl      whether to disable ssl validation when
                                     contacting the Pivotal Network
-          --proxy-url=              proxy URL for downloading products from Pivnet
+          --proxy-url=              proxy URL for downloading products from
+                                    Pivnet
           --proxy-username=         username for proxy authentication
           --proxy-password=         password for proxy authentication
           --proxy-auth-type=        type of proxy authentication (basic, spnego)
-          --proxy-krb5-config=      path to Kerberos config file (krb5.conf) for
-                                    SPNEGO authentication
+          --proxy-krb5-config=      path to Kerberos config file (krb5.conf)
+                                    for SPNEGO authentication
 
     config file interpolation:
       -c, --config=                 path to yml file for configuration (keys

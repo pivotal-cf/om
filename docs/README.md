@@ -44,9 +44,11 @@ for this product.
 | [download-product](download-product/README.md) | downloads a specified product file from Pivotal Network |
 | [errands](errands/README.md) | list errands for a product |
 | [expiring-certificates](expiring-certificates/README.md) | lists expiring certificates from the Ops Manager targeted |
+| [expiring-licenses](expiring-licenses/README.md) | lists expiring licenses from the Ops Manager targeted |
 | [export-installation](export-installation/README.md) | exports the installation of the target Ops Manager |
 | [generate-certificate-authority](generate-certificate-authority/README.md) | generates a certificate authority on the Opsman |
 | [generate-certificate](generate-certificate/README.md) | generates a new certificate signed by Ops Manager's root CA |
+| [get-certificates](get-certificates/README.md) | fetches deployed certificates and displays their serial numbers |
 | [import-installation](import-installation/README.md) | imports a given installation to the Ops Manager targeted |
 | [installation-log](installation-log/README.md) | output installation logs |
 | [installations](installations/README.md) | list recent installation events |
@@ -56,6 +58,7 @@ for this product.
 | [product-metadata](product-metadata/README.md) | prints product metadata |
 | [products](products/README.md) | lists product staged, available, and deployed versions |
 | [regenerate-certificates](regenerate-certificates/README.md) | deletes all non-configurable certificates in Ops Manager so they will automatically be regenerated on the next apply-changes |
+| [replicate-product](replicate-product/README.md) | stages a product as a replica (only for products that support replicas, requires Ops Manager 3.3 or newer) |
 | [revert-staged-changes](revert-staged-changes/README.md) | This command reverts the staged changes already on an Ops Manager. |
 | [ssl-certificate](ssl-certificate/README.md) | gets certificate applied to Ops Manager |
 | [stage-product](stage-product/README.md) | stages a given product in the Ops Manager targeted |
