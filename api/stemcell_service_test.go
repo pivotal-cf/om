@@ -356,6 +356,39 @@ cloud_properties:
 			})
 		})
 
+		When("Docker Ops Manager (warden/docker infrastructure equivalence)", func() {
+			It("returns true when stemcell manifest has warden and report has docker", func() {
+				// Docker Ops Manager reports infrastructure_type "docker" but stemcells are built for "warden".
+				manifestContent := `name: bosh-warden-ubuntu-jammy
+version: "1.1016"
+operating_system: ubuntu-jammy
+cloud_properties:
+  infrastructure: warden
+`
+				var buf bytes.Buffer
+				gw := gzip.NewWriter(&buf)
+				tw := tar.NewWriter(gw)
+				Expect(tw.WriteHeader(&tar.Header{Name: "stemcell.MF", Size: int64(len(manifestContent))})).To(Succeed())
+				_, err := tw.Write([]byte(manifestContent))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(tw.Close()).To(Succeed())
+				Expect(gw.Close()).To(Succeed())
+
+				stemcellPath := filepath.Join(os.TempDir(), "bosh-stemcell-1.1016-warden-ubuntu-jammy-go_agent.tgz")
+				Expect(os.WriteFile(stemcellPath, buf.Bytes(), 0600)).To(Succeed())
+				defer os.Remove(stemcellPath)
+
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `{"stemcells": [], "infrastructure_type": "docker", "available_stemcells": [{"filename": "bosh-docker-ubuntu-jammy-1.1016.tgz", "os": "ubuntu-jammy", "version": "1.1016"}]}`),
+					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+		})
+
 		When("the diagnostic report fails", func() {
 			It("returns an error", func() {
 				server.AppendHandlers(

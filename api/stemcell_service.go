@@ -111,6 +111,18 @@ func extractStemcellManifest(tgzPath string) (stemcellManifest, error) {
 	return stemcellManifest{}, fmt.Errorf("stemcell.MF not found in %s", tgzPath)
 }
 
+// infrastructureMatches reports whether the stemcell's infrastructure matches the
+// report's infrastructure type. Treats "warden" and "docker" as equivalent so that
+// duplicate detection works with Docker Ops Manager, where stemcells are built for
+// warden but the diagnostic report may report infrastructure_type as "docker".
+func infrastructureMatches(manifestInfrastructure, reportInfrastructureType string) bool {
+	if manifestInfrastructure == reportInfrastructureType {
+		return true
+	}
+	return (manifestInfrastructure == "warden" && reportInfrastructureType == "docker") ||
+		(manifestInfrastructure == "docker" && reportInfrastructureType == "warden")
+}
+
 func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 	report, err := a.GetDiagnosticReport()
 	if err != nil {
@@ -137,7 +149,7 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 			iaasField := manifest.CloudProperties.Infrastructure
 			if osField != "" && versionField != "" && iaasField != "" {
 				for _, stemcell := range report.AvailableStemcells {
-					if stemcell.OS == osField && stemcell.Version == versionField && iaasField == report.InfrastructureType {
+					if stemcell.OS == osField && stemcell.Version == versionField && infrastructureMatches(iaasField, report.InfrastructureType) {
 						return true, nil
 					}
 				}
