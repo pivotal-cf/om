@@ -1,6 +1,8 @@
 package acceptance
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
@@ -31,7 +33,7 @@ var _ = Describe("upload-stemcell command", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		path := filepath.Join(dir, "stemcells", filename)
-		err = os.WriteFile(path, []byte("content so validation does not fail"), 0777)
+		err = os.WriteFile(path, MinimalStemcellTgz(), 0777)
 		Expect(err).ToNot(HaveOccurred())
 		return path, dir
 	}
@@ -99,13 +101,15 @@ var _ = Describe("upload-stemcell command", func() {
 		When("a config file is provided", func() {
 			It("successfully sends the stemcell to the Ops Manager", func() {
 				filename, _ := createStemcell("stemcell.tgz")
+				sum := sha256.Sum256(MinimalStemcellTgz())
+				shasum := hex.EncodeToString(sum[:])
 				command := exec.Command(pathToMain,
 					"--target", server.URL(),
 					"--username", "some-username",
 					"--password", "pass",
 					"--skip-ssl-validation",
 					"upload-stemcell",
-					"--config", writeFile(fmt.Sprintf("{stemcell: %s, shasum: 33d5f6335e83364e11760878afad059fffd6a2729ae53691c87cc349a784de92}", filename)),
+					"--config", writeFile(fmt.Sprintf("{stemcell: %s, shasum: %s}", filename, shasum)),
 				)
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)

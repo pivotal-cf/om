@@ -1,9 +1,15 @@
 package api
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v2"
 )
 
 type ProductStemcells struct {
@@ -57,6 +63,66 @@ func (a Api) AssignStemcell(input ProductStemcells) error {
 	return nil
 }
 
+// stemcellManifest represents the structure of stemcell.MF inside a stemcell .tgz.
+// Only relevant fields for duplicate detection are included.
+type stemcellManifest struct {
+	OperatingSystem string `yaml:"operating_system"`
+	Version         string `yaml:"version"`
+	CloudProperties struct {
+		Infrastructure string `yaml:"infrastructure"`
+	} `yaml:"cloud_properties"`
+}
+
+func extractStemcellManifest(tgzPath string) (stemcellManifest, error) {
+	f, err := os.Open(tgzPath)
+	if err != nil {
+		return stemcellManifest{}, err
+	}
+	defer f.Close()
+
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return stemcellManifest{}, err
+	}
+	defer gz.Close()
+
+	tarReader := tar.NewReader(gz)
+	for {
+		hdr, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return stemcellManifest{}, err
+		}
+		if hdr.Name == "stemcell.MF" {
+			var mf stemcellManifest
+			manifestBytes, err := io.ReadAll(tarReader)
+			if err != nil {
+				return stemcellManifest{}, err
+			}
+			err = yaml.Unmarshal(manifestBytes, &mf)
+			if err != nil {
+				return stemcellManifest{}, err
+			}
+			return mf, nil
+		}
+	}
+	return stemcellManifest{}, fmt.Errorf("stemcell.MF not found in %s", tgzPath)
+}
+
+// infrastructureMatches reports whether the stemcell's infrastructure matches the
+// report's infrastructure type. Treats "warden" and "docker" as equivalent so that
+// duplicate detection works with Docker Ops Manager, where stemcells are built for
+// warden but the diagnostic report may report infrastructure_type as "docker".
+func infrastructureMatches(manifestInfrastructure, reportInfrastructureType string) bool {
+	if manifestInfrastructure == reportInfrastructureType {
+		return true
+	}
+	return (manifestInfrastructure == "warden" && reportInfrastructureType == "docker") ||
+		(manifestInfrastructure == "docker" && reportInfrastructureType == "warden")
+}
+
 func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 	report, err := a.GetDiagnosticReport()
 	if err != nil {
@@ -74,6 +140,23 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 	}
 
 	if validVersion {
+		// Try to match by OS, version, and infrastructure from stemcell manifest
+		// so that duplicate uploads are avoided regardless of local filename.
+		manifest, extractErr := extractStemcellManifest(stemcellFilename)
+		if extractErr == nil {
+			osField := manifest.OperatingSystem
+			versionField := manifest.Version
+			iaasField := manifest.CloudProperties.Infrastructure
+			if osField != "" && versionField != "" && iaasField != "" {
+				for _, stemcell := range report.AvailableStemcells {
+					if stemcell.OS == osField && stemcell.Version == versionField && infrastructureMatches(iaasField, report.InfrastructureType) {
+						return true, nil
+					}
+				}
+				return false, nil
+			}
+		}
+		// Fall back to filename match when manifest cannot be used (e.g. file not found, invalid tgz)
 		for _, stemcell := range report.AvailableStemcells {
 			if stemcell.Filename == filepath.Base(stemcellFilename) {
 				return true, nil
