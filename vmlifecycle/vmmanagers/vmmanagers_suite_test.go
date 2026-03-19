@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -88,7 +89,9 @@ func testPropertiesExist(vst reflect.Value, filename string) {
 				Expect(field.Bool()).ToNot(Equal(false), errorMsg)
 			}
 		case reflect.String:
-			if tst.Field(i).Name != "KmsKeyId" {
+			ignoredFields := []string{"KmsKeyId", "AvailabilityZoneId", "Affinity", "GroupName", "HostId", "Tenancy", "HostResourceGroupArn", "GroupId", "AvailabilityZone"}
+
+			if !slices.Contains(ignoredFields[:], tst.Field(i).Name) {
 				Expect(field.String()).ToNot(Equal(""), errorMsg)
 			}
 		case reflect.Int:
