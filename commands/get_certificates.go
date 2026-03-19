@@ -108,14 +108,19 @@ func (cmd *GetCertificates) Execute(args []string) error {
 						errorMsg = err.Error()
 					}
 				} else {
-					pem, ok := cred.Credential.Value["cert_pem"]
-					if !ok || pem == "" {
-						errorMsg = "cert_pem not found in credential"
-					} else {
-						serial, err = ExtractSerialFromPEM(pem)
-						if err != nil {
-							errorMsg = fmt.Sprintf("failed to extract serial number: %v", err)
+					if valMap, ok := cred.Credential.Value.(map[string]interface{}); ok {
+						pemVal, ok := valMap["cert_pem"]
+						pem, _ := pemVal.(string)
+						if !ok || pem == "" {
+							errorMsg = "cert_pem not found in credential"
+						} else {
+							serial, err = ExtractSerialFromPEM(pem)
+							if err != nil {
+								errorMsg = fmt.Sprintf("failed to extract serial number: %v", err)
+							}
 						}
+					} else {
+						errorMsg = "credential value is not a map"
 					}
 				}
 			} else {
