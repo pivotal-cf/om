@@ -30,7 +30,7 @@ func (j JSONPresenter) PresentCredentialReferences(credentialReferences []string
 	j.encodeJSON(credentialReferences)
 }
 
-func (j JSONPresenter) PresentCredentials(credentials map[string]string) {
+func (j JSONPresenter) PresentCredentials(credentials interface{}) {
 	j.encodeJSON(credentials)
 }
 

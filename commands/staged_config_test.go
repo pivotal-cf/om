@@ -297,7 +297,7 @@ syslog-properties:
 				fakeService.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
 						Type: "some-secret-type",
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"some-secret-key": "some-secret-value",
 						},
 					},

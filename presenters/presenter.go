@@ -14,7 +14,7 @@ type Presenter interface {
 	PresentGenerateCAResponse(api.GenerateCAResponse)
 	PresentSSLCertificate(api.SSLCertificate)
 	PresentCredentialReferences([]string)
-	PresentCredentials(map[string]string)
+	PresentCredentials(interface{})
 	PresentDeployedProducts([]api.DiagnosticProduct)
 	PresentErrands([]models.Errand)
 	PresentInstallations([]models.Installation)
@@ -105,7 +105,7 @@ func (p *MultiPresenter) PresentCredentialReferences(ref []string) {
 	}
 }
 
-func (p *MultiPresenter) PresentCredentials(creds map[string]string) {
+func (p *MultiPresenter) PresentCredentials(creds interface{}) {
 	switch p.format {
 	case "json":
 		p.jsonPresenter.PresentCredentials(creds)

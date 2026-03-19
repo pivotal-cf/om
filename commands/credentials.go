@@ -54,7 +54,10 @@ func (cs Credentials) Execute(args []string) error {
 		return fmt.Errorf("failed to fetch credential for %q: %s", cs.Options.CredentialReference, err)
 	}
 
-	if len(output.Credential.Value) == 0 {
+	if output.Credential.Value == nil {
+		return fmt.Errorf("failed to fetch credential for %q", cs.Options.CredentialReference)
+	}
+	if valMap, ok := output.Credential.Value.(map[string]interface{}); ok && len(valMap) == 0 {
 		return fmt.Errorf("failed to fetch credential for %q", cs.Options.CredentialReference)
 	}
 
@@ -62,10 +65,19 @@ func (cs Credentials) Execute(args []string) error {
 		cs.presenter.SetFormat(cs.Options.Format)
 		cs.presenter.PresentCredentials(output.Credential.Value)
 	} else {
-		if value, ok := output.Credential.Value[cs.Options.CredentialField]; ok {
-			cs.logger.Println(value)
+		if valMap, ok := output.Credential.Value.(map[string]interface{}); ok {
+			if value, ok := valMap[cs.Options.CredentialField]; ok {
+				if vStr, ok := value.(string); ok {
+					cs.logger.Println(vStr)
+				} else {
+					cs.presenter.SetFormat(cs.Options.Format)
+					cs.presenter.PresentCredentials(value)
+				}
+			} else {
+				return fmt.Errorf("credential field %q not found", cs.Options.CredentialField)
+			}
 		} else {
-			return fmt.Errorf("credential field %q not found", cs.Options.CredentialField)
+			return fmt.Errorf("credential is not a map, cannot lookup field %q", cs.Options.CredentialField)
 		}
 	}
 

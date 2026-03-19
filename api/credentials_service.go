@@ -19,8 +19,8 @@ type CredentialReferencesOutput struct {
 }
 
 type Credential struct {
-	Type  string            `json:"type"`
-	Value map[string]string `json:"value"`
+	Type  string      `json:"type"`
+	Value interface{} `json:"value"`
 }
 
 func (a Api) GetDeployedProductCredential(input GetDeployedProductCredentialInput) (GetDeployedProductCredentialOutput, error) {
