@@ -1,6 +1,8 @@
 package presenters
 
 import (
+	"encoding/json"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -65,15 +67,30 @@ func (t TablePresenter) PresentCredentialReferences(credentialReferences []strin
 	t.tableWriter.Render()
 }
 
-func (t TablePresenter) PresentCredentials(credentials map[string]string) {
+func (t TablePresenter) PresentCredentials(credentials interface{}) {
 	t.tableWriter.SetAlignment(tablewriter.ALIGN_LEFT)
 
-	header, credential := sortCredentialMap(credentials)
-
-	t.tableWriter.SetAutoFormatHeaders(false)
-	t.tableWriter.SetHeader(header)
-	t.tableWriter.SetAutoWrapText(false)
-	t.tableWriter.Append(credential)
+	if credMap, ok := credentials.(map[string]interface{}); ok {
+		header, credential := sortCredentialMap(credMap)
+		t.tableWriter.SetAutoFormatHeaders(false)
+		t.tableWriter.SetHeader(header)
+		t.tableWriter.SetAutoWrapText(false)
+		t.tableWriter.Append(credential)
+	} else {
+		t.tableWriter.SetAutoFormatHeaders(false)
+		t.tableWriter.SetHeader([]string{"Credential"})
+		t.tableWriter.SetAutoWrapText(false)
+		if credStr, ok := credentials.(string); ok {
+			t.tableWriter.Append([]string{credStr})
+		} else {
+			b, err := json.Marshal(credentials)
+			if err != nil {
+				t.tableWriter.Append([]string{fmt.Sprintf("%v", credentials)})
+			} else {
+				t.tableWriter.Append([]string{string(b)})
+			}
+		}
+	}
 	t.tableWriter.Render()
 }
 
@@ -275,7 +292,7 @@ func (t TablePresenter) PresentLicensedProducts(products []api.ExpiringLicenseOu
 	t.tableWriter.Render()
 }
 
-func sortCredentialMap(cm map[string]string) ([]string, []string) {
+func sortCredentialMap(cm map[string]interface{}) ([]string, []string) {
 	var header []string
 	var credential []string
 
@@ -289,7 +306,17 @@ func sortCredentialMap(cm map[string]string) ([]string, []string) {
 	sort.Strings(key)
 	for i := 0; i < len(key); i++ {
 		header = append(header, key[i])
-		credential = append(credential, cm[key[i]])
+		val := cm[key[i]]
+		if vStr, ok := val.(string); ok {
+			credential = append(credential, vStr)
+		} else {
+			b, err := json.Marshal(val)
+			if err != nil {
+				credential = append(credential, fmt.Sprintf("%v", val))
+			} else {
+				credential = append(credential, string(b))
+			}
+		}
 	}
 
 	return header, credential

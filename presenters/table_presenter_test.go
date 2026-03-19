@@ -57,10 +57,10 @@ var _ = Describe("TablePresenter", func() {
 	})
 
 	Describe("PresentCredentials", func() {
-		var credentials map[string]string
+		var credentials map[string]interface{}
 
 		BeforeEach(func() {
-			credentials = map[string]string{"identity": "some-identity", "password": "some-password"}
+			credentials = map[string]interface{}{"identity": "some-identity", "password": "some-password"}
 		})
 
 		It("creates a table", func() {
@@ -75,6 +75,79 @@ var _ = Describe("TablePresenter", func() {
 
 			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
 			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-identity", "some-password"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+	})
+
+	Describe("PresentCredentials with generated_credentials (output accessor)", func() {
+		It("serializes the output value as JSON in the table", func() {
+			credentials := map[string]interface{}{
+				"output": map[string]interface{}{
+					"host":     "10.0.0.1",
+					"port":     float64(8080),
+					"username": "admin",
+				},
+			}
+			tablePresenter.PresentCredentials(credentials)
+
+			Expect(fakeTableWriter.SetAutoFormatHeadersCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.SetAutoFormatHeadersArgsForCall(0)).To(Equal(false))
+
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"output"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			row := fakeTableWriter.AppendArgsForCall(0)
+			Expect(row[0]).To(ContainSubstring("host"))
+			Expect(row[0]).To(ContainSubstring("10.0.0.1"))
+			Expect(row[0]).To(ContainSubstring("admin"))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+
+		It("handles a simple string output value", func() {
+			credentials := map[string]interface{}{
+				"output": "some-simple-output",
+			}
+			tablePresenter.PresentCredentials(credentials)
+
+			Expect(fakeTableWriter.SetAutoFormatHeadersCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"output"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{"some-simple-output"}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+
+		It("handles an empty output value", func() {
+			credentials := map[string]interface{}{
+				"output": "",
+			}
+			tablePresenter.PresentCredentials(credentials)
+
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"output"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			Expect(fakeTableWriter.AppendArgsForCall(0)).To(Equal([]string{""}))
+
+			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
+		})
+
+		It("handles a non-map credential value for edge cases", func() {
+			tablePresenter.PresentCredentials([]interface{}{"item1", "item2"})
+
+			Expect(fakeTableWriter.SetAutoFormatHeadersCallCount()).To(Equal(1))
+			headers := fakeTableWriter.SetHeaderArgsForCall(0)
+			Expect(headers).To(Equal([]string{"Credential"}))
+
+			Expect(fakeTableWriter.AppendCallCount()).To(Equal(1))
+			row := fakeTableWriter.AppendArgsForCall(0)
+			Expect(row[0]).To(ContainSubstring("item1"))
+			Expect(row[0]).To(ContainSubstring("item2"))
 
 			Expect(fakeTableWriter.RenderCallCount()).To(Equal(1))
 		})

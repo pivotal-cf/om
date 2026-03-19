@@ -114,8 +114,103 @@ var _ = Describe("Credentials", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(output.Credential.Value["private_key_pem"]).To(Equal("some-private-key"))
-			Expect(output.Credential.Value["cert_pem"]).To(Equal("some-cert-pem"))
+			valMap, ok := output.Credential.Value.(map[string]interface{})
+			Expect(ok).To(BeTrue())
+			Expect(valMap["private_key_pem"]).To(Equal("some-private-key"))
+			Expect(valMap["cert_pem"]).To(Equal("some-cert-pem"))
+		})
+
+		It("fetches a generated_credentials reference with nested output value", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/.properties.generated-cred"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"credential":{
+							"type": "generated_credentials",
+							"credential": true,
+							"value":{
+								"output": {
+									"host": "10.0.0.1",
+									"port": 8080,
+									"username": "admin"
+								}
+							}
+						}
+					}`),
+				),
+			)
+
+			output, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+				DeployedGUID:        "some-deployed-product-guid",
+				CredentialReference: ".properties.generated-cred",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.Credential.Type).To(Equal("generated_credentials"))
+
+			valMap, ok := output.Credential.Value.(map[string]interface{})
+			Expect(ok).To(BeTrue())
+
+			outputVal, ok := valMap["output"].(map[string]interface{})
+			Expect(ok).To(BeTrue())
+			Expect(outputVal["host"]).To(Equal("10.0.0.1"))
+			Expect(outputVal["port"]).To(Equal(float64(8080)))
+			Expect(outputVal["username"]).To(Equal("admin"))
+		})
+
+		It("fetches a generated_credentials reference with simple string output", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/.properties.generated-string-cred"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"credential":{
+							"type": "generated_credentials",
+							"credential": true,
+							"value":{
+								"output": "some-generated-string-value"
+							}
+						}
+					}`),
+				),
+			)
+
+			output, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+				DeployedGUID:        "some-deployed-product-guid",
+				CredentialReference: ".properties.generated-string-cred",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.Credential.Type).To(Equal("generated_credentials"))
+
+			valMap, ok := output.Credential.Value.(map[string]interface{})
+			Expect(ok).To(BeTrue())
+			Expect(valMap["output"]).To(Equal("some-generated-string-value"))
+		})
+
+		It("fetches a generated_credentials reference with empty output", func() {
+			client.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/deployed/products/some-deployed-product-guid/credentials/.properties.generated-empty-cred"),
+					ghttp.RespondWith(http.StatusOK, `{
+						"credential":{
+							"type": "generated_credentials",
+							"credential": true,
+							"value":{
+								"output": ""
+							}
+						}
+					}`),
+				),
+			)
+
+			output, err := service.GetDeployedProductCredential(api.GetDeployedProductCredentialInput{
+				DeployedGUID:        "some-deployed-product-guid",
+				CredentialReference: ".properties.generated-empty-cred",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.Credential.Type).To(Equal("generated_credentials"))
+
+			valMap, ok := output.Credential.Value.(map[string]interface{})
+			Expect(ok).To(BeTrue())
+			Expect(valMap["output"]).To(Equal(""))
 		})
 
 		When("the client can't connect to the server", func() {
