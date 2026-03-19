@@ -102,7 +102,7 @@ svTEb6EMuB8T2B9Rtg==
 
 				service.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"cert_pem": validPEM,
 						},
 					},
@@ -257,7 +257,7 @@ svTEb6EMuB8T2B9Rtg==
 
 				service.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"private_key": "some-key", // Missing cert_pem
 						},
 					},
@@ -284,7 +284,7 @@ svTEb6EMuB8T2B9Rtg==
 
 				service.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"cert_pem": "", // Empty cert_pem
 						},
 					},
@@ -311,7 +311,7 @@ svTEb6EMuB8T2B9Rtg==
 
 				service.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"cert_pem": "invalid-pem-data",
 						},
 					},
@@ -378,7 +378,7 @@ svTEb6EMuB8T2B9Rtg==
 
 				service.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"cert_pem": validPEM,
 						},
 					},
@@ -446,7 +446,7 @@ svTEb6EMuB8T2B9Rtg==
 
 				service.GetDeployedProductCredentialReturns(api.GetDeployedProductCredentialOutput{
 					Credential: api.Credential{
-						Value: map[string]string{
+						Value: map[string]interface{}{
 							"cert_pem": validPEM,
 						},
 					},
