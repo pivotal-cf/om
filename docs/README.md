@@ -12,6 +12,7 @@ for this product.
 | ------------- | ------------- |
 | [activate-certificate-authority](activate-certificate-authority/README.md) | activates a certificate authority on the Ops Manager |
 | [apply-changes](apply-changes/README.md) | triggers an install on the Ops Manager targeted |
+| [assign-kubernetes-distribution](assign-kubernetes-distribution/README.md) | assigns a kubernetes distribution to a product in the targeted Ops Manager |
 | [assign-multi-stemcell](assign-multi-stemcell/README.md) | assigns multiple uploaded stemcells to a product in the targeted Ops Manager 2.6+ |
 | [assign-stemcell](assign-stemcell/README.md) | assigns an uploaded stemcell to a product in the targeted Ops Manager |
 | [available-products](available-products/README.md) | **DEPRECATED** lists available products. Use 'products --available' instead. |
@@ -53,6 +54,7 @@ for this product.
 | [installation-log](installation-log/README.md) | output installation logs |
 | [installations](installations/README.md) | list recent installation events |
 | [interpolate](interpolate/README.md) | interpolates variables into a manifest |
+| [kubernetes-distributions](kubernetes-distributions/README.md) | lists kubernetes distributions known to Ops Manager |
 | [pending-changes](pending-changes/README.md) | checks for pending changes |
 | [pre-deploy-check](pre-deploy-check/README.md) | checks completeness and validity of product configuration |
 | [product-metadata](product-metadata/README.md) | prints product metadata |
