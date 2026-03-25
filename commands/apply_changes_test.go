@@ -60,7 +60,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, forceLatestVariables, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, forceLatestVariables, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 			Expect(forceLatestVariables).To(Equal(false))
@@ -91,7 +91,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, _, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
@@ -117,7 +117,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--ignore-warnings"})
 				Expect(err).ToNot(HaveOccurred())
 
-				ignoreWarnings, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+				ignoreWarnings, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
 			})
 		})
@@ -131,7 +131,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--force-latest-variables"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, forceLatestVariables, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, forceLatestVariables, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(forceLatestVariables).To(Equal(true))
 			})
 		})
@@ -143,7 +143,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--skip-deploy-products"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, deployProducts, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 
@@ -164,7 +164,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
-				_, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
 				Expect(productNames).To(ConsistOf("product1", "product2"))
 			})
 		})
@@ -330,6 +330,38 @@ var _ = Describe("ApplyChanges", func() {
 			})
 		})
 
+		When("passed the resume-recreate-vms flag", func() {
+			It("passes recreate=true to CreateInstallation when paired with --recreate-vms on OM 3.3.0+", func() {
+				service.InfoReturns(api.Info{Version: "3.3.0"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--recreate-vms", "--resume-recreate-vms"})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, recreate, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(recreate).To(Equal(true))
+			})
+
+			It("errors when used without --recreate-vms", func() {
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--resume-recreate-vms"})
+				Expect(err).To(MatchError(ContainSubstring("--resume-recreate-vms can only be used with --recreate-vms")))
+			})
+
+			When("on a version less than 3.3.0", func() {
+				It("errors because recreate is not supported before OM 3.3.0", func() {
+					service.InfoReturns(api.Info{Version: "2.9.0"}, nil)
+
+					command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+					err := executeCommand(command, []string{"--recreate-vms", "--resume-recreate-vms"})
+					Expect(err).To(MatchError(ContainSubstring("--resume-recreate-vms requires Ops Manager 3.3.0 or later: you are running 2.9.0")))
+				})
+			})
+		})
+
 		Context("Load config file", func() {
 			var fileName string
 
@@ -397,7 +429,7 @@ errands:
 
 					Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-					ignoreWarnings, deployProducts, forceLatestVariables, _, errands := service.CreateInstallationArgsForCall(0)
+					ignoreWarnings, deployProducts, forceLatestVariables, _, _, errands := service.CreateInstallationArgsForCall(0)
 					Expect(ignoreWarnings).To(Equal(false))
 					Expect(deployProducts).To(Equal(true))
 					Expect(forceLatestVariables).To(Equal(false))

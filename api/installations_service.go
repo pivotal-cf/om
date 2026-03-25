@@ -74,7 +74,7 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	return responseStruct.Installations, nil
 }
 
-func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
+func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, recreate bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
 	productGuidMapping, err := a.fetchProductGUID()
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("failed to list staged and/or deployed products: %w", err)
@@ -112,11 +112,13 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceL
 	data, err := json.Marshal(&struct {
 		IgnoreWarnings       string                   `json:"ignore_warnings"`
 		ForceLatestVariables bool                     `json:"force_latest_variables"`
+		Recreate             bool                     `json:"recreate,omitempty"`
 		DeployProducts       interface{}              `json:"deploy_products"`
 		Errands              map[string]ProductErrand `json:"errands,omitempty"`
 	}{
 		IgnoreWarnings:       fmt.Sprintf("%t", ignoreWarnings),
 		ForceLatestVariables: forceLatestVariables,
+		Recreate:             recreate,
 		DeployProducts:       deployProductsVal,
 		Errands:              errandsPayload,
 	})

@@ -24,6 +24,7 @@ type ApplyChanges struct {
 		IgnoreWarnings       bool     `short:"i"   long:"ignore-warnings"      description:"For convenience. Use other commands to disable particular verifiers if they are inappropriate."`
 		Reattach             bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
 		RecreateVMs          bool     `long:"recreate-vms" description:"recreate all vms"`
+		ResumeRecreateVMs    bool     `long:"resume-recreate-vms" description:"resume an interrupted recreate, can only be used with --recreate-vms (OM 3.3.0+)"`
 		SkipDeployProducts   bool     `short:"s" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
 		ForceLatestVariables bool     `long:"force-latest-variables" description:"force any certificates or other BOSH variables to use their latest version even when a stemcell is not being upgraded"`
 		ProductNames         []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
@@ -32,7 +33,7 @@ type ApplyChanges struct {
 
 //counterfeiter:generate -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
 type applyChangesService interface {
-	CreateInstallation(bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
+	CreateInstallation(bool, bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 	Info() (api.Info, error)
@@ -59,6 +60,10 @@ func NewApplyChanges(service applyChangesService, pendingService pendingChangesS
 func (ac ApplyChanges) Execute(args []string) error {
 	if ac.Options.RecreateVMs && ac.Options.Reattach {
 		return errors.New("--recreate-vms cannot be used with --reattach because it requires the ability to update a director property")
+	}
+
+	if ac.Options.ResumeRecreateVMs && !ac.Options.RecreateVMs {
+		return errors.New("--resume-recreate-vms can only be used with --recreate-vms")
 	}
 
 	errands := api.ApplyErrandChanges{}
@@ -151,6 +156,16 @@ func (ac ApplyChanges) Execute(args []string) error {
 			config.DirectorConfiguration.DirectorRecreate = false
 		}
 
+		if ac.Options.ResumeRecreateVMs {
+			versionAtLeast33, err := info.VersionAtLeast(3, 3)
+			if err != nil {
+				return err
+			}
+			if !versionAtLeast33 {
+				return fmt.Errorf("--resume-recreate-vms requires Ops Manager 3.3.0 or later: you are running %s", info.Version)
+			}
+		}
+
 		payload, _ := json.Marshal(config)
 		err = ac.service.UpdateStagedDirectorProperties(api.DirectorProperties(string(payload)))
 		if err != nil {
@@ -159,7 +174,7 @@ func (ac ApplyChanges) Execute(args []string) error {
 	}
 
 	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, ac.Options.ForceLatestVariables, changedProducts, errands)
+	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, ac.Options.ForceLatestVariables, ac.Options.ResumeRecreateVMs, changedProducts, errands)
 	if err != nil {
 		return fmt.Errorf("installation failed to trigger: %s", err)
 	}
