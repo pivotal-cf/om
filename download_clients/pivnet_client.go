@@ -29,11 +29,11 @@ type PivnetDownloader interface {
 
 type PivnetFactory func(ts pivnet.AccessTokenService, config pivnet.ClientConfig, logger pivnetlog.Logger) (PivnetDownloader, error)
 
-var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyAuthType string, proxyKrb5Config string) (ProductDownloader, error) {
+var NewPivnetClient = func(stdout *log.Logger, stderr *log.Logger, trace bool, factory PivnetFactory, token string, skipSSL bool, pivnetHost string, proxyURL string, proxyUsername string, proxyPassword string, proxyAuthType string, proxyKrb5Config string) (ProductDownloader, error) {
 	logger := logshim.NewLogShim(
 		stdout,
 		stderr,
-		false,
+		trace,
 	)
 
 	// Configure proxy settings
