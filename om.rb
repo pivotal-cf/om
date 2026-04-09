@@ -5,22 +5,22 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.20.1"
+  version "7.21.0"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.20.1/om-darwin-amd64-7.20.1.tar.gz"
-      sha256 "017a3cbd27fc1f13460d08a5ed2738323e97d9709d79cc682bca3cf34cb3da84"
+      url "https://github.com/pivotal-cf/om/releases/download/7.21.0/om-darwin-amd64-7.21.0.tar.gz"
+      sha256 "0dbe6effe5e46a9f91282492c75edb3b4b035a04231fb203b2c8bf615a0611ea"
 
-      def install
+      define_method(:install) do
         bin.install "om"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.20.1/om-darwin-arm64-7.20.1.tar.gz"
-      sha256 "b4bf5ebdaf574fd06ff66bc65ab178b97680cf0900a259ba9f4cf93710e5354f"
+      url "https://github.com/pivotal-cf/om/releases/download/7.21.0/om-darwin-arm64-7.21.0.tar.gz"
+      sha256 "3adb8757d593a52544fcc0a57596b0aabd6ff5b83d5cc0ad145df8b5fc2f0f3f"
 
-      def install
+      define_method(:install) do
         bin.install "om"
       end
     end
@@ -28,16 +28,16 @@ class Om < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.20.1/om-linux-amd64-7.20.1.tar.gz"
-      sha256 "8312998627909962d72f5d1d3542dcd907a6e0a5cf522913c4f90deb699c1779"
-      def install
+      url "https://github.com/pivotal-cf/om/releases/download/7.21.0/om-linux-amd64-7.21.0.tar.gz"
+      sha256 "f7606956b83af0b9d8f0cdf2af364094628bfc9ad6d39b55e3048b6b40eb219b"
+      define_method(:install) do
         bin.install "om"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.20.1/om-linux-arm64-7.20.1.tar.gz"
-      sha256 "b8439b3bf2591089b7570f30bce033cfa6c33b831e6b6ce9c7f60fe91a36ef3c"
-      def install
+      url "https://github.com/pivotal-cf/om/releases/download/7.21.0/om-linux-arm64-7.21.0.tar.gz"
+      sha256 "cc6767bb08de63c014deff8d8ea22116e7180ff8734efbbc415db6260e9ca8a4"
+      define_method(:install) do
         bin.install "om"
       end
     end
