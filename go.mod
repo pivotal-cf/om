@@ -1,6 +1,6 @@
 module github.com/pivotal-cf/om
 
-go 1.25.8
+go 1.25.9
 
 require (
 	cloud.google.com/go/storage v1.57.0
