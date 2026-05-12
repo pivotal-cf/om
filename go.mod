@@ -30,7 +30,7 @@ require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260213221146-eb40be258a86
-	github.com/testcontainers/testcontainers-go v0.41.1-0.20260403163240-359d0dec648b
+	github.com/testcontainers/testcontainers-go v0.42.0
 	github.com/vmware/govmomi v0.46.0
 	golang.org/x/oauth2 v0.34.0
 	google.golang.org/api v0.252.0
@@ -132,7 +132,7 @@ require (
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
