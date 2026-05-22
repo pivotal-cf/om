@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.62.1
 	code.cloudfoundry.org/credhub-cli v0.0.0-20260525130100-0755c85522c7
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.11.29
+	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/aws/aws-sdk-go v1.55.8
 	github.com/blang/semver v3.5.1+incompatible
