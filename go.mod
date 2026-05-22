@@ -15,7 +15,7 @@ require (
 	github.com/cloudfoundry-community/go-uaa v0.3.3
 	github.com/cloudfoundry/bosh-cli v6.4.1+incompatible
 	github.com/cppforlife/go-patch v0.2.0
-	github.com/fatih/color v1.18.0
+	github.com/fatih/color v1.19.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/graymeta/stow v0.2.8
 	github.com/hashicorp/go-version v1.7.0
