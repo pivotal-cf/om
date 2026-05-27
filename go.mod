@@ -29,7 +29,7 @@ require (
 require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
-	github.com/pivotal-cf/winfs-injector v0.0.0-20260213221146-eb40be258a86
+	github.com/pivotal-cf/winfs-injector v0.0.0-20260511234604-9a7f5e362230
 	github.com/testcontainers/testcontainers-go v0.41.1-0.20260403163240-359d0dec648b
 	github.com/vmware/govmomi v0.46.0
 	golang.org/x/oauth2 v0.36.0
@@ -48,9 +48,9 @@ require (
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.11.0 // indirect
 	cloud.google.com/go/monitoring v1.29.0 // indirect
-	code.cloudfoundry.org/archiver v0.62.0 // indirect
+	code.cloudfoundry.org/archiver v0.69.0 // indirect
 	code.cloudfoundry.org/clock v1.69.0 // indirect
-	code.cloudfoundry.org/hydrator v0.81.0 // indirect
+	code.cloudfoundry.org/hydrator v0.88.0 // indirect
 	code.cloudfoundry.org/tlsconfig v0.53.0 // indirect
 	code.cloudfoundry.org/workpool v0.0.0-20250911194158-1489753f182e // indirect
 	dario.cat/mergo v1.0.2 // indirect
