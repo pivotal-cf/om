@@ -30,7 +30,7 @@ require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20260512025510-ac7a56596ed0
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260213221146-eb40be258a86
-	github.com/testcontainers/testcontainers-go v0.41.1-0.20260403163240-359d0dec648b
+	github.com/testcontainers/testcontainers-go v0.42.0
 	github.com/vmware/govmomi v0.46.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.281.0
