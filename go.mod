@@ -1,6 +1,6 @@
 module github.com/pivotal-cf/om
 
-go 1.25.9
+go 1.26.3
 
 require (
 	cloud.google.com/go/storage v1.62.1
@@ -28,7 +28,7 @@ require (
 
 require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
-	github.com/pivotal-cf/replicator v0.0.0-20181127185712-7c58987ce14b
+	github.com/pivotal-cf/replicator v0.0.0-20260512025510-ac7a56596ed0
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260213221146-eb40be258a86
 	github.com/testcontainers/testcontainers-go v0.41.1-0.20260403163240-359d0dec648b
 	github.com/vmware/govmomi v0.46.0
@@ -170,7 +170,6 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
-	github.com/pivotal-cf-experimental/gomegamatchers v0.0.0-20180326192815-e36bfcc98c3a // indirect
 	github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
