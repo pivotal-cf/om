@@ -31,7 +31,8 @@ require (
 	github.com/pivotal-cf/replicator v0.0.0-20260512025510-ac7a56596ed0
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260213221146-eb40be258a86
 	github.com/testcontainers/testcontainers-go v0.42.0
-	github.com/vmware/govmomi v0.46.0
+	github.com/vmware/govmomi v0.54.0
+	github.com/vmware/govmomi/govc v0.0.0-20260525204757-d2c4a463b094
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.281.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
@@ -69,7 +70,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
-	github.com/a8m/tree v0.0.0-20210115125333-10a5fd5b637d // indirect
+	github.com/a8m/tree v0.0.0-20240104212747-2c8764a5f17e // indirect
 	github.com/aws/aws-sdk-go-v2 v1.41.7 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.10 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.32.17 // indirect
