@@ -3,8 +3,18 @@
     "extends": [
       "config:recommended"
     ],
+    "schedule": ["on tuesday and thursday"],
     "postUpdateOptions": [
       "gomodTidy",
       "gomodUpdateImportPaths"
+    ],
+    "packageRules": [
+      {
+        "matchUpdateTypes": ["patch"],
+        "groupName": "all patch updates",
+        "automerge": true,
+        "automergeType": "pr",
+        "automergeStrategy": "squash"
+      }
     ]
   }
