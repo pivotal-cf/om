@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	cloud.google.com/go/storage v1.62.2
-	code.cloudfoundry.org/credhub-cli v0.0.0-20260525130100-0755c85522c7
+	code.cloudfoundry.org/credhub-cli v0.0.0-20260601130146-10715408e47d
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
@@ -100,7 +100,7 @@ require (
 	github.com/cloudfoundry/bosh-davcli v0.0.476 // indirect
 	github.com/cloudfoundry/bosh-gcscli v0.0.381 // indirect
 	github.com/cloudfoundry/bosh-s3cli v0.0.404 // indirect
-	github.com/cloudfoundry/bosh-utils v0.0.612 // indirect
+	github.com/cloudfoundry/bosh-utils v0.0.615 // indirect
 	github.com/cloudfoundry/config-server v0.1.277 // indirect
 	github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851 // indirect
 	github.com/cloudfoundry/socks5-proxy v0.2.176 // indirect
@@ -155,7 +155,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
