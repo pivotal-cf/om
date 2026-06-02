@@ -31,7 +31,7 @@ require (
 	github.com/pivotal-cf/replicator v0.0.0-20260512025510-ac7a56596ed0
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260213221146-eb40be258a86
 	github.com/testcontainers/testcontainers-go v0.42.0
-	github.com/vmware/govmomi v0.54.0
+	github.com/vmware/govmomi v0.54.1
 	github.com/vmware/govmomi/govc v0.0.0-20260529172403-d12aa89c22af
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.283.0
