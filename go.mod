@@ -34,7 +34,7 @@ require (
 	github.com/vmware/govmomi v0.54.0
 	github.com/vmware/govmomi/govc v0.0.0-20260529172403-d12aa89c22af
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.282.0
+	google.golang.org/api v0.283.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
