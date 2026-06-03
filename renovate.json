@@ -3,6 +3,7 @@
     "extends": [
       "config:recommended"
     ],
+    "ignorePresets": ["group:monorepos", "group:recommended"],
     "schedule": ["on tuesday and thursday"],
     "postUpdateOptions": [
       "gomodTidy",
