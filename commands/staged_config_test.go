@@ -1,3 +1,8 @@
+// @AI-Generated
+// Modified with AI assistance
+// Description:
+// 2026-06-05: Updated and added tests for SupportsParallelDeploys gating in staged-config - Cursor: Claude Sonnet 4.5
+
 package commands_test
 
 import (
@@ -430,8 +435,9 @@ syslog-properties:
 			deployTrue := true
 			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 				Product: api.StagedProduct{
-					GUID:             "some-product-guid",
-					DeployInParallel: &deployTrue,
+					GUID:                    "some-product-guid",
+					DeployInParallel:        &deployTrue,
+					SupportsParallelDeploys: true,
 				},
 			}, nil)
 		})
@@ -490,8 +496,9 @@ syslog-properties:
 			deployFalse := false
 			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
 				Product: api.StagedProduct{
-					GUID:             "some-product-guid",
-					DeployInParallel: &deployFalse,
+					GUID:                    "some-product-guid",
+					DeployInParallel:        &deployFalse,
+					SupportsParallelDeploys: true,
 				},
 			}, nil)
 		})
@@ -536,6 +543,37 @@ syslog-properties:
   enabled: true
   host: tcp://1.1.1.1
 `)))
+		})
+	})
+
+	When("the product does not support parallel deploys", func() {
+		BeforeEach(func() {
+			internalSelector = api.ResponseProperty{
+				Value:        "internal",
+				Type:         "selector",
+				Configurable: true,
+			}
+			fakeService = setFakeService(internalSelector, true)
+			deployFalse := false
+			fakeService.GetStagedProductByNameReturns(api.StagedProductsFindOutput{
+				Product: api.StagedProduct{
+					GUID:                    "some-product-guid",
+					DeployInParallel:        &deployFalse,
+					SupportsParallelDeploys: false,
+				},
+			}, nil)
+		})
+
+		It("omits deploy-in-parallel from the output", func() {
+			command := commands.NewStagedConfig(fakeService, logger)
+			err := executeCommand(command, []string{
+				"--product-name", "some-product",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(logger.PrintlnCallCount()).To(Equal(1))
+			output := logger.PrintlnArgsForCall(0)
+			Expect(output).ToNot(ContainElement(ContainSubstring("deploy-in-parallel")))
 		})
 	})
 

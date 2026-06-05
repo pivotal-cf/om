@@ -1,3 +1,8 @@
+// @AI-Generated
+// Modified with AI assistance
+// Description:
+// 2026-06-05: Suppress deploy-in-parallel in staged-config output for products that don't support parallel deploys - Cursor: Claude Sonnet 4.5
+
 package commands
 
 import (
@@ -174,9 +179,14 @@ func (ec StagedConfig) Execute(args []string) error {
 		errandConfigs[errand.Name] = errandConfig
 	}
 
+	var deployInParallel *bool
+	if findOutput.Product.SupportsParallelDeploys {
+		deployInParallel = findOutput.Product.DeployInParallel
+	}
+
 	config := config.ProductConfiguration{
 		ProductName:              ec.Options.Product,
-		DeployInParallel:         findOutput.Product.DeployInParallel,
+		DeployInParallel:         deployInParallel,
 		ProductProperties:        configurableProperties,
 		NetworkProperties:        networks,
 		ResourceConfigProperties: resourceConfig,

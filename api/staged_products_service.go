@@ -1,3 +1,8 @@
+// @AI-Generated
+// Modified with AI assistance
+// Description:
+// 2026-06-05: Added SupportsParallelDeploys field to StagedProduct struct - Cursor: Claude Sonnet 4.5
+
 package api
 
 import (
@@ -25,12 +30,13 @@ type StagedProductsOutput struct {
 }
 
 type StagedProduct struct {
-	GUID                string
-	Type                string
-	ProductTemplateName string            `json:"product_template_name"`
-	LicenseMetadata     []LicenseMetadata `json:"license_metadata"`
-	ProductVersion      string            `json:"product_version"`
-	DeployInParallel    *bool             `json:"deploy_in_parallel,omitempty"`
+	GUID                    string
+	Type                    string
+	ProductTemplateName     string            `json:"product_template_name"`
+	LicenseMetadata         []LicenseMetadata `json:"license_metadata"`
+	ProductVersion          string            `json:"product_version"`
+	DeployInParallel        *bool             `json:"deploy_in_parallel,omitempty"`
+	SupportsParallelDeploys bool              `json:"supports_parallel_deploys"`
 }
 
 type UnstageProductInput struct {

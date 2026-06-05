@@ -1,3 +1,8 @@
+// @AI-Generated
+// Modified with AI assistance
+// Description:
+// 2026-06-05: Updated and added acceptance tests for SupportsParallelDeploys gating in staged-config - Cursor: Claude Sonnet 4.5
+
 package acceptance
 
 import (
@@ -131,10 +136,10 @@ syslog-properties:
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
-					ghttp.RespondWith(http.StatusOK, `[
-						{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
-						{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0","deploy_in_parallel":true}
-					]`),
+				ghttp.RespondWith(http.StatusOK, `[
+					{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
+					{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0","supports_parallel_deploys":true,"deploy_in_parallel":true}
+				]`),
 				),
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties", "redact=true"),
@@ -219,6 +224,66 @@ syslog-properties:
   permitted_peer: "*.example.com"
   ssl_ca_certificate: "-----BEGIN CERTIFICATE-----\r\nMIIBsjCCARug..."
 `))
+		})
+	})
+
+	When("the product does not support parallel deploys", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+					ghttp.RespondWith(http.StatusOK, `[
+						{"installation_name":"p-bosh","guid":"p-bosh-guid","type":"p-bosh","product_version":"1.10.0.0"},
+						{"installation_name":"some-product","guid":"some-product-guid","type":"some-product","product_version":"1.0.0","supports_parallel_deploys":false,"deploy_in_parallel":false}
+					]`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/properties", "redact=true"),
+					ghttp.RespondWith(http.StatusOK, stagedPropertiesJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/networks_and_azs"),
+					ghttp.RespondWith(http.StatusOK, stagedNetworksAndAzsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs"),
+					ghttp.RespondWith(http.StatusOK, stagedJobsJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/max_in_flight"),
+					ghttp.RespondWith(http.StatusOK, `{"max_in_flight": {"some-guid": "20%"}}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/syslog_configuration"),
+					ghttp.RespondWith(http.StatusOK, stagedSyslogConfigurationJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/jobs/some-guid/resource_config"),
+					ghttp.RespondWith(http.StatusOK, stagedResourceConfigJSON),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/staged/products/some-product-guid/errands"),
+					ghttp.RespondWith(http.StatusOK, stagedErrandsJSON),
+				),
+			)
+		})
+
+		It("omits deploy-in-parallel from the configuration template", func() {
+			command := exec.Command(pathToMain,
+				"--target", server.URL(),
+				"--username", "some-username",
+				"--password", "some-password",
+				"--skip-ssl-validation",
+				"staged-config",
+				"--product-name", "some-product",
+			)
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session, "10s").Should(gexec.Exit(0))
+
+			Expect(string(session.Out.Contents())).ToNot(ContainSubstring("deploy-in-parallel"))
 		})
 	})
 
