@@ -92,10 +92,9 @@ type DownloadProductOptions struct {
 }
 
 type DownloadProduct struct {
-	environFunc    func() []string
-	progressWriter io.Writer
 	stderr         *log.Logger
 	stdout         *log.Logger
+	trace          bool
 	service        downloadProductService
 	downloadClient download_clients.ProductDownloader
 	Options        DownloadProductOptions
@@ -107,13 +106,12 @@ type downloadProductService interface {
 	CheckStemcellAvailability(string) (bool, error)
 }
 
-func NewDownloadProduct(environFunc func() []string, stdout *log.Logger, stderr *log.Logger, progressWriter io.Writer, downloadProductService downloadProductService) *DownloadProduct {
+func NewDownloadProduct(stdout *log.Logger, stderr *log.Logger, trace bool, downloadProductService downloadProductService) *DownloadProduct {
 	return &DownloadProduct{
-		environFunc:    environFunc,
-		stderr:         stderr,
-		stdout:         stdout,
-		progressWriter: progressWriter,
-		service:        downloadProductService,
+		stderr:  stderr,
+		stdout:  stdout,
+		trace:   trace,
+		service: downloadProductService,
 	}
 }
 
@@ -234,7 +232,7 @@ func (c *DownloadProduct) determineProductVersion() (string, error) {
 }
 
 func (c *DownloadProduct) createClient() error {
-	plugin, err := newDownloadClientFromSource(c.Options, c.progressWriter, c.stdout, c.stderr)
+	plugin, err := newDownloadClientFromSource(c.Options, c.stdout, c.stderr, c.trace)
 	if err != nil {
 		return fmt.Errorf("could not find valid source for '%s': %w", c.Options.Source, err)
 	}
@@ -580,9 +578,9 @@ type ProductClientRegistration func(
 ) (download_clients.ProductDownloader, error)
 
 func newDownloadClientFromSource(c DownloadProductOptions,
-	progressWriter io.Writer,
 	stdout *log.Logger,
 	stderr *log.Logger,
+	trace bool,
 ) (download_clients.ProductDownloader, error) {
 	switch c.Source {
 	case "azure":
@@ -630,6 +628,7 @@ func newDownloadClientFromSource(c DownloadProductOptions,
 		return download_clients.NewPivnetClient(
 			stdout,
 			stderr,
+			trace,
 			download_clients.DefaultPivnetFactory,
 			c.PivnetToken,
 			c.PivnetDisableSSL,
