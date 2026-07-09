@@ -38,6 +38,129 @@ var _ = Describe("StemcellService", func() {
 		server.Close()
 	})
 
+	Describe("CheckStemcellAvailability with smart filename parsing", func() {
+		It("detects stemcell when filename format differs but OS/version/infra match", func() {
+			// This tests the smart filename parsing fallback:
+			// - Requested: bosh-stemcell-1.1250-vsphere-esxi-ubuntu-jammy-go_agent.tgz (Pivnet format)
+			// - Available: bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1250.tgz (Ops Manager format)
+			// The exact filenames don't match, so exact matching fails.
+			// But smart parsing should extract the same OS, version, infra and match.
+
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"stemcells": [],
+					"infrastructure_type": "vsphere-esxi",
+					"available_stemcells": [
+						{
+							"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1250.tgz",
+							"os": "ubuntu-jammy",
+							"version": "1.1250"
+						}
+					]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+			)
+
+			found, err := service.CheckStemcellAvailability("bosh-stemcell-1.1250-vsphere-esxi-ubuntu-jammy-go_agent.tgz")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+		})
+
+		It("detects stemcell using smart parsing even when manifest extraction fails", func() {
+			// File is not a valid .tgz, so manifest extraction fails.
+			// Smart filename parsing should still extract OS/version/infra from the filename
+			// and match against the Ops Manager inventory.
+
+			invalidPath := filepath.Join(os.TempDir(), "bosh-stemcell-1.1250-vsphere-esxi-ubuntu-jammy-go_agent.tgz")
+			Expect(os.WriteFile(invalidPath, []byte("not a tgz"), 0600)).To(Succeed())
+			defer os.Remove(invalidPath)
+
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"stemcells": [],
+					"infrastructure_type": "vsphere-esxi",
+					"available_stemcells": [
+						{
+							"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1250.tgz",
+							"os": "ubuntu-jammy",
+							"version": "1.1250"
+						}
+					]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+			)
+
+			found, err := service.CheckStemcellAvailability(invalidPath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+		})
+
+		It("handles smart parsing with AWS infrastructure", func() {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"stemcells": [],
+					"infrastructure_type": "aws",
+					"available_stemcells": [
+						{
+							"filename": "bosh-aws-ubuntu-bionic-1.100.tgz",
+							"os": "ubuntu-bionic",
+							"version": "1.100"
+						}
+					]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+			)
+
+			found, err := service.CheckStemcellAvailability("bosh-stemcell-1.100-aws-ubuntu-bionic-go_agent.tgz")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+		})
+
+		It("returns false when smart parsing extracts different version", func() {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"stemcells": [],
+					"infrastructure_type": "vsphere-esxi",
+					"available_stemcells": [
+						{
+							"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1251.tgz",
+							"os": "ubuntu-jammy",
+							"version": "1.1251"
+						}
+					]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+			)
+
+			// Requested version is 1.1250, available is 1.1251 -> should not match
+			found, err := service.CheckStemcellAvailability("bosh-stemcell-1.1250-vsphere-esxi-ubuntu-jammy-go_agent.tgz")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeFalse())
+		})
+
+		It("returns false when smart parsing can't extract from unparseable filename", func() {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, `{
+					"stemcells": [],
+					"infrastructure_type": "vsphere-esxi",
+					"available_stemcells": [
+						{
+							"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1250.tgz",
+							"os": "ubuntu-jammy",
+							"version": "1.1250"
+						}
+					]
+				}`),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+			)
+
+			// Filename that can't be parsed -> smart parsing returns empty strings
+			found, err := service.CheckStemcellAvailability("unparseable-filename.tgz")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeFalse())
+		})
+	})
+
 	Describe("ListStemcells", func() {
 		It("makes a request to list the stemcells", func() {
 			server.AppendHandlers(
@@ -356,6 +479,38 @@ cloud_properties:
 			})
 		})
 
+		When("vSphere variants (vsphere/vsphere-esxi infrastructure equivalence)", func() {
+			It("returns true when stemcell manifest has vsphere and report has vsphere-esxi", func() {
+				manifestContent := `name: bosh-vsphere-esxi-ubuntu-jammy
+version: "1.1016"
+operating_system: ubuntu-jammy
+cloud_properties:
+  infrastructure: vsphere
+`
+				var buf bytes.Buffer
+				gw := gzip.NewWriter(&buf)
+				tw := tar.NewWriter(gw)
+				Expect(tw.WriteHeader(&tar.Header{Name: "stemcell.MF", Size: int64(len(manifestContent))})).To(Succeed())
+				_, err := tw.Write([]byte(manifestContent))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(tw.Close()).To(Succeed())
+				Expect(gw.Close()).To(Succeed())
+
+				stemcellPath := filepath.Join(os.TempDir(), "bosh-stemcell-1.1016-vsphere-ubuntu-jammy-go_agent.tgz")
+				Expect(os.WriteFile(stemcellPath, buf.Bytes(), 0600)).To(Succeed())
+				defer os.Remove(stemcellPath)
+
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `{"stemcells": [], "infrastructure_type": "vsphere-esxi", "available_stemcells": [{"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1016.tgz", "os": "ubuntu-jammy", "version": "1.1016"}]}`),
+					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+		})
+
 		When("Docker Ops Manager (warden/docker infrastructure equivalence)", func() {
 			It("returns true when stemcell manifest has warden and report has docker", func() {
 				// Docker Ops Manager reports infrastructure_type "docker" but stemcells are built for "warden".
@@ -380,6 +535,57 @@ cloud_properties:
 
 				server.AppendHandlers(
 					ghttp.RespondWith(http.StatusOK, `{"stemcells": [], "infrastructure_type": "docker", "available_stemcells": [{"filename": "bosh-docker-ubuntu-jammy-1.1016.tgz", "os": "ubuntu-jammy", "version": "1.1016"}]}`),
+					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+
+			It("falls back to filename matching when manifest fields don't match any stemcell (TNZ-103785)", func() {
+				// This is the regression test for TNZ-103785. The bug was that when manifest
+				// extraction succeeded but the manifest fields didn't match any stemcell in the
+				// diagnostic report, the function would return false immediately without
+				// attempting the filename-based fallback. This test verifies that the fix
+				// allows the function to continue to filename matching.
+
+				// Create a stemcell with manifest that won't match any stemcell in the report
+				// (different infrastructure type), but the filename DOES exist in available_stemcells.
+				manifestContent := `name: bosh-aws-ubuntu-jammy
+version: "1.1016"
+operating_system: ubuntu-jammy
+cloud_properties:
+  infrastructure: aws
+`
+				var buf bytes.Buffer
+				gw := gzip.NewWriter(&buf)
+				tw := tar.NewWriter(gw)
+				Expect(tw.WriteHeader(&tar.Header{Name: "stemcell.MF", Size: int64(len(manifestContent))})).To(Succeed())
+				_, err := tw.Write([]byte(manifestContent))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(tw.Close()).To(Succeed())
+				Expect(gw.Close()).To(Succeed())
+
+				stemcellPath := filepath.Join(os.TempDir(), "bosh-stemcell-1.1016-aws-ubuntu-jammy-go_agent.tgz")
+				Expect(os.WriteFile(stemcellPath, buf.Bytes(), 0600)).To(Succeed())
+				defer os.Remove(stemcellPath)
+
+				// Diagnostic report has the stemcell by filename in available_stemcells,
+				// but with a different infrastructure type (vsphere instead of aws),
+				// so manifest matching won't find it. The fallback filename matching should find it.
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, `{
+						"stemcells": [],
+						"infrastructure_type": "vsphere-esxi",
+						"available_stemcells": [
+							{
+								"filename": "bosh-stemcell-1.1016-aws-ubuntu-jammy-go_agent.tgz",
+								"os": "ubuntu-jammy",
+								"version": "1.1016"
+							}
+						]
+					}`),
 					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
 				)
 
