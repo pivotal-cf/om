@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bmatcuk/doublestar"
+	"github.com/bmatcuk/doublestar/v4"
 	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/om/interpolate"
