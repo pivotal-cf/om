@@ -12,7 +12,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/cheggaaa/pb/v3 v3.1.7
-	github.com/cloudfoundry-community/go-uaa v0.4.0
+	github.com/cloudfoundry-community/go-uaa v0.4.1
 	github.com/cloudfoundry/bosh-cli v6.4.1+incompatible
 	github.com/cppforlife/go-patch v0.2.0
 	github.com/fatih/color v1.19.0
@@ -23,7 +23,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.32.0
-	github.com/onsi/gomega v1.41.0
+	github.com/onsi/gomega v1.42.1
 )
 
 require (
