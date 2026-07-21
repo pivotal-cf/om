@@ -500,8 +500,8 @@ github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 h1:gga7acRE695AP
 github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 github.com/vito/go-interact v1.0.2 h1:viJuANio3WH9utUG4rKbJC9V3JR5JgYNS+i0efeA+GU=
 github.com/vito/go-interact v1.0.2/go.mod h1:s+y0jK9Z2etBYt5ZM6+DhpOsE5C7NNGC3jrJvW0BBpc=
-github.com/vmware/govmomi v0.54.1 h1:K30mfqTYE/xMbka2EHLAucxL5VOXrPstMUTbHdETNIg=
-github.com/vmware/govmomi v0.54.1/go.mod h1:/1lqYPsCaC3Rf+WTgMcuvs+TqJVEvLX1O4oJ51pIw4E=
+github.com/vmware/govmomi v0.55.1 h1:7FW6VXIdKe/7AXftBoFTHaf0UO8Kdl84tIjothNDlZI=
+github.com/vmware/govmomi v0.55.1/go.mod h1:QR6UoTHdmvT5XvdomNKwyi7VPOnrE0QZxjPBJ0mWWQs=
 github.com/vmware/govmomi/govc v0.0.0-20260605144729-9dabce8729ae h1:XvJU/dLzId3kgH2K6KuiVeAZv4C/QfF/coDsuKhVr5k=
 github.com/vmware/govmomi/govc v0.0.0-20260605144729-9dabce8729ae/go.mod h1:xkq7fCcN85fzCngdqXeI2drXUQa2yg9qvc+OsQygsuk=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
