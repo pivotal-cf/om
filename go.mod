@@ -36,7 +36,6 @@ require (
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.285.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
-	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
@@ -212,4 +211,5 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
