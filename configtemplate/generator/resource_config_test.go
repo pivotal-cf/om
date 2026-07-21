@@ -3,7 +3,7 @@ package generator_test
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/pivotal-cf/om/configtemplate/generator"
 	"github.com/pivotal-cf/om/configtemplate/generator/fakes"
