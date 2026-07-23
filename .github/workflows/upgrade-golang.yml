@@ -28,7 +28,7 @@ jobs:
 
       - id: setup-go
         name: Set Go to latest
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           check-latest: true
 
