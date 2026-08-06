@@ -13,7 +13,7 @@ import (
 	"github.com/pivotal-cf/om/config"
 
 	yamlConverter "github.com/ghodss/yaml"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type ConfigureProduct struct {
