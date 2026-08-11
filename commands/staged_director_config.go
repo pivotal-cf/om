@@ -16,7 +16,7 @@ type StagedDirectorConfig struct {
 	service stagedDirectorConfigService
 	Options struct {
 		IncludePlaceholders bool `long:"include-placeholders" short:"r" description:"Replace obscured credentials to interpolatable placeholders.\n\t\t\t\t    To include credentials hidden by OpsMan, use with \"--no-redact\""`
-		NoRedact            bool `long:"no-redact" description:"Redact IaaS values from director configuration"`
+		NoRedact            bool `long:"no-redact" description:"Do not redact IaaS values from director configuration"`
 	}
 }
 
