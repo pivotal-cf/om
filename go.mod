@@ -32,7 +32,7 @@ require (
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260729231350-c2f95e6eefe2
 	github.com/testcontainers/testcontainers-go v0.43.0
 	github.com/vmware/govmomi v0.55.1
-	github.com/vmware/govmomi/govc v0.0.0-20260803170239-d1b4f8203ef2
+	github.com/vmware/govmomi/govc v0.0.0-20260831023013-ec6493ddde50
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.292.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
@@ -202,7 +202,7 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.48.0 // indirect
 	google.golang.org/genproto v0.0.0-20260610212136-7ab31c22f7ad // indirect
