@@ -28,7 +28,7 @@ require (
 
 require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
-	github.com/pivotal-cf/replicator v0.0.0-20260729225515-1ba70f2a7bdc
+	github.com/pivotal-cf/replicator v0.0.0-20260827232357-d1c43342a170
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260729231350-c2f95e6eefe2
 	github.com/testcontainers/testcontainers-go v0.43.0
 	github.com/vmware/govmomi v0.55.1
