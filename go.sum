@@ -430,8 +430,8 @@ github.com/pivotal-cf/go-pivnet/v9 v9.1.0 h1:OTAsJOOM+Cy5C+AQIJkK3yGamye/DmOcxnG
 github.com/pivotal-cf/go-pivnet/v9 v9.1.0/go.mod h1:092E6eCvTjtL+rT1bhDWtJQn3GDaSf7Z8JZUmXYmzC0=
 github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43 h1:SYEUxVbqz3U7pJP/tlaXaD08w0rZVuPvCFRodnw/TLY=
 github.com/pivotal-cf/jhanda v0.0.0-20200619200912-8de8eb943a43/go.mod h1:UXciri1Yqno0IdXxEzwMF91nnwYMPoN95goHWxVtWq8=
-github.com/pivotal-cf/replicator v0.0.0-20260827232357-d1c43342a170 h1:a+KLclCVRh+g4Pnpn7LJwBIrjM53DvCgfq0mD6pp9Z0=
-github.com/pivotal-cf/replicator v0.0.0-20260827232357-d1c43342a170/go.mod h1:0fvmbgLMztWdQOU4+5RL3+FBt3UsonsQvXWn/u52dP8=
+github.com/pivotal-cf/replicator v0.0.0-20260902163946-ca4239e79689 h1:Z/ufdchjc+20ZZLdGKBMueR/9gdPKtOrd8DmwZZ+Rr4=
+github.com/pivotal-cf/replicator v0.0.0-20260902163946-ca4239e79689/go.mod h1:7oxhCj8oOu2ML8+Dfv5lS+yGvJturDkXLkOxSDn2zuU=
 github.com/pivotal-cf/winfs-injector v0.0.0-20260827232544-c4f3bb3d4bb3 h1:9MtfpOyX6sUYtOUD+QQJVtK0YFBUJp0+Tp4UrXuXCU4=
 github.com/pivotal-cf/winfs-injector v0.0.0-20260827232544-c4f3bb3d4bb3/go.mod h1:ymlkr3VoPDAv6uDD0+jXXg/pdRxQTSpUFB/pC8+sfGQ=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
