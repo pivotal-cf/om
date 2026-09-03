@@ -29,7 +29,7 @@ require (
 require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20260827232357-d1c43342a170
-	github.com/pivotal-cf/winfs-injector v0.0.0-20260827232544-c4f3bb3d4bb3
+	github.com/pivotal-cf/winfs-injector v0.0.0-20260902164956-e35b85981028
 	github.com/testcontainers/testcontainers-go v0.43.0
 	github.com/vmware/govmomi v0.55.1
 	github.com/vmware/govmomi/govc v0.0.0-20260831023013-ec6493ddde50
@@ -49,9 +49,9 @@ require (
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.13.0 // indirect
 	cloud.google.com/go/monitoring v1.30.0 // indirect
-	code.cloudfoundry.org/archiver v0.82.0 // indirect
+	code.cloudfoundry.org/archiver v0.85.0 // indirect
 	code.cloudfoundry.org/clock v1.83.0 // indirect
-	code.cloudfoundry.org/hydrator v0.93.0 // indirect
+	code.cloudfoundry.org/hydrator v0.99.0 // indirect
 	code.cloudfoundry.org/tlsconfig v0.53.0 // indirect
 	code.cloudfoundry.org/workpool v0.0.0-20250911194158-1489753f182e // indirect
 	dario.cat/mergo v1.0.2 // indirect
@@ -206,7 +206,7 @@ require (
 	google.golang.org/genproto v0.0.0-20260810153831-ec0a7760b754 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260810153831-ec0a7760b754 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260810153831-ec0a7760b754 // indirect
-	google.golang.org/grpc v1.83.0 // indirect
+	google.golang.org/grpc v1.83.1 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
