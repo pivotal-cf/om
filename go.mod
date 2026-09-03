@@ -3,7 +3,7 @@ module github.com/pivotal-cf/om
 go 1.26.5
 
 require (
-	cloud.google.com/go/storage v1.64.0
+	cloud.google.com/go/storage v1.67.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.30
