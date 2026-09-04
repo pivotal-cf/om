@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	cloud.google.com/go/storage v1.64.0
-	code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95
+	code.cloudfoundry.org/credhub-cli v0.0.0-20260904212625-86e168992675
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
@@ -100,7 +100,7 @@ require (
 	github.com/cloudfoundry/bosh-davcli v0.0.499 // indirect
 	github.com/cloudfoundry/bosh-gcscli v0.0.407 // indirect
 	github.com/cloudfoundry/bosh-s3cli v0.0.430 // indirect
-	github.com/cloudfoundry/bosh-utils v0.0.646 // indirect
+	github.com/cloudfoundry/bosh-utils v0.0.647 // indirect
 	github.com/cloudfoundry/config-server v0.1.287 // indirect
 	github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851 // indirect
 	github.com/cloudfoundry/socks5-proxy v0.2.186 // indirect
@@ -132,7 +132,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20260830191439-4932ad3515ea // indirect
+	github.com/google/pprof v0.0.0-20260903180319-d6c3cb2f37ec // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.21 // indirect
@@ -194,7 +194,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.45.0 // indirect
 	go.opentelemetry.io/otel/trace v1.45.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/crypto v0.56.0 // indirect
 	golang.org/x/mod v0.40.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
