@@ -27,8 +27,8 @@ code.cloudfoundry.org/archiver v0.82.0 h1:I4/ecSS72NpK27lXpT4h7vAJMqL8Egj/ac7pcE
 code.cloudfoundry.org/archiver v0.82.0/go.mod h1:kpKZZZhTh0Mj6ItiG46fQEuVaIqrCrO9Nerf4TbrOXY=
 code.cloudfoundry.org/clock v1.83.0 h1:mfvo8W/0rbabUP14xffa/IaGjNVPbROta8kZoG9nuB0=
 code.cloudfoundry.org/clock v1.83.0/go.mod h1:7ZvHLD4H0HfcO8WJsGb/CCOTT9bky1ruYUwCP5glzRA=
-code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95 h1:E+hK2DpTK9AYrgCBn4fMh01tGI/sjkUonfB40YxJxdQ=
-code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95/go.mod h1:99iDwvfgOQpcfpep8ABopodhBZBKb8x5BlmC+eTuONo=
+code.cloudfoundry.org/credhub-cli v0.0.0-20260904212625-86e168992675 h1:WHagFT4VSIX2zwv/5W04Ysz3bI2LLBOJgsVxZ2KRlgw=
+code.cloudfoundry.org/credhub-cli v0.0.0-20260904212625-86e168992675/go.mod h1:7ApMnvUQBEpotiylhqcnmhaSrvKmWKE0yn7xGudzetw=
 code.cloudfoundry.org/hydrator v0.93.0 h1:DZvF4/iSkqPpwsdmfoIjkS03igbplqU3mAeBbk/xxW4=
 code.cloudfoundry.org/hydrator v0.93.0/go.mod h1:O98oreDDERdqa/PaHcaELQj9xOg/PEAJYVA020JuZgU=
 code.cloudfoundry.org/tlsconfig v0.53.0 h1:ajprkio3g4V+C0AUJt3rXkkA0il+3sQZ9dJMRQ/e7Ug=
@@ -170,8 +170,8 @@ github.com/cloudfoundry/bosh-gcscli v0.0.407 h1:fJaJ/LkWRM9JFmYOvtvimcySn3OLZWkF
 github.com/cloudfoundry/bosh-gcscli v0.0.407/go.mod h1:Gdol/Rh00hg4La1i9FCeR1meSTh1vEHDIrThH/RKIg4=
 github.com/cloudfoundry/bosh-s3cli v0.0.430 h1:XKQNqsuNRxyq683xhcbdmzI2GtdxVTnpbhF5rN4Mryc=
 github.com/cloudfoundry/bosh-s3cli v0.0.430/go.mod h1:XCyGaOEf73NGcm2rqJfauj8FKOOJQ3TcBYG/tKhYgrU=
-github.com/cloudfoundry/bosh-utils v0.0.646 h1:BZijLC23GB/hqyB1t0/mjefmE0ZzCm4JvKI9C6ZGKh4=
-github.com/cloudfoundry/bosh-utils v0.0.646/go.mod h1:QoS546ZJpksB92qPoLZD72mkSuXKbmLP0FaRWVnH7Nk=
+github.com/cloudfoundry/bosh-utils v0.0.647 h1:PjM6wo2GfR9mBOuTAPLX9/0GwusipCALCtZG/fWZ8T4=
+github.com/cloudfoundry/bosh-utils v0.0.647/go.mod h1:QoS546ZJpksB92qPoLZD72mkSuXKbmLP0FaRWVnH7Nk=
 github.com/cloudfoundry/config-server v0.1.287 h1:5oNsV7IazZg4Lfaj2rDtagV10QBo9OIyJUDiqZw0sg8=
 github.com/cloudfoundry/config-server v0.1.287/go.mod h1:4d3INx9KCtdBs1fGntcd8WrHCvqQQx1Wr7J6pqj1ux4=
 github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851 h1:oy59UYcspoP44ggE8DM3kjxl1+sTFd802bbZlBBhBMk=
@@ -289,8 +289,8 @@ github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXi
 github.com/google/martian/v3 v3.3.3 h1:DIhPTQrbPkgs2yJYdXU/eNACCG5DVQjySNRNlflZ9Fc=
 github.com/google/martian/v3 v3.3.3/go.mod h1:iEPrYcgCF7jA9OtScMFQyAlZZ4YXTKEtJ1E6RWzmBA0=
 github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
-github.com/google/pprof v0.0.0-20260830191439-4932ad3515ea h1:nItRa0lOM9n5+PZiNPdBI2RjLCZoBrhWqKDJuB3+gSU=
-github.com/google/pprof v0.0.0-20260830191439-4932ad3515ea/go.mod h1:jl5iWTm0/hd5PjEYEOuwAJ57L/CibdZfrqZ5XA5GrCk=
+github.com/google/pprof v0.0.0-20260903180319-d6c3cb2f37ec h1:ZhR4jlKRUmzPEPd2RLiJRUi25rUrdKBrhQNVIbqpTNE=
+github.com/google/pprof v0.0.0-20260903180319-d6c3cb2f37ec/go.mod h1:jl5iWTm0/hd5PjEYEOuwAJ57L/CibdZfrqZ5XA5GrCk=
 github.com/google/readahead v0.0.0-20161222183148-eaceba169032/go.mod h1:qYysrqQXuV4tzsizt4oOQ6mrBZQ0xnQXP3ylXX8Jk5Y=
 github.com/google/s2a-go v0.1.9 h1:LGD7gtMgezd8a/Xak7mEWL0PjoTQFvpRudN895yqKW0=
 github.com/google/s2a-go v0.1.9/go.mod h1:YA0Ei2ZQL3acow2O62kdp9UlnvMmU7kA6Eutn0dXayM=
@@ -544,8 +544,8 @@ golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5y
 golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/crypto v0.6.0/go.mod h1:OFC/31mSvZgRz0V1QTNCzfAI1aIRzbiufJtkMIlEp58=
 golang.org/x/crypto v0.17.0/go.mod h1:gCAAfMLgwOJRpTjQ2zCCt2OcSfYMTeZVSRtQlPC7Nq4=
-golang.org/x/crypto v0.55.0 h1:+KWHjbgOaAQ66dh/YlkZKHlz9ZUlq61AFirAR9ntP8M=
-golang.org/x/crypto v0.55.0/go.mod h1:uq0V9dE/fzQuJtbnL+2EhWOE63vo164FY8xqEnV9xis=
+golang.org/x/crypto v0.56.0 h1:GUh5Ii4J5jtcseSMiRqr1jXCNHoxjeV9Fmekc2oLy6Y=
+golang.org/x/crypto v0.56.0/go.mod h1:OMW5y6CY9l38uPLmxU6l6pwcXp1obtLo3e6gT7gQR2I=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
