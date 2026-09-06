@@ -61,6 +61,13 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This Ops Manager 3.3+ property controls the maximum number of product deployment tasks that run in parallel during Apply Changes.
   Set it under `properties-configuration.director_configuration.product_deploy_parallelism` in the director config YAML.
 
+- Add `--allow-unsafe-dependency-update` and `--allow-unsafe-dependency-deletion` flags to `apply-changes`.
+  These let a Platform Engineer bypass safety checks around deploying an optional dependency out of its declared
+  safe order, or deleting an optional dependency not marked as safe to delete. Both default to `false` and are
+  only sent to Ops Manager when set to `true`, preserving compatibility with older Ops Manager versions. If a
+  blocked `apply-changes` has a known bypass, the error message now also suggests the matching flag(s), based on
+  the `available_overrides` field Ops Manager returns.
+
 ## 7.10.1
 
 ### Bug fixes

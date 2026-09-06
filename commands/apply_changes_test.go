@@ -60,7 +60,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, forceLatestVariables, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, forceLatestVariables, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 			Expect(forceLatestVariables).To(Equal(false))
@@ -91,7 +91,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, _, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
@@ -117,7 +117,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--ignore-warnings"})
 				Expect(err).ToNot(HaveOccurred())
 
-				ignoreWarnings, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+				ignoreWarnings, _, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
 			})
 		})
@@ -131,8 +131,40 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--force-latest-variables"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, forceLatestVariables, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, forceLatestVariables, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(forceLatestVariables).To(Equal(true))
+			})
+		})
+
+		When("passed the allow-unsafe-dependency-update flag", func() {
+			It("applies changes while allowing unsafe dependency updates", func() {
+				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--allow-unsafe-dependency-update"})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, allowUnsafeDependencyUpdate, _, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(allowUnsafeDependencyUpdate).To(Equal(true))
+
+				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-update is set: unsafe optional-dependency update checks will be bypassed"))
+			})
+		})
+
+		When("passed the allow-unsafe-dependency-deletion flag", func() {
+			It("applies changes while allowing unsafe dependency deletions", func() {
+				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--allow-unsafe-dependency-deletion"})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, _, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(allowUnsafeDependencyDeletion).To(Equal(true))
+
+				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed"))
 			})
 		})
 
@@ -143,7 +175,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--skip-deploy-products"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, deployProducts, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, deployProducts, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 
@@ -164,7 +196,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
-				_, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
 				Expect(productNames).To(ConsistOf("product1", "product2"))
 			})
 		})
@@ -397,7 +429,7 @@ errands:
 
 					Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-					ignoreWarnings, deployProducts, forceLatestVariables, _, errands := service.CreateInstallationArgsForCall(0)
+					ignoreWarnings, deployProducts, forceLatestVariables, _, _, _, errands := service.CreateInstallationArgsForCall(0)
 					Expect(ignoreWarnings).To(Equal(false))
 					Expect(deployProducts).To(Equal(true))
 					Expect(forceLatestVariables).To(Equal(false))

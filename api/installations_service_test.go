@@ -115,7 +115,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -140,7 +140,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, false, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, false, false, false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -165,7 +165,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, []string{"product2"}, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 			})
@@ -189,7 +189,101 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, true, []string{"product2"}, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, true, false, false, []string{"product2"}, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+			})
+		})
+
+		When("allowing unsafe dependency update", func() {
+			It("includes allow_unsafe_dependency_update in the request when true", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all","allow_unsafe_dependency_update":true}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, true, false, nil, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_update=true: request to Ops Manager will bypass unsafe optional-dependency update checks"))
+			})
+
+			It("omits allow_unsafe_dependency_update from the request when false", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all"}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+			})
+		})
+
+		When("allowing unsafe dependency deletion", func() {
+			It("includes allow_unsafe_dependency_deletion in the request when true", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all","allow_unsafe_dependency_deletion":true}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, false, true, nil, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_deletion=true: request to Ops Manager will bypass unsafe optional-dependency deletion checks"))
+			})
+
+			It("omits allow_unsafe_dependency_deletion from the request when false", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all"}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 			})
@@ -214,7 +308,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					output, err := service.CreateInstallation(false, true, false, []string{"product1"}, api.ApplyErrandChanges{
+					output, err := service.CreateInstallation(false, true, false, false, false, []string{"product1"}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -244,7 +338,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, []string{"product2"}, api.ApplyErrandChanges{
+					_, err := service.CreateInstallation(false, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product3": {
 								RunPostDeploy: map[string]interface{}{
@@ -276,7 +370,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					output, err := service.CreateInstallation(false, true, false, []string{}, api.ApplyErrandChanges{
+					output, err := service.CreateInstallation(false, true, false, false, false, []string{}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -306,7 +400,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, []string{}, api.ApplyErrandChanges{
+					_, err := service.CreateInstallation(false, true, false, false, false, []string{}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -340,7 +434,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations")))
 			})
 		})
@@ -375,9 +469,84 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, []string{"product2"}, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer, you can use `om pre-deploy-check` to get a complete list of failed verifiers and om commands to disable them.")))
+			})
+
+			When("the response includes available_overrides", func() {
+				It("suggests the matching CLI flag(s) for known override values", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.RespondWith(http.StatusUnprocessableEntity, `{
+								"errors": ["optional dependency has unsafe property changes"],
+								"available_overrides": ["allow_unsafe_dependency_update", "allow_unsafe_dependency_deletion"]
+							}`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: --allow-unsafe-dependency-update, --allow-unsafe-dependency-deletion")))
+					Expect(stdout).To(gbytes.Say("You can retry with the following flag\\(s\\) to bypass this: --allow-unsafe-dependency-update, --allow-unsafe-dependency-deletion"))
+				})
+
+				It("falls back to the raw parameter name for an unrecognized override value", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.RespondWith(http.StatusUnprocessableEntity, `{
+								"errors": ["something new blocked this"],
+								"available_overrides": ["some_future_override"]
+							}`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: some_future_override")))
+				})
+
+				It("does not append an override hint when available_overrides is empty", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.RespondWith(http.StatusUnprocessableEntity, `{
+								"errors": ["some other unrelated blocking error"],
+								"available_overrides": []
+							}`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).ToNot(MatchError(ContainSubstring("You can retry with the following flag(s)")))
+					Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer")))
+				})
 			})
 		})
 
@@ -390,7 +559,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
@@ -412,7 +581,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 			})
 		})
