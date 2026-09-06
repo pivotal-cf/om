@@ -289,6 +289,32 @@ var _ = Describe("InstallationsService", func() {
 			})
 		})
 
+		When("allowing both unsafe dependency update and deletion", func() {
+			It("includes both allow_unsafe_dependency_update and allow_unsafe_dependency_deletion in the request", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all","allow_unsafe_dependency_update":true,"allow_unsafe_dependency_deletion":true}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, true, true, nil, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_update=true: request to Ops Manager will bypass unsafe optional-dependency update checks"))
+				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_deletion=true: request to Ops Manager will bypass unsafe optional-dependency deletion checks"))
+			})
+		})
+
 		When("given the errands", func() {
 			When("product names are passed", func() {
 				It("sends the errands as a json parameter", func() {
@@ -521,6 +547,31 @@ var _ = Describe("InstallationsService", func() {
 
 					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: some_future_override")))
+					Expect(stdout).To(gbytes.Say("You can retry with the following flag\\(s\\) to bypass this: some_future_override"))
+				})
+
+				It("suggests --ignore-warnings when available_overrides includes ignore_warnings", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.RespondWith(http.StatusUnprocessableEntity, `{
+								"errors": ["some ignorable verifier warning blocked this"],
+								"available_overrides": ["ignore_warnings"]
+							}`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: --ignore-warnings")))
+					Expect(stdout).To(gbytes.Say("You can retry with the following flag\\(s\\) to bypass this: --ignore-warnings"))
 				})
 
 				It("does not append an override hint when available_overrides is empty", func() {
@@ -546,6 +597,30 @@ var _ = Describe("InstallationsService", func() {
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 					Expect(err).ToNot(MatchError(ContainSubstring("You can retry with the following flag(s)")))
 					Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer")))
+					Expect(stdout).ToNot(gbytes.Say("You can retry with the following flag"))
+				})
+
+				It("does not append an override hint when the response body cannot be decoded as JSON", func() {
+					client.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+							ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+						),
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/v0/installations"),
+							ghttp.RespondWith(http.StatusUnprocessableEntity, `not-valid-json`),
+						),
+					)
+
+					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
+					Expect(err).ToNot(MatchError(ContainSubstring("You can retry with the following flag(s)")))
+					Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer")))
+					Expect(stdout).ToNot(gbytes.Say("You can retry with the following flag"))
 				})
 			})
 		})

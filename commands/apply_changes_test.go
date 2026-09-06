@@ -60,10 +60,12 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, forceLatestVariables, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, forceLatestVariables, allowUnsafeDependencyUpdate, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 			Expect(forceLatestVariables).To(Equal(false))
+			Expect(allowUnsafeDependencyUpdate).To(Equal(false))
+			Expect(allowUnsafeDependencyDeletion).To(Equal(false))
 
 			Expect(stderr).To(gbytes.Say("attempting to apply changes to the targeted Ops Manager"))
 
@@ -164,6 +166,24 @@ var _ = Describe("ApplyChanges", func() {
 				_, _, _, _, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(allowUnsafeDependencyDeletion).To(Equal(true))
 
+				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed"))
+			})
+		})
+
+		When("passed both the allow-unsafe-dependency-update and allow-unsafe-dependency-deletion flags", func() {
+			It("applies changes while allowing both unsafe dependency updates and deletions", func() {
+				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--allow-unsafe-dependency-update", "--allow-unsafe-dependency-deletion"})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, allowUnsafeDependencyUpdate, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(allowUnsafeDependencyUpdate).To(Equal(true))
+				Expect(allowUnsafeDependencyDeletion).To(Equal(true))
+
+				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-update is set: unsafe optional-dependency update checks will be bypassed"))
 				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed"))
 			})
 		})
