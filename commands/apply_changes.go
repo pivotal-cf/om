@@ -92,6 +92,16 @@ func (ac ApplyChanges) Execute(args []string) error {
 		changedProducts = ac.Options.ProductNames
 	}
 
+	if ac.Options.AllowUnsafeDependencyUpdate || ac.Options.AllowUnsafeDependencyDeletion {
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if ok, err := info.VersionAtLeast(11, 0); !ok {
+			return fmt.Errorf("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running %s. Error: %w", info.Version, err)
+		}
+	}
+
 	installation, err := ac.service.RunningInstallation()
 	if err != nil {
 		return fmt.Errorf("could not check for any already running installation: %s", err)

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/onsi/gomega/gbytes"
@@ -140,7 +141,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		When("passed the allow-unsafe-dependency-update flag", func() {
 			It("applies changes while allowing unsafe dependency updates", func() {
-				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+				service.InfoReturns(api.Info{Version: "11.0"}, nil)
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -156,7 +157,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		When("passed the allow-unsafe-dependency-deletion flag", func() {
 			It("applies changes while allowing unsafe dependency deletions", func() {
-				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+				service.InfoReturns(api.Info{Version: "11.0"}, nil)
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -172,7 +173,7 @@ var _ = Describe("ApplyChanges", func() {
 
 		When("passed both the allow-unsafe-dependency-update and allow-unsafe-dependency-deletion flags", func() {
 			It("applies changes while allowing both unsafe dependency updates and deletions", func() {
-				service.InfoReturns(api.Info{Version: "2.3-build43"}, nil)
+				service.InfoReturns(api.Info{Version: "11.0"}, nil)
 
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
@@ -185,6 +186,56 @@ var _ = Describe("ApplyChanges", func() {
 
 				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-update is set: unsafe optional-dependency update checks will be bypassed"))
 				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed"))
+			})
+		})
+
+		When("passed the allow-unsafe-dependency-update flag against an Ops Manager older than 11.0", func() {
+			It("errors instead of claiming the check will be bypassed", func() {
+				service.InfoReturns(api.Info{Version: "10.2-build1"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--allow-unsafe-dependency-update"})
+				Expect(err).To(MatchError(ContainSubstring("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running 10.2-build1")))
+
+				Expect(service.CreateInstallationCallCount()).To(Equal(0))
+				Expect(stderr).ToNot(gbytes.Say("checks will be bypassed"))
+			})
+		})
+
+		When("passed the allow-unsafe-dependency-deletion flag against an Ops Manager older than 11.0", func() {
+			It("errors instead of claiming the check will be bypassed", func() {
+				service.InfoReturns(api.Info{Version: "10.2-build1"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--allow-unsafe-dependency-deletion"})
+				Expect(err).To(MatchError(ContainSubstring("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running 10.2-build1")))
+
+				Expect(service.CreateInstallationCallCount()).To(Equal(0))
+				Expect(stderr).ToNot(gbytes.Say("checks will be bypassed"))
+			})
+		})
+
+		When("passed both the allow-unsafe-dependency-update and allow-unsafe-dependency-deletion flags against an Ops Manager older than 11.0", func() {
+			It("errors exactly once with a single, non-redundant message covering both flags", func() {
+				service.InfoReturns(api.Info{Version: "10.2-build1"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--allow-unsafe-dependency-update", "--allow-unsafe-dependency-deletion"})
+				Expect(err).To(HaveOccurred())
+
+				// A single combined message naming both flags, not two concatenated
+				// per-flag errors: exactly one "only available with Ops Manager"
+				// substring, and no duplicated "you are running" clause.
+				message := err.Error()
+				Expect(strings.Count(message, "only available with Ops Manager")).To(Equal(1))
+				Expect(strings.Count(message, "you are running")).To(Equal(1))
+				Expect(message).To(ContainSubstring("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running 10.2-build1"))
+
+				Expect(service.CreateInstallationCallCount()).To(Equal(0))
+				Expect(stderr).ToNot(gbytes.Say("checks will be bypassed"))
 			})
 		})
 
