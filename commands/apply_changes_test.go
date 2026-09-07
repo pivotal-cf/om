@@ -195,7 +195,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--skip-deploy-products"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, deployProducts, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+				_, deployProducts, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 
