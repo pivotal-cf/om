@@ -98,7 +98,10 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
 		}
 		if ok, err := info.VersionAtLeast(11, 0); !ok {
-			return fmt.Errorf("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running %s. Error: %w", info.Version, err)
+			if err != nil {
+				return fmt.Errorf("Could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion: %w", err)
+			}
+			return fmt.Errorf("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running %s", info.Version)
 		}
 	}
 

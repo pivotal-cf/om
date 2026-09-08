@@ -239,6 +239,7 @@ var _ = Describe("InstallationsService", func() {
 				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
+				Expect(stdout).ToNot(gbytes.Say("allow_unsafe_dependency_update=true"))
 			})
 		})
 
@@ -286,6 +287,7 @@ var _ = Describe("InstallationsService", func() {
 				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
+				Expect(stdout).ToNot(gbytes.Say("allow_unsafe_dependency_deletion=true"))
 			})
 		})
 
