@@ -38,7 +38,7 @@ type OpenstackConfig struct {
 
 //go:generate counterfeiter -o ./fakes/openstackRunner.go --fake-name OpenstackRunner . openstackRunner
 type openstackRunner interface {
-	Execute(args []interface{}) (*bytes.Buffer, *bytes.Buffer, error)
+	ExecuteWithEnvVars(env []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error)
 }
 
 type OpenstackVMManager struct {
@@ -155,7 +155,7 @@ func (o *OpenstackVMManager) listExistingImages(imageName string) (string, error
 		`--format`, `value`,
 		`--column`, `ID`)
 
-	stdout, _, err := o.runner.Execute(args)
+	stdout, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 	return cleanupString(stdout.String()), checkFormatedError("openstack error failed to list existing images. Could not create: %s", err)
 }
 
@@ -172,7 +172,7 @@ func (o *OpenstackVMManager) createImage(imageName string) (imageURI string, err
 		`--format`, `value`, `--column`, `id`,
 		`--file`, o.Image, imageName)
 
-	stdout, _, err := o.runner.Execute(args)
+	stdout, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 
 	return cleanupString(stdout.String()), err
 }
@@ -202,7 +202,7 @@ func (o *OpenstackVMManager) createVM(imageID string) (serverID string, state St
 
 	args = append(args, o.Config.VMName)
 
-	stdout, _, err := o.runner.Execute(args)
+	stdout, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 	if err != nil {
 		return "", StateInfo{}, err
 	}
@@ -211,7 +211,7 @@ func (o *OpenstackVMManager) createVM(imageID string) (serverID string, state St
 
 func (o *OpenstackVMManager) deleteVM() error {
 	args := append(o.getAuthArguments(), `server`, `delete`, o.State.ID, `--wait`)
-	_, _, err := o.runner.Execute(args)
+	_, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 	if err != nil {
 		return fmt.Errorf("openstack error deleting VM: %s", err)
 	}
@@ -223,7 +223,7 @@ func (o *OpenstackVMManager) attachIP(serverID string) error {
 	log.Println("Attaching Public IP to VM...")
 	args := append(o.getAuthArguments(), `server`, `add`, `floating`, `ip`,
 		serverID, o.Config.PublicIP)
-	_, _, err := o.runner.Execute(args)
+	_, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 	if err != nil {
 		return fmt.Errorf("openstack error attaching the IP address to VM: %s", err)
 	}
@@ -251,7 +251,7 @@ func (o *OpenstackVMManager) vmExists() (bool, error) {
 		`--column`, `status`,
 		`--format`, `value`)
 
-	stdout, _, err := o.runner.Execute(args)
+	stdout, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 	status := cleanupString(stdout.String())
 
 	return status == "ACTIVE", checkFormatedError("VM ID in statefile does not exist. Please check your statefile and try again: %s", err)
@@ -261,7 +261,7 @@ func (o *OpenstackVMManager) getVMImage() (string, error) {
 	args := append(o.getAuthArguments(), `server`, `show`, o.State.ID,
 		`--column`, `image`,
 		`--format`, `value`)
-	stdout, _, err := o.runner.Execute(args)
+	stdout, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 	if err != nil {
 		return "", fmt.Errorf(
 			"%s\n       Could not find VM with ID %q.\n       To fix, ensure the VM ID in the statefile matches a VM that exists.\n       If the VM has already been deleted, delete the contents of the statefile.",
@@ -276,15 +276,23 @@ func (o *OpenstackVMManager) getVMImage() (string, error) {
 
 func (o *OpenstackVMManager) deleteImage(imageID string) error {
 	args := append(o.getAuthArguments(), `image`, `delete`, imageID)
-	_, _, err := o.runner.Execute(args)
+	_, _, err := o.runner.ExecuteWithEnvVars(o.addEnvVars(), args)
 
 	return checkFormatedError("openstack error failed to remove existing image. Could not create: %s", err)
+}
+
+// addEnvVars passes the OpenStack password via the OS_PASSWORD env var
+// instead of a CLI flag, since process argv (unlike the environment) is
+// readable by any local user via /proc/<pid>/cmdline or ps.
+func (o *OpenstackVMManager) addEnvVars() []string {
+	return []string{
+		fmt.Sprintf("OS_PASSWORD=%s", o.Config.Password),
+	}
 }
 
 func (o *OpenstackVMManager) getAuthArguments() []interface{} {
 	args := []interface{}{
 		`--os-username`, runner.Redact(o.Config.Username),
-		`--os-password`, runner.Redact(o.Config.Password),
 		`--os-auth-url`, o.Config.AuthUrl,
 		`--os-project-name`, o.Config.Project,
 	}
