@@ -252,7 +252,7 @@ var _ = Describe("ApplyChanges", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := executeCommand(command, []string{"--allow-unsafe-dependency-update"})
-				Expect(err).To(MatchError(ContainSubstring("Could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion")))
+				Expect(err).To(MatchError(ContainSubstring("could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion")))
 				Expect(err).To(MatchError(ContainSubstring("invalid version: 'not-a-version'")))
 				Expect(err).ToNot(MatchError(ContainSubstring("are only available with Ops Manager 11.0 or later")))
 
@@ -268,7 +268,7 @@ var _ = Describe("ApplyChanges", func() {
 				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
 
 				err := executeCommand(command, []string{"--allow-unsafe-dependency-deletion"})
-				Expect(err).To(MatchError(ContainSubstring("Could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion")))
+				Expect(err).To(MatchError(ContainSubstring("could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion")))
 				Expect(err).To(MatchError(ContainSubstring("invalid version: 'not-a-version'")))
 				Expect(err).ToNot(MatchError(ContainSubstring("are only available with Ops Manager 11.0 or later")))
 
@@ -287,9 +287,9 @@ var _ = Describe("ApplyChanges", func() {
 				Expect(err).To(HaveOccurred())
 
 				message := err.Error()
-				Expect(strings.Count(message, "Could not determine Ops Manager version")).To(Equal(1))
+				Expect(strings.Count(message, "could not determine Ops Manager version")).To(Equal(1))
 				Expect(strings.Count(message, "invalid version:")).To(Equal(1))
-				Expect(message).To(ContainSubstring("Could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion"))
+				Expect(message).To(ContainSubstring("could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion"))
 				Expect(message).ToNot(ContainSubstring("are only available with Ops Manager 11.0 or later"))
 
 				Expect(service.CreateInstallationCallCount()).To(Equal(0))
