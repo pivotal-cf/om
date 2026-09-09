@@ -96,6 +96,21 @@ var _ = Describe("Executor", func() {
 			}
 		})
 
+		It("rejects tile metadata that attempts path traversal via product name or version", func() {
+			maliciousMetadata := []byte(`
+name: ../escaped-product
+product_version: ../escaped-version
+`)
+			gen := generator.NewExecutor(maliciousMetadata, tmpPath, false, true, 10, false)
+			err := gen.Generate()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("path traversal"))
+
+			Expect(path.Join(testGen, "escaped-product")).ToNot(BeADirectory())
+			Expect(path.Join(testGen, "escaped-version")).ToNot(BeADirectory())
+		})
+
 		It("Should generate files for pks", func() {
 			By("successfully executing the generator")
 
