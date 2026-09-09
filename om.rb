@@ -10,7 +10,7 @@ class Om < Formula
   on_macos do
     if Hardware::CPU.intel?
       url "https://github.com/pivotal-cf/om/releases/download/7.21.8/om-darwin-amd64-7.21.8.tar.gz"
-      sha256 "ad7e1f2da6f6ea9aa44810f3114c6d3d8448de2dee22b41ed10b9f6820560619"
+      sha256 "a98765cf089ead17cea6b098608cb838925f9208eea6e16608a6b2e2d6f45f47"
 
       define_method(:install) do
         bin.install "om"
@@ -18,7 +18,7 @@ class Om < Formula
     end
     if Hardware::CPU.arm?
       url "https://github.com/pivotal-cf/om/releases/download/7.21.8/om-darwin-arm64-7.21.8.tar.gz"
-      sha256 "064e2df2be312d1aa137ead79f54ec3b3a74df9cd08b0168d5bdec87c9b4da9e"
+      sha256 "ba9b5b2a990108f030e691ab74301aaf3f68c2b2775f80fbb7f4a6bfcb2008c3"
 
       define_method(:install) do
         bin.install "om"
@@ -29,14 +29,14 @@ class Om < Formula
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
       url "https://github.com/pivotal-cf/om/releases/download/7.21.8/om-linux-amd64-7.21.8.tar.gz"
-      sha256 "a7a8426a5971a3b679503b26272a98dc218d1e63c47f64baf10547a493e7e3b3"
+      sha256 "a46d6b4ce0116afb9ba953e194b6b88bb682d105bca12b796c93a7f55e36952e"
       define_method(:install) do
         bin.install "om"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
       url "https://github.com/pivotal-cf/om/releases/download/7.21.8/om-linux-arm64-7.21.8.tar.gz"
-      sha256 "84f2fb2f69e1c553b997a6785ee1aa67a7f0515c8f8d8202c05f3d73efa1833c"
+      sha256 "3fa8aed7322266e2423bec31a1edde8355f41d3858042b920e2f48aa88a8f666"
       define_method(:install) do
         bin.install "om"
       end
