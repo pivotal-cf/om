@@ -166,6 +166,11 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 	if err != nil {
 		return Unknown, StateInfo{}, err
 	}
+	defer func() {
+		if removeErr := os.Remove(optionFilename); removeErr != nil {
+			log.Printf("could not remove temp options file %s: %s", optionFilename, removeErr)
+		}
+	}()
 
 	ipath := v.createIpath()
 
