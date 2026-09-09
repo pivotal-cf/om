@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	cloud.google.com/go/storage v1.67.1
-	code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95
+	code.cloudfoundry.org/credhub-cli v0.0.0-20260907130120-567c46b571cd
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
