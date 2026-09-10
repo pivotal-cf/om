@@ -7,7 +7,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/config"
 	"github.com/pivotal-cf/om/interpolate"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 //counterfeiter:generate -o ./fakes/create_vm_extension_service.go --fake-name CreateVMExtensionService . createVMExtensionService

@@ -10,7 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/pivotal-cf/om/vmlifecycle/matchers"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
