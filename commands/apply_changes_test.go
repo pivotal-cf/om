@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/onsi/gomega/gbytes"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/commands"
