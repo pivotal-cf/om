@@ -7,17 +7,18 @@ import (
 )
 
 type OpenstackRunner struct {
-	ExecuteStub        func([]interface{}) (*bytes.Buffer, *bytes.Buffer, error)
-	executeMutex       sync.RWMutex
-	executeArgsForCall []struct {
-		arg1 []interface{}
+	ExecuteWithEnvVarsStub        func([]string, []interface{}) (*bytes.Buffer, *bytes.Buffer, error)
+	executeWithEnvVarsMutex       sync.RWMutex
+	executeWithEnvVarsArgsForCall []struct {
+		arg1 []string
+		arg2 []interface{}
 	}
-	executeReturns struct {
+	executeWithEnvVarsReturns struct {
 		result1 *bytes.Buffer
 		result2 *bytes.Buffer
 		result3 error
 	}
-	executeReturnsOnCall map[int]struct {
+	executeWithEnvVarsReturnsOnCall map[int]struct {
 		result1 *bytes.Buffer
 		result2 *bytes.Buffer
 		result3 error
@@ -26,71 +27,77 @@ type OpenstackRunner struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *OpenstackRunner) Execute(arg1 []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
-	var arg1Copy []interface{}
+func (fake *OpenstackRunner) ExecuteWithEnvVars(arg1 []string, arg2 []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+	var arg1Copy []string
 	if arg1 != nil {
-		arg1Copy = make([]interface{}, len(arg1))
+		arg1Copy = make([]string, len(arg1))
 		copy(arg1Copy, arg1)
 	}
-	fake.executeMutex.Lock()
-	ret, specificReturn := fake.executeReturnsOnCall[len(fake.executeArgsForCall)]
-	fake.executeArgsForCall = append(fake.executeArgsForCall, struct {
-		arg1 []interface{}
-	}{arg1Copy})
-	fake.recordInvocation("Execute", []interface{}{arg1Copy})
-	fake.executeMutex.Unlock()
-	if fake.ExecuteStub != nil {
-		return fake.ExecuteStub(arg1)
+	var arg2Copy []interface{}
+	if arg2 != nil {
+		arg2Copy = make([]interface{}, len(arg2))
+		copy(arg2Copy, arg2)
+	}
+	fake.executeWithEnvVarsMutex.Lock()
+	ret, specificReturn := fake.executeWithEnvVarsReturnsOnCall[len(fake.executeWithEnvVarsArgsForCall)]
+	fake.executeWithEnvVarsArgsForCall = append(fake.executeWithEnvVarsArgsForCall, struct {
+		arg1 []string
+		arg2 []interface{}
+	}{arg1Copy, arg2Copy})
+	fake.recordInvocation("ExecuteWithEnvVars", []interface{}{arg1Copy, arg2Copy})
+	fake.executeWithEnvVarsMutex.Unlock()
+	if fake.ExecuteWithEnvVarsStub != nil {
+		return fake.ExecuteWithEnvVarsStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.executeReturns
+	fakeReturns := fake.executeWithEnvVarsReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
-func (fake *OpenstackRunner) ExecuteCallCount() int {
-	fake.executeMutex.RLock()
-	defer fake.executeMutex.RUnlock()
-	return len(fake.executeArgsForCall)
+func (fake *OpenstackRunner) ExecuteWithEnvVarsCallCount() int {
+	fake.executeWithEnvVarsMutex.RLock()
+	defer fake.executeWithEnvVarsMutex.RUnlock()
+	return len(fake.executeWithEnvVarsArgsForCall)
 }
 
-func (fake *OpenstackRunner) ExecuteCalls(stub func([]interface{}) (*bytes.Buffer, *bytes.Buffer, error)) {
-	fake.executeMutex.Lock()
-	defer fake.executeMutex.Unlock()
-	fake.ExecuteStub = stub
+func (fake *OpenstackRunner) ExecuteWithEnvVarsCalls(stub func([]string, []interface{}) (*bytes.Buffer, *bytes.Buffer, error)) {
+	fake.executeWithEnvVarsMutex.Lock()
+	defer fake.executeWithEnvVarsMutex.Unlock()
+	fake.ExecuteWithEnvVarsStub = stub
 }
 
-func (fake *OpenstackRunner) ExecuteArgsForCall(i int) []interface{} {
-	fake.executeMutex.RLock()
-	defer fake.executeMutex.RUnlock()
-	argsForCall := fake.executeArgsForCall[i]
-	return argsForCall.arg1
+func (fake *OpenstackRunner) ExecuteWithEnvVarsArgsForCall(i int) ([]string, []interface{}) {
+	fake.executeWithEnvVarsMutex.RLock()
+	defer fake.executeWithEnvVarsMutex.RUnlock()
+	argsForCall := fake.executeWithEnvVarsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *OpenstackRunner) ExecuteReturns(result1 *bytes.Buffer, result2 *bytes.Buffer, result3 error) {
-	fake.executeMutex.Lock()
-	defer fake.executeMutex.Unlock()
-	fake.ExecuteStub = nil
-	fake.executeReturns = struct {
+func (fake *OpenstackRunner) ExecuteWithEnvVarsReturns(result1 *bytes.Buffer, result2 *bytes.Buffer, result3 error) {
+	fake.executeWithEnvVarsMutex.Lock()
+	defer fake.executeWithEnvVarsMutex.Unlock()
+	fake.ExecuteWithEnvVarsStub = nil
+	fake.executeWithEnvVarsReturns = struct {
 		result1 *bytes.Buffer
 		result2 *bytes.Buffer
 		result3 error
 	}{result1, result2, result3}
 }
 
-func (fake *OpenstackRunner) ExecuteReturnsOnCall(i int, result1 *bytes.Buffer, result2 *bytes.Buffer, result3 error) {
-	fake.executeMutex.Lock()
-	defer fake.executeMutex.Unlock()
-	fake.ExecuteStub = nil
-	if fake.executeReturnsOnCall == nil {
-		fake.executeReturnsOnCall = make(map[int]struct {
+func (fake *OpenstackRunner) ExecuteWithEnvVarsReturnsOnCall(i int, result1 *bytes.Buffer, result2 *bytes.Buffer, result3 error) {
+	fake.executeWithEnvVarsMutex.Lock()
+	defer fake.executeWithEnvVarsMutex.Unlock()
+	fake.ExecuteWithEnvVarsStub = nil
+	if fake.executeWithEnvVarsReturnsOnCall == nil {
+		fake.executeWithEnvVarsReturnsOnCall = make(map[int]struct {
 			result1 *bytes.Buffer
 			result2 *bytes.Buffer
 			result3 error
 		})
 	}
-	fake.executeReturnsOnCall[i] = struct {
+	fake.executeWithEnvVarsReturnsOnCall[i] = struct {
 		result1 *bytes.Buffer
 		result2 *bytes.Buffer
 		result3 error
@@ -100,8 +107,8 @@ func (fake *OpenstackRunner) ExecuteReturnsOnCall(i int, result1 *bytes.Buffer, 
 func (fake *OpenstackRunner) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.executeMutex.RLock()
-	defer fake.executeMutex.RUnlock()
+	fake.executeWithEnvVarsMutex.RLock()
+	defer fake.executeWithEnvVarsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
