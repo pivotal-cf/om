@@ -127,7 +127,7 @@ var _ = Describe("bosh-env", func() {
 				for i := 0; i < 10; i++ {
 					value := fmt.Sprintf("%v", stdout.PrintlnArgsForCall(i))
 					if strings.Contains(value, "BOSH_ALL_PROXY") {
-						Expect(value).To(Equal(fmt.Sprintf("[export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s]", keyFile)))
+						Expect(value).To(Equal(fmt.Sprintf("[export BOSH_ALL_PROXY='ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s']", keyFile)))
 					}
 				}
 			})
@@ -237,16 +237,16 @@ var _ = Describe("bosh-env", func() {
 			}
 
 			Expect(lines).To(ContainElements(
-				"export CREDHUB_SERVER=https://10.0.0.10:8844",
+				"export CREDHUB_SERVER='https://10.0.0.10:8844'",
 				"export CREDHUB_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
-				fmt.Sprintf("export CREDHUB_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
-				"export BOSH_CLIENT=opsmanager_client",
-				"export BOSH_CLIENT_SECRET=my-super-secret",
+				fmt.Sprintf("export CREDHUB_PROXY='ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s'", keyFile),
+				"export BOSH_CLIENT='opsmanager_client'",
+				"export BOSH_CLIENT_SECRET='my-super-secret'",
 				"export BOSH_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
-				fmt.Sprintf("export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
-				"export BOSH_ENVIRONMENT=10.0.0.10",
-				"export CREDHUB_CLIENT=opsmanager_client",
-				"export CREDHUB_SECRET=my-super-secret",
+				fmt.Sprintf("export BOSH_ALL_PROXY='ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s'", keyFile),
+				"export BOSH_ENVIRONMENT='10.0.0.10'",
+				"export CREDHUB_CLIENT='opsmanager_client'",
+				"export CREDHUB_SECRET='my-super-secret'",
 			))
 		})
 
@@ -287,11 +287,11 @@ var _ = Describe("bosh-env", func() {
 			}
 
 			Expect(lines).To(ContainElements(
-				"export BOSH_CLIENT=opsmanager_client",
-				"export BOSH_CLIENT_SECRET=my-super-secret",
+				"export BOSH_CLIENT='opsmanager_client'",
+				"export BOSH_CLIENT_SECRET='my-super-secret'",
 				"export BOSH_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
-				fmt.Sprintf("export BOSH_ALL_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
-				"export BOSH_ENVIRONMENT=10.0.0.10",
+				fmt.Sprintf("export BOSH_ALL_PROXY='ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s'", keyFile),
+				"export BOSH_ENVIRONMENT='10.0.0.10'",
 			))
 		})
 
@@ -332,11 +332,11 @@ var _ = Describe("bosh-env", func() {
 			}
 
 			Expect(lines).To(ContainElements(
-				"export CREDHUB_SERVER=https://10.0.0.10:8844",
+				"export CREDHUB_SERVER='https://10.0.0.10:8844'",
 				"export CREDHUB_CA_CERT='-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgI....\n'",
-				fmt.Sprintf("export CREDHUB_PROXY=ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s", keyFile),
-				"export CREDHUB_CLIENT=opsmanager_client",
-				"export CREDHUB_SECRET=my-super-secret",
+				fmt.Sprintf("export CREDHUB_PROXY='ssh+socks5://ubuntu@opsman.pivotal.io:22?private-key=%s'", keyFile),
+				"export CREDHUB_CLIENT='opsmanager_client'",
+				"export CREDHUB_SECRET='my-super-secret'",
 			))
 		})
 	})

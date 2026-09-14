@@ -14,14 +14,16 @@ func NewPosix() Renderer {
 }
 
 func (renderer *posix) RenderEnvironmentVariable(variable string, value string) string {
-	if strings.ContainsAny(value, "\n") {
-		suffix := ""
-		if !strings.HasSuffix(value, "\n") {
-			suffix = "\n"
-		}
-		return fmt.Sprintf("export %s='%s%s'", variable, value, suffix)
+	if strings.ContainsAny(value, "\n") && !strings.HasSuffix(value, "\n") {
+		value += "\n"
 	}
-	return fmt.Sprintf("export %s=%s", variable, value)
+	return fmt.Sprintf("export %s=%s", variable, posixQuote(value))
+}
+
+// posixQuote wraps value in single quotes, escaping any embedded single
+// quotes, so it is safe to eval regardless of shell metacharacters it contains.
+func posixQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", `'\''`) + "'"
 }
 
 func (renderer *posix) RenderUnsetVariable(variable string) string {
