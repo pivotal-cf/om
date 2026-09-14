@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -72,6 +73,24 @@ opsman-configuration:
 					command, _ := createCommand(configStr, opsmanVersionBelow26)
 					_, _, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("removes the temp options file (which contains the cleartext admin_password) after use", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					var optionsFilename string
+					for _, arg := range args {
+						if s, ok := arg.(string); ok && strings.HasPrefix(s, "-options=") {
+							optionsFilename = strings.TrimPrefix(s, "-options=")
+						}
+					}
+					Expect(optionsFilename).ToNot(BeEmpty())
+
+					_, statErr := os.Stat(optionsFilename)
+					Expect(os.IsNotExist(statErr)).To(BeTrue(), "expected temp options file to be removed after CreateVM")
 				})
 
 				It("calls govc with correct cli arguments, and does not duplicate /datacenter/vm path", func() {
