@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -38,8 +39,14 @@ func (e *Executor) Generate() error {
 	if productVersion == "" {
 		return errors.New("version in metadata is blank")
 	}
+	if err := validateMetadataPathSegment("product version", productVersion); err != nil {
+		return err
+	}
 
 	productName := metadata.ProductName()
+	if err := validateMetadataPathSegment("product name", productName); err != nil {
+		return err
+	}
 
 	targetDirectory := path.Join(e.baseDirectory, productName)
 	if !e.doNotIncludeProductVersion {
@@ -86,6 +93,9 @@ func (e *Executor) Generate() error {
 
 	if len(networkOpsFiles) > 0 {
 		for name, contents := range networkOpsFiles {
+			if err = validateMetadataPathSegment("network ops-file name", name); err != nil {
+				return err
+			}
 			if err = e.writeYamlFile(path.Join(networkDirectory, fmt.Sprintf("%s.yml", name)), contents); err != nil {
 				return err
 			}
@@ -115,6 +125,9 @@ func (e *Executor) Generate() error {
 
 	if len(resourceOpsFiles) > 0 {
 		for name, contents := range resourceOpsFiles {
+			if err = validateMetadataPathSegment("resource ops-file name", name); err != nil {
+				return err
+			}
 			if err = e.writeYamlFile(path.Join(resourceDirectory, fmt.Sprintf("%s.yml", name)), contents); err != nil {
 				return err
 			}
@@ -145,6 +158,9 @@ func (e *Executor) Generate() error {
 
 	if len(productPropertyOpsFiles) > 0 {
 		for name, contents := range productPropertyOpsFiles {
+			if err = validateMetadataPathSegment("product property ops-file name", name); err != nil {
+				return err
+			}
 			if err = e.writeYamlFile(path.Join(featuresDirectory, fmt.Sprintf("%s.yml", name)), contents); err != nil {
 				return err
 			}
@@ -158,6 +174,9 @@ func (e *Executor) Generate() error {
 
 	if len(productPropertyOptionalOpsFiles) > 0 {
 		for name, contents := range productPropertyOptionalOpsFiles {
+			if err = validateMetadataPathSegment("product property optional ops-file name", name); err != nil {
+				return err
+			}
 			if err = e.writeYamlFile(path.Join(optionalDirectory, fmt.Sprintf("%s.yml", name)), contents); err != nil {
 				return err
 			}
@@ -187,6 +206,17 @@ func (e *Executor) CreateTemplate(metadata *Metadata) (*Template, error) {
 		template.ErrandConfig = CreateErrandConfig(metadata)
 	}
 	return template, nil
+}
+
+// validateMetadataPathSegment rejects tile-metadata-derived values that are
+// used as filesystem path segments (product name/version, ops-file names) if
+// they could escape the intended output directory via ".." or a path
+// separator.
+func validateMetadataPathSegment(fieldName, value string) error {
+	if strings.Contains(value, "..") || strings.ContainsRune(value, '/') || strings.ContainsRune(value, '\\') {
+		return fmt.Errorf("path traversal detected in tile metadata: invalid %s %q", fieldName, value)
+	}
+	return nil
 }
 
 func (e *Executor) createDirectory(path string) error {
