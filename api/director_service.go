@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	yamlConverter "github.com/ghodss/yaml"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type AvailabilityZoneInput struct {
