@@ -8,7 +8,7 @@ import (
 	"github.com/pivotal-cf/om/api"
 	"github.com/pivotal-cf/om/config"
 	"github.com/pivotal-cf/om/configparser"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type StagedConfig struct {
