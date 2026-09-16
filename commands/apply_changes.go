@@ -20,19 +20,21 @@ type ApplyChanges struct {
 	logWriter      logWriter
 	waitDuration   time.Duration
 	Options        struct {
-		Config               string   `short:"c"   long:"config"               description:"path to yml file containing errand configuration (see docs/apply-changes/README.md for format)"`
-		IgnoreWarnings       bool     `short:"i"   long:"ignore-warnings"      description:"For convenience. Use other commands to disable particular verifiers if they are inappropriate."`
-		Reattach             bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
-		RecreateVMs          bool     `long:"recreate-vms" description:"recreate all vms"`
-		SkipDeployProducts   bool     `short:"s" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
-		ForceLatestVariables bool     `long:"force-latest-variables" description:"force any certificates or other BOSH variables to use their latest version even when a stemcell is not being upgraded"`
-		ProductNames         []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
+		Config                        string   `short:"c"   long:"config"               description:"path to yml file containing errand configuration (see docs/apply-changes/README.md for format)"`
+		IgnoreWarnings                bool     `short:"i"   long:"ignore-warnings"      description:"For convenience. Use other commands to disable particular verifiers if they are inappropriate."`
+		Reattach                      bool     `long:"reattach" description:"reattach to an already running apply changes (if available)"`
+		RecreateVMs                   bool     `long:"recreate-vms" description:"recreate all vms"`
+		SkipDeployProducts            bool     `short:"s" long:"skip-deploy-products" description:"skip deploying products when applying changes - just update the director"`
+		ForceLatestVariables          bool     `long:"force-latest-variables" description:"force any certificates or other BOSH variables to use their latest version even when a stemcell is not being upgraded"`
+		AllowUnsafeDependencyUpdate   bool     `long:"allow-unsafe-dependency-update" description:"allow apply-changes to proceed even when it would update a dependency out of its declared safe order"`
+		AllowUnsafeDependencyDeletion bool     `long:"allow-unsafe-dependency-deletion" description:"allow apply-changes to proceed even when it would delete an optional dependency not marked as safe to delete"`
+		ProductNames                  []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
 }
 
 //counterfeiter:generate -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
 type applyChangesService interface {
-	CreateInstallation(bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
+	CreateInstallation(bool, bool, bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 	Info() (api.Info, error)
@@ -88,6 +90,19 @@ func (ac ApplyChanges) Execute(args []string) error {
 			return fmt.Errorf("--product-name is only available with Ops Manager 2.2 or later: you are running %s. Error: %w", info.Version, err)
 		}
 		changedProducts = ac.Options.ProductNames
+	}
+
+	if ac.Options.AllowUnsafeDependencyUpdate || ac.Options.AllowUnsafeDependencyDeletion {
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if ok, err := info.VersionAtLeast(11, 0); !ok {
+			if err != nil {
+				return fmt.Errorf("could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion: %w", err)
+			}
+			return fmt.Errorf("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running %s", info.Version)
+		}
 	}
 
 	installation, err := ac.service.RunningInstallation()
@@ -158,8 +173,15 @@ func (ac ApplyChanges) Execute(args []string) error {
 		}
 	}
 
+	if ac.Options.AllowUnsafeDependencyUpdate {
+		ac.logger.Printf("allow-unsafe-dependency-update is set: unsafe optional-dependency update checks will be bypassed")
+	}
+	if ac.Options.AllowUnsafeDependencyDeletion {
+		ac.logger.Printf("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed")
+	}
+
 	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, ac.Options.ForceLatestVariables, changedProducts, errands)
+	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, ac.Options.ForceLatestVariables, ac.Options.AllowUnsafeDependencyUpdate, ac.Options.AllowUnsafeDependencyDeletion, changedProducts, errands)
 	if err != nil {
 		return fmt.Errorf("installation failed to trigger: %s", err)
 	}

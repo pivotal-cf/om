@@ -8,14 +8,16 @@ import (
 )
 
 type ApplyChangesService struct {
-	CreateInstallationStub        func(bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
+	CreateInstallationStub        func(bool, bool, bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
 	createInstallationMutex       sync.RWMutex
 	createInstallationArgsForCall []struct {
 		arg1 bool
 		arg2 bool
 		arg3 bool
-		arg4 []string
-		arg5 api.ApplyErrandChanges
+		arg4 bool
+		arg5 bool
+		arg6 []string
+		arg7 api.ApplyErrandChanges
 	}
 	createInstallationReturns struct {
 		result1 api.InstallationsServiceOutput
@@ -102,11 +104,11 @@ type ApplyChangesService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool, arg3 bool, arg4 []string, arg5 api.ApplyErrandChanges) (api.InstallationsServiceOutput, error) {
-	var arg4Copy []string
-	if arg4 != nil {
-		arg4Copy = make([]string, len(arg4))
-		copy(arg4Copy, arg4)
+func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool, arg3 bool, arg4 bool, arg5 bool, arg6 []string, arg7 api.ApplyErrandChanges) (api.InstallationsServiceOutput, error) {
+	var arg6Copy []string
+	if arg6 != nil {
+		arg6Copy = make([]string, len(arg6))
+		copy(arg6Copy, arg6)
 	}
 	fake.createInstallationMutex.Lock()
 	ret, specificReturn := fake.createInstallationReturnsOnCall[len(fake.createInstallationArgsForCall)]
@@ -114,18 +116,21 @@ func (fake *ApplyChangesService) CreateInstallation(arg1 bool, arg2 bool, arg3 b
 		arg1 bool
 		arg2 bool
 		arg3 bool
-		arg4 []string
-		arg5 api.ApplyErrandChanges
-	}{arg1, arg2, arg3, arg4Copy, arg5})
-	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2, arg3, arg4Copy, arg5})
+		arg4 bool
+		arg5 bool
+		arg6 []string
+		arg7 api.ApplyErrandChanges
+	}{arg1, arg2, arg3, arg4, arg5, arg6Copy, arg7})
+	stub := fake.CreateInstallationStub
+	fakeReturns := fake.createInstallationReturns
+	fake.recordInvocation("CreateInstallation", []interface{}{arg1, arg2, arg3, arg4, arg5, arg6Copy, arg7})
 	fake.createInstallationMutex.Unlock()
-	if fake.CreateInstallationStub != nil {
-		return fake.CreateInstallationStub(arg1, arg2, arg3, arg4, arg5)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createInstallationReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -135,17 +140,17 @@ func (fake *ApplyChangesService) CreateInstallationCallCount() int {
 	return len(fake.createInstallationArgsForCall)
 }
 
-func (fake *ApplyChangesService) CreateInstallationCalls(stub func(bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)) {
+func (fake *ApplyChangesService) CreateInstallationCalls(stub func(bool, bool, bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)) {
 	fake.createInstallationMutex.Lock()
 	defer fake.createInstallationMutex.Unlock()
 	fake.CreateInstallationStub = stub
 }
 
-func (fake *ApplyChangesService) CreateInstallationArgsForCall(i int) (bool, bool, bool, []string, api.ApplyErrandChanges) {
+func (fake *ApplyChangesService) CreateInstallationArgsForCall(i int) (bool, bool, bool, bool, bool, []string, api.ApplyErrandChanges) {
 	fake.createInstallationMutex.RLock()
 	defer fake.createInstallationMutex.RUnlock()
 	argsForCall := fake.createInstallationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5, argsForCall.arg6, argsForCall.arg7
 }
 
 func (fake *ApplyChangesService) CreateInstallationReturns(result1 api.InstallationsServiceOutput, result2 error) {
@@ -180,15 +185,16 @@ func (fake *ApplyChangesService) GetInstallation(arg1 int) (api.InstallationsSer
 	fake.getInstallationArgsForCall = append(fake.getInstallationArgsForCall, struct {
 		arg1 int
 	}{arg1})
+	stub := fake.GetInstallationStub
+	fakeReturns := fake.getInstallationReturns
 	fake.recordInvocation("GetInstallation", []interface{}{arg1})
 	fake.getInstallationMutex.Unlock()
-	if fake.GetInstallationStub != nil {
-		return fake.GetInstallationStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getInstallationReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -243,15 +249,16 @@ func (fake *ApplyChangesService) GetInstallationLogs(arg1 int) (api.Installation
 	fake.getInstallationLogsArgsForCall = append(fake.getInstallationLogsArgsForCall, struct {
 		arg1 int
 	}{arg1})
+	stub := fake.GetInstallationLogsStub
+	fakeReturns := fake.getInstallationLogsReturns
 	fake.recordInvocation("GetInstallationLogs", []interface{}{arg1})
 	fake.getInstallationLogsMutex.Unlock()
-	if fake.GetInstallationLogsStub != nil {
-		return fake.GetInstallationLogsStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getInstallationLogsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -305,15 +312,16 @@ func (fake *ApplyChangesService) Info() (api.Info, error) {
 	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
 	fake.infoArgsForCall = append(fake.infoArgsForCall, struct {
 	}{})
+	stub := fake.InfoStub
+	fakeReturns := fake.infoReturns
 	fake.recordInvocation("Info", []interface{}{})
 	fake.infoMutex.Unlock()
-	if fake.InfoStub != nil {
-		return fake.InfoStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.infoReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -360,15 +368,16 @@ func (fake *ApplyChangesService) ListInstallations() ([]api.InstallationsService
 	ret, specificReturn := fake.listInstallationsReturnsOnCall[len(fake.listInstallationsArgsForCall)]
 	fake.listInstallationsArgsForCall = append(fake.listInstallationsArgsForCall, struct {
 	}{})
+	stub := fake.ListInstallationsStub
+	fakeReturns := fake.listInstallationsReturns
 	fake.recordInvocation("ListInstallations", []interface{}{})
 	fake.listInstallationsMutex.Unlock()
-	if fake.ListInstallationsStub != nil {
-		return fake.ListInstallationsStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listInstallationsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -415,15 +424,16 @@ func (fake *ApplyChangesService) RunningInstallation() (api.InstallationsService
 	ret, specificReturn := fake.runningInstallationReturnsOnCall[len(fake.runningInstallationArgsForCall)]
 	fake.runningInstallationArgsForCall = append(fake.runningInstallationArgsForCall, struct {
 	}{})
+	stub := fake.RunningInstallationStub
+	fakeReturns := fake.runningInstallationReturns
 	fake.recordInvocation("RunningInstallation", []interface{}{})
 	fake.runningInstallationMutex.Unlock()
-	if fake.RunningInstallationStub != nil {
-		return fake.RunningInstallationStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.runningInstallationReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -471,15 +481,16 @@ func (fake *ApplyChangesService) UpdateStagedDirectorProperties(arg1 api.Directo
 	fake.updateStagedDirectorPropertiesArgsForCall = append(fake.updateStagedDirectorPropertiesArgsForCall, struct {
 		arg1 api.DirectorProperties
 	}{arg1})
+	stub := fake.UpdateStagedDirectorPropertiesStub
+	fakeReturns := fake.updateStagedDirectorPropertiesReturns
 	fake.recordInvocation("UpdateStagedDirectorProperties", []interface{}{arg1})
 	fake.updateStagedDirectorPropertiesMutex.Unlock()
-	if fake.UpdateStagedDirectorPropertiesStub != nil {
-		return fake.UpdateStagedDirectorPropertiesStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateStagedDirectorPropertiesReturns
 	return fakeReturns.result1
 }
 
@@ -528,20 +539,6 @@ func (fake *ApplyChangesService) UpdateStagedDirectorPropertiesReturnsOnCall(i i
 func (fake *ApplyChangesService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createInstallationMutex.RLock()
-	defer fake.createInstallationMutex.RUnlock()
-	fake.getInstallationMutex.RLock()
-	defer fake.getInstallationMutex.RUnlock()
-	fake.getInstallationLogsMutex.RLock()
-	defer fake.getInstallationLogsMutex.RUnlock()
-	fake.infoMutex.RLock()
-	defer fake.infoMutex.RUnlock()
-	fake.listInstallationsMutex.RLock()
-	defer fake.listInstallationsMutex.RUnlock()
-	fake.runningInstallationMutex.RLock()
-	defer fake.runningInstallationMutex.RUnlock()
-	fake.updateStagedDirectorPropertiesMutex.RLock()
-	defer fake.updateStagedDirectorPropertiesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

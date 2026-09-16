@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -12,6 +13,43 @@ const (
 	StatusSucceeded = "succeeded"
 	StatusFailed    = "failed"
 )
+
+// overrideFlagHints maps the "available_overrides" parameter names Ops Manager
+// returns on a blocked apply-changes to the om CLI flag that sets them.
+var overrideFlagHints = map[string]string{
+	"ignore_warnings":                  "--ignore-warnings",
+	"allow_unsafe_dependency_update":   "--allow-unsafe-dependency-update",
+	"allow_unsafe_dependency_deletion": "--allow-unsafe-dependency-deletion",
+}
+
+// availableOverridesHint reads the "available_overrides" field from a blocked
+// installations response and, if present and non-empty, builds a hint telling
+// the user which flag(s) would let them retry past this specific failure.
+// httputil.DumpResponse (called by validateStatusOK before this) restores
+// resp.Body after reading it, so it can be decoded again here.
+func availableOverridesHint(resp *http.Response) string {
+	var body struct {
+		AvailableOverrides []string `json:"available_overrides"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return ""
+	}
+
+	if len(body.AvailableOverrides) == 0 {
+		return ""
+	}
+
+	hints := make([]string, 0, len(body.AvailableOverrides))
+	for _, override := range body.AvailableOverrides {
+		if flag, ok := overrideFlagHints[override]; ok {
+			hints = append(hints, flag)
+		} else {
+			hints = append(hints, override)
+		}
+	}
+
+	return "You can retry with the following flag(s) to bypass this: " + strings.Join(hints, ", ")
+}
 
 type InstallationsServiceOutput struct {
 	ID         int
@@ -74,7 +112,14 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	return responseStruct.Installations, nil
 }
 
-func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
+func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, allowUnsafeDependencyUpdate bool, allowUnsafeDependencyDeletion bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
+	if allowUnsafeDependencyUpdate {
+		a.logger.Println("allow_unsafe_dependency_update=true: request to Ops Manager will bypass unsafe optional-dependency update checks")
+	}
+	if allowUnsafeDependencyDeletion {
+		a.logger.Println("allow_unsafe_dependency_deletion=true: request to Ops Manager will bypass unsafe optional-dependency deletion checks")
+	}
+
 	productGuidMapping, err := a.fetchProductGUID()
 	if err != nil {
 		return InstallationsServiceOutput{}, fmt.Errorf("failed to list staged and/or deployed products: %w", err)
@@ -110,15 +155,19 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceL
 	}
 
 	data, err := json.Marshal(&struct {
-		IgnoreWarnings       string                   `json:"ignore_warnings"`
-		ForceLatestVariables bool                     `json:"force_latest_variables"`
-		DeployProducts       interface{}              `json:"deploy_products"`
-		Errands              map[string]ProductErrand `json:"errands,omitempty"`
+		IgnoreWarnings                string                   `json:"ignore_warnings"`
+		ForceLatestVariables          bool                     `json:"force_latest_variables"`
+		AllowUnsafeDependencyUpdate   bool                     `json:"allow_unsafe_dependency_update,omitempty"`
+		AllowUnsafeDependencyDeletion bool                     `json:"allow_unsafe_dependency_deletion,omitempty"`
+		DeployProducts                interface{}              `json:"deploy_products"`
+		Errands                       map[string]ProductErrand `json:"errands,omitempty"`
 	}{
-		IgnoreWarnings:       fmt.Sprintf("%t", ignoreWarnings),
-		ForceLatestVariables: forceLatestVariables,
-		DeployProducts:       deployProductsVal,
-		Errands:              errandsPayload,
+		IgnoreWarnings:                fmt.Sprintf("%t", ignoreWarnings),
+		ForceLatestVariables:          forceLatestVariables,
+		AllowUnsafeDependencyUpdate:   allowUnsafeDependencyUpdate,
+		AllowUnsafeDependencyDeletion: allowUnsafeDependencyDeletion,
+		DeployProducts:                deployProductsVal,
+		Errands:                       errandsPayload,
 	})
 	if err != nil {
 		return InstallationsServiceOutput{}, err
@@ -133,6 +182,11 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceL
 	if err = validateStatusOK(resp); err != nil {
 		if resp.StatusCode == http.StatusUnprocessableEntity {
 			err = fmt.Errorf("%s\n%s", err.Error(), "Tip: In Ops Manager 2.6 or newer, you can use `om pre-deploy-check` to get a complete list of failed verifiers and om commands to disable them.")
+
+			if hint := availableOverridesHint(resp); hint != "" {
+				a.logger.Println(hint)
+				err = fmt.Errorf("%s\n%s", err.Error(), hint)
+			}
 		}
 
 		return InstallationsServiceOutput{}, err
