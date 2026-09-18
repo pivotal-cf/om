@@ -115,7 +115,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -140,7 +140,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, false, false, false, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, false, false, false, false, false, nil, api.ApplyErrandChanges{})
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
@@ -165,7 +165,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 			})
@@ -189,7 +189,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, true, false, false, []string{"product2"}, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 			})
@@ -213,7 +213,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, true, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, true, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_update=true: request to Ops Manager will bypass unsafe optional-dependency update checks"))
@@ -236,10 +236,56 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 				Expect(stdout).ToNot(gbytes.Say("allow_unsafe_dependency_update=true"))
+			})
+		})
+
+		When("fixing stemcells", func() {
+			It("includes fix_stemcells in the request when true", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all","fix_stemcells":true}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, false, false, true, nil, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
+			})
+
+			It("omits fix_stemcells from the request when false", func() {
+				client.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/staged/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/deployed/products"),
+						ghttp.RespondWith(http.StatusOK, `[{"guid": "guid1", "type": "product1"}, {"guid": "guid2", "type": "product2"}]`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/v0/installations"),
+						ghttp.VerifyJSON(`{"ignore_warnings":"false","force_latest_variables":false,"deploy_products":"all"}`),
+						ghttp.RespondWith(http.StatusOK, `{"install": {"id":1}}`),
+					),
+				)
+
+				output, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(output.ID).To(Equal(1))
 			})
 		})
 
@@ -261,7 +307,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, false, true, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, true, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_deletion=true: request to Ops Manager will bypass unsafe optional-dependency deletion checks"))
@@ -284,7 +330,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 				Expect(stdout).ToNot(gbytes.Say("allow_unsafe_dependency_deletion=true"))
@@ -309,7 +355,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				output, err := service.CreateInstallation(false, true, false, true, true, nil, api.ApplyErrandChanges{})
+				output, err := service.CreateInstallation(false, true, false, true, true, false, nil, api.ApplyErrandChanges{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(output.ID).To(Equal(1))
 				Expect(stdout).To(gbytes.Say("allow_unsafe_dependency_update=true: request to Ops Manager will bypass unsafe optional-dependency update checks"))
@@ -336,7 +382,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					output, err := service.CreateInstallation(false, true, false, false, false, []string{"product1"}, api.ApplyErrandChanges{
+					output, err := service.CreateInstallation(false, true, false, false, false, false, []string{"product1"}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -366,7 +412,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{
+					_, err := service.CreateInstallation(false, true, false, false, false, false, []string{"product2"}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product3": {
 								RunPostDeploy: map[string]interface{}{
@@ -398,7 +444,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					output, err := service.CreateInstallation(false, true, false, false, false, []string{}, api.ApplyErrandChanges{
+					output, err := service.CreateInstallation(false, true, false, false, false, false, []string{}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -428,7 +474,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, []string{}, api.ApplyErrandChanges{
+					_, err := service.CreateInstallation(false, true, false, false, false, false, []string{}, api.ApplyErrandChanges{
 						Errands: map[string]api.ProductErrand{
 							"product1": {
 								RunPostDeploy: map[string]interface{}{
@@ -462,7 +508,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("could not make api request to installations endpoint: could not send api request to POST /api/v0/installations")))
 			})
 		})
@@ -497,7 +543,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, false, []string{"product2"}, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 				Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer, you can use `om pre-deploy-check` to get a complete list of failed verifiers and om commands to disable them.")))
 			})
@@ -522,7 +568,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: --allow-unsafe-dependency-update, --allow-unsafe-dependency-deletion")))
 					Expect(stdout).To(gbytes.Say("You can retry with the following flag\\(s\\) to bypass this: --allow-unsafe-dependency-update, --allow-unsafe-dependency-deletion"))
@@ -547,7 +593,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: some_future_override")))
 					Expect(stdout).To(gbytes.Say("You can retry with the following flag\\(s\\) to bypass this: some_future_override"))
 				})
@@ -571,7 +617,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("You can retry with the following flag(s) to bypass this: --ignore-warnings")))
 					Expect(stdout).To(gbytes.Say("You can retry with the following flag\\(s\\) to bypass this: --ignore-warnings"))
 				})
@@ -595,7 +641,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 					Expect(err).ToNot(MatchError(ContainSubstring("You can retry with the following flag(s)")))
 					Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer")))
@@ -618,7 +664,7 @@ var _ = Describe("InstallationsService", func() {
 						),
 					)
 
-					_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+					_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 					Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 					Expect(err).ToNot(MatchError(ContainSubstring("You can retry with the following flag(s)")))
 					Expect(err).To(MatchError(ContainSubstring("Tip: In Ops Manager 2.6 or newer")))
@@ -636,7 +682,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("request failed: unexpected response")))
 			})
 		})
@@ -658,7 +704,7 @@ var _ = Describe("InstallationsService", func() {
 					),
 				)
 
-				_, err := service.CreateInstallation(false, true, false, false, false, nil, api.ApplyErrandChanges{})
+				_, err := service.CreateInstallation(false, true, false, false, false, false, nil, api.ApplyErrandChanges{})
 				Expect(err).To(MatchError(ContainSubstring("failed to decode response: invalid character")))
 			})
 		})

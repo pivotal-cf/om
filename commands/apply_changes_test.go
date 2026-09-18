@@ -61,7 +61,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, forceLatestVariables, allowUnsafeDependencyUpdate, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, forceLatestVariables, allowUnsafeDependencyUpdate, allowUnsafeDependencyDeletion, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 			Expect(forceLatestVariables).To(Equal(false))
@@ -96,7 +96,7 @@ var _ = Describe("ApplyChanges", func() {
 
 			Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-			ignoreWarnings, deployProducts, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+			ignoreWarnings, deployProducts, _, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 			Expect(ignoreWarnings).To(Equal(false))
 			Expect(deployProducts).To(Equal(true))
 
@@ -122,7 +122,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--ignore-warnings"})
 				Expect(err).ToNot(HaveOccurred())
 
-				ignoreWarnings, _, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+				ignoreWarnings, _, _, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(ignoreWarnings).To(Equal(true))
 			})
 		})
@@ -136,7 +136,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--force-latest-variables"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, forceLatestVariables, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, forceLatestVariables, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(forceLatestVariables).To(Equal(true))
 			})
 		})
@@ -150,7 +150,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--allow-unsafe-dependency-update"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, _, allowUnsafeDependencyUpdate, _, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, allowUnsafeDependencyUpdate, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(allowUnsafeDependencyUpdate).To(Equal(true))
 
 				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-update is set: unsafe optional-dependency update checks will be bypassed"))
@@ -166,10 +166,54 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--allow-unsafe-dependency-deletion"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, _, _, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, _, allowUnsafeDependencyDeletion, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(allowUnsafeDependencyDeletion).To(Equal(true))
 
 				Expect(stderr).To(gbytes.Say("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed"))
+			})
+		})
+
+		When("passed the fix-stemcells flag", func() {
+			It("applies changes while forcing stemcells to be re-uploaded", func() {
+				service.InfoReturns(api.Info{Version: "11.0"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--fix-stemcells"})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, _, _, fixStemcells, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(fixStemcells).To(Equal(true))
+
+				Expect(stderr).To(gbytes.Say("fix-stemcells is set: stemcells will be uploaded with --fix"))
+			})
+		})
+
+		When("passed the fix-stemcells flag against an Ops Manager older than 11.0", func() {
+			It("errors instead of claiming stemcells will be re-uploaded", func() {
+				service.InfoReturns(api.Info{Version: "10.2-build1"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{"--fix-stemcells"})
+				Expect(err).To(MatchError("--fix-stemcells is only available with Ops Manager 11.0 or later: you are running 10.2-build1"))
+
+				Expect(service.CreateInstallationCallCount()).To(Equal(0))
+				Expect(stderr).ToNot(gbytes.Say("fix-stemcells is set"))
+			})
+		})
+
+		When("not passed the fix-stemcells flag", func() {
+			It("does not ask for stemcells to be re-uploaded", func() {
+				service.InfoReturns(api.Info{Version: "11.0"}, nil)
+
+				command := commands.NewApplyChanges(service, pendingService, writer, logger, 1)
+
+				err := executeCommand(command, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, _, _, fixStemcells, _, _ := service.CreateInstallationArgsForCall(0)
+				Expect(fixStemcells).To(Equal(false))
 			})
 		})
 
@@ -182,7 +226,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--allow-unsafe-dependency-update", "--allow-unsafe-dependency-deletion"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, _, _, allowUnsafeDependencyUpdate, allowUnsafeDependencyDeletion, _, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, allowUnsafeDependencyUpdate, allowUnsafeDependencyDeletion, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(allowUnsafeDependencyUpdate).To(Equal(true))
 				Expect(allowUnsafeDependencyDeletion).To(Equal(true))
 
@@ -332,7 +376,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--skip-deploy-products"})
 				Expect(err).ToNot(HaveOccurred())
 
-				_, deployProducts, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
+				_, deployProducts, _, _, _, _, _, _ := service.CreateInstallationArgsForCall(0)
 				Expect(deployProducts).To(Equal(false))
 			})
 
@@ -353,7 +397,7 @@ var _ = Describe("ApplyChanges", func() {
 				err := executeCommand(command, []string{"--product-name", "product1", "--product-name", "product2"})
 				Expect(err).To(HaveOccurred())
 
-				_, _, _, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
+				_, _, _, _, _, _, productNames, _ := service.CreateInstallationArgsForCall(0)
 				Expect(productNames).To(ConsistOf("product1", "product2"))
 			})
 		})
@@ -586,7 +630,7 @@ errands:
 
 					Expect(service.CreateInstallationCallCount()).To(Equal(1))
 
-					ignoreWarnings, deployProducts, forceLatestVariables, _, _, _, errands := service.CreateInstallationArgsForCall(0)
+					ignoreWarnings, deployProducts, forceLatestVariables, _, _, _, _, errands := service.CreateInstallationArgsForCall(0)
 					Expect(ignoreWarnings).To(Equal(false))
 					Expect(deployProducts).To(Equal(true))
 					Expect(forceLatestVariables).To(Equal(false))
