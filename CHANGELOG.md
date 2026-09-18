@@ -61,6 +61,11 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   This Ops Manager 3.3+ property controls the maximum number of product deployment tasks that run in parallel during Apply Changes.
   Set it under `properties-configuration.director_configuration.product_deploy_parallelism` in the director config YAML.
 
+- Add `--fix-stemcells` to `apply-changes`. When set, every stemcell upload in that Apply Changes run is
+  performed with `bosh upload-stemcell --fix`, forcing the director to re-upload a stemcell it already has
+  under the same name and version. It applies to a single run and is not persisted. Requires Ops Manager
+  11.0 or later; against an older target the command errors rather than silently applying no fix.
+
 - Add `--allow-unsafe-dependency-update` and `--allow-unsafe-dependency-deletion` flags to `apply-changes`.
   These let a Platform Engineer bypass safety checks around deploying an optional dependency out of its declared
   safe order, or deleting an optional dependency not marked as safe to delete. Both default to `false` and are

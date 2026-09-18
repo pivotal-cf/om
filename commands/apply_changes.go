@@ -28,13 +28,14 @@ type ApplyChanges struct {
 		ForceLatestVariables          bool     `long:"force-latest-variables" description:"force any certificates or other BOSH variables to use their latest version even when a stemcell is not being upgraded"`
 		AllowUnsafeDependencyUpdate   bool     `long:"allow-unsafe-dependency-update" description:"allow apply-changes to proceed even when it would update a dependency out of its declared safe order"`
 		AllowUnsafeDependencyDeletion bool     `long:"allow-unsafe-dependency-deletion" description:"allow apply-changes to proceed even when it would delete an optional dependency not marked as safe to delete"`
+		FixStemcells                  bool     `long:"fix-stemcells" description:"upload stemcells with --fix, forcing the director to re-upload them even when it already has the same name and version (OM 11.0+)"`
 		ProductNames                  []string `short:"n"   long:"product-name"         description:"name of the product(s) to deploy, cannot be used in conjunction with --skip-deploy-products (OM 2.2+)"`
 	}
 }
 
 //counterfeiter:generate -o ./fakes/apply_changes_service.go --fake-name ApplyChangesService . applyChangesService
 type applyChangesService interface {
-	CreateInstallation(bool, bool, bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
+	CreateInstallation(bool, bool, bool, bool, bool, bool, []string, api.ApplyErrandChanges) (api.InstallationsServiceOutput, error)
 	GetInstallation(id int) (api.InstallationsServiceOutput, error)
 	GetInstallationLogs(id int) (api.InstallationsServiceOutput, error)
 	Info() (api.Info, error)
@@ -102,6 +103,19 @@ func (ac ApplyChanges) Execute(args []string) error {
 				return fmt.Errorf("could not determine Ops Manager version to accept flags --allow-unsafe-dependency-update / --allow-unsafe-dependency-deletion: %w", err)
 			}
 			return fmt.Errorf("--allow-unsafe-dependency-update and --allow-unsafe-dependency-deletion are only available with Ops Manager 11.0 or later: you are running %s", info.Version)
+		}
+	}
+
+	if ac.Options.FixStemcells {
+		info, err := ac.service.Info()
+		if err != nil {
+			return fmt.Errorf("could not retrieve info from targetted ops manager: %v", err)
+		}
+		if ok, err := info.VersionAtLeast(11, 0); !ok {
+			if err != nil {
+				return fmt.Errorf("could not determine Ops Manager version to accept flag --fix-stemcells: %w", err)
+			}
+			return fmt.Errorf("--fix-stemcells is only available with Ops Manager 11.0 or later: you are running %s", info.Version)
 		}
 	}
 
@@ -180,8 +194,12 @@ func (ac ApplyChanges) Execute(args []string) error {
 		ac.logger.Printf("allow-unsafe-dependency-deletion is set: unsafe optional-dependency deletion checks will be bypassed")
 	}
 
+	if ac.Options.FixStemcells {
+		ac.logger.Printf("fix-stemcells is set: stemcells will be uploaded with --fix")
+	}
+
 	ac.logger.Printf("attempting to apply changes to the targeted Ops Manager")
-	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, ac.Options.ForceLatestVariables, ac.Options.AllowUnsafeDependencyUpdate, ac.Options.AllowUnsafeDependencyDeletion, changedProducts, errands)
+	installation, err = ac.service.CreateInstallation(ac.Options.IgnoreWarnings, !ac.Options.SkipDeployProducts, ac.Options.ForceLatestVariables, ac.Options.AllowUnsafeDependencyUpdate, ac.Options.AllowUnsafeDependencyDeletion, ac.Options.FixStemcells, changedProducts, errands)
 	if err != nil {
 		return fmt.Errorf("installation failed to trigger: %s", err)
 	}

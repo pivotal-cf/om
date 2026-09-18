@@ -112,7 +112,7 @@ func (a Api) ListInstallations() ([]InstallationsServiceOutput, error) {
 	return responseStruct.Installations, nil
 }
 
-func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, allowUnsafeDependencyUpdate bool, allowUnsafeDependencyDeletion bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
+func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceLatestVariables bool, allowUnsafeDependencyUpdate bool, allowUnsafeDependencyDeletion bool, fixStemcells bool, productNames []string, errands ApplyErrandChanges) (InstallationsServiceOutput, error) {
 	if allowUnsafeDependencyUpdate {
 		a.logger.Println("allow_unsafe_dependency_update=true: request to Ops Manager will bypass unsafe optional-dependency update checks")
 	}
@@ -159,6 +159,7 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceL
 		ForceLatestVariables          bool                     `json:"force_latest_variables"`
 		AllowUnsafeDependencyUpdate   bool                     `json:"allow_unsafe_dependency_update,omitempty"`
 		AllowUnsafeDependencyDeletion bool                     `json:"allow_unsafe_dependency_deletion,omitempty"`
+		FixStemcells                  bool                     `json:"fix_stemcells,omitempty"`
 		DeployProducts                interface{}              `json:"deploy_products"`
 		Errands                       map[string]ProductErrand `json:"errands,omitempty"`
 	}{
@@ -166,6 +167,7 @@ func (a Api) CreateInstallation(ignoreWarnings bool, deployProducts bool, forceL
 		ForceLatestVariables:          forceLatestVariables,
 		AllowUnsafeDependencyUpdate:   allowUnsafeDependencyUpdate,
 		AllowUnsafeDependencyDeletion: allowUnsafeDependencyDeletion,
+		FixStemcells:                  fixStemcells,
 		DeployProducts:                deployProductsVal,
 		Errands:                       errandsPayload,
 	})

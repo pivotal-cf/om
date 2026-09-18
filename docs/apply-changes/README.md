@@ -89,6 +89,10 @@ Help Options:
                                               even when it would delete an
                                               optional dependency not marked as
                                               safe to delete
+          --fix-stemcells                     upload stemcells with --fix,
+                                              forcing the director to re-upload
+                                              them even when it already has the
+                                              same name and version (OM 11.0+)
       -n, --product-name=                     name of the product(s) to deploy,
                                               cannot be used in conjunction
                                               with --skip-deploy-products (OM
