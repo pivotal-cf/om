@@ -50,6 +50,12 @@ var _ = Describe(renderers.ShellTypePowershell, func() {
 				result := renderer.RenderEnvironmentVariable(key, value)
 				Expect(result).To(Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'"))
 			})
+			It("normalizes a trailing bare \\n to \\r\\n without adding an extra blank line", func() {
+				key := "KEY"
+				value := "1\r\n2\r\n3\r\n4\n"
+				result := renderer.RenderEnvironmentVariable(key, value)
+				Expect(result).To(Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'"))
+			})
 		})
 	})
 

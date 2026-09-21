@@ -15,8 +15,10 @@ func NewPowershell() Renderer {
 
 func (renderer *powershell) RenderEnvironmentVariable(variable string, value string) string {
 	if strings.ContainsAny(value, "\n") {
-		if !strings.HasSuffix(value, "\r\n") {
+		if !strings.HasSuffix(value, "\n") {
 			value += "\r\n"
+		} else if !strings.HasSuffix(value, "\r\n") {
+			value = value[:len(value)-1] + "\r\n"
 		}
 		value = "\r\n" + value
 	}
