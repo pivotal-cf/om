@@ -93,6 +93,28 @@ opsman-configuration:
 					Expect(os.IsNotExist(statErr)).To(BeTrue(), "expected temp options file to be removed after CreateVM")
 				})
 
+				It("writes the temp options file (which contains the cleartext admin_password) with owner-only permissions", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+
+					var optionsFileMode os.FileMode
+					runner.ExecuteWithEnvVarsCalls(func(_ []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+						for _, arg := range args {
+							if s, ok := arg.(string); ok && strings.HasPrefix(s, "-options=") {
+								optionsFilename := strings.TrimPrefix(s, "-options=")
+								info, statErr := os.Stat(optionsFilename)
+								Expect(statErr).ToNot(HaveOccurred())
+								optionsFileMode = info.Mode().Perm()
+							}
+						}
+						return nil, nil, nil
+					})
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(optionsFileMode).To(Equal(os.FileMode(0600)), "expected temp options file to be readable/writable by owner only")
+				})
+
 				It("calls govc with correct cli arguments, and does not duplicate /datacenter/vm path", func() {
 					command, runner := createCommand(configStr, opsmanVersionBelow26)
 

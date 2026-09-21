@@ -262,7 +262,7 @@ func (v *VsphereVMManager) createOptionsFile() (optionsFileName string, err erro
 		return "", fmt.Errorf("could not create temp option file: %s", err)
 	}
 
-	err = os.WriteFile(optionsFile.Name(), optionsBytes, 0644)
+	err = os.WriteFile(optionsFile.Name(), optionsBytes, 0600)
 	if err != nil {
 		return "", fmt.Errorf("could not write options to file: %s", err)
 	}
