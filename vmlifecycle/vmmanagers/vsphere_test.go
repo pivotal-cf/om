@@ -430,6 +430,25 @@ opsman-configuration:
 						env, _ := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Eventually(env).Should(ContainElement(MatchRegexp(`GOVC_TLS_CA_CERTS=.*ca.crt.*`)))
 					})
+
+					It("removes the temp ca cert file after use", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+
+						_, _, err := command.CreateVM()
+						Expect(err).ToNot(HaveOccurred())
+
+						env, _ := runner.ExecuteWithEnvVarsArgsForCall(0)
+						var caCertFilename string
+						for _, e := range env {
+							if strings.HasPrefix(e, "GOVC_TLS_CA_CERTS=") {
+								caCertFilename = strings.TrimPrefix(e, "GOVC_TLS_CA_CERTS=")
+							}
+						}
+						Expect(caCertFilename).ToNot(BeEmpty())
+
+						_, statErr := os.Stat(caCertFilename)
+						Expect(os.IsNotExist(statErr)).To(BeTrue(), "expected temp ca cert file to be removed after CreateVM")
+					})
 				})
 
 				Context("failure cases", func() {
