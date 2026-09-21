@@ -111,6 +111,20 @@ product_version: ../escaped-version
 			Expect(path.Join(testGen, "escaped-version")).ToNot(BeADirectory())
 		})
 
+		It("rejects tile metadata with a colon in the product name, to guard against Windows ADS manipulation", func() {
+			maliciousMetadata := []byte(`
+name: "evil:stream"
+product_version: "1.0"
+`)
+			gen := generator.NewExecutor(maliciousMetadata, tmpPath, false, true, 10, false)
+			err := gen.Generate()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("path traversal"))
+
+			Expect(path.Join(tmpPath, "evil:stream")).ToNot(BeAnExistingFile())
+		})
+
 		It("rejects tile metadata that attempts path traversal via a job-derived resource ops-file name", func() {
 			maliciousMetadata := []byte(`
 name: safe-product
