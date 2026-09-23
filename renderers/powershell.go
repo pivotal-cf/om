@@ -15,13 +15,21 @@ func NewPowershell() Renderer {
 
 func (renderer *powershell) RenderEnvironmentVariable(variable string, value string) string {
 	if strings.ContainsAny(value, "\n") {
-		suffix := ""
 		if !strings.HasSuffix(value, "\n") {
-			suffix = "\r\n"
+			value += "\r\n"
+		} else if !strings.HasSuffix(value, "\r\n") {
+			value = value[:len(value)-1] + "\r\n"
 		}
-		return fmt.Sprintf("$env:%s='\r\n%s%s'", variable, value, suffix)
+		value = "\r\n" + value
 	}
-	return fmt.Sprintf("$env:%s=\"%s\"", variable, value)
+	return fmt.Sprintf("$env:%s=%s", variable, powershellQuote(value))
+}
+
+// powershellQuote wraps value in single quotes, doubling any embedded
+// single quotes, so it is safe to iex regardless of `"`, backtick, or
+// $() metacharacters it contains.
+func powershellQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "''") + "'"
 }
 
 func (renderer *powershell) RenderUnsetVariable(variable string) string {

