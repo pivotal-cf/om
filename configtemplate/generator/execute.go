@@ -212,9 +212,9 @@ func (e *Executor) CreateTemplate(metadata *Metadata) (*Template, error) {
 // used as filesystem path segments (product name/version, ops-file names) if
 // they could escape the intended output directory via ".." or a path
 // separator, or manipulate a Windows NTFS Alternate Data Stream via ":".
-func validateMetadataPathSegment(fieldName, value string) error {
+func validateMetadataPathSegment(label, value string) error {
 	if strings.Contains(value, "..") || strings.ContainsRune(value, '/') || strings.ContainsRune(value, '\\') || strings.ContainsRune(value, ':') {
-		return fmt.Errorf("path traversal detected in tile metadata: invalid %s %q", fieldName, value)
+		return fmt.Errorf("path traversal detected in tile metadata: invalid %s %q", label, value)
 	}
 	return nil
 }
