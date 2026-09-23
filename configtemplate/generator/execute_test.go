@@ -96,6 +96,88 @@ var _ = Describe("Executor", func() {
 			}
 		})
 
+		It("rejects tile metadata that attempts path traversal via product name or version", func() {
+			maliciousMetadata := []byte(`
+name: ../escaped-product
+product_version: ../escaped-version
+`)
+			gen := generator.NewExecutor(maliciousMetadata, tmpPath, false, true, 10, false)
+			err := gen.Generate()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("path traversal"))
+
+			Expect(path.Join(testGen, "escaped-product")).ToNot(BeADirectory())
+			Expect(path.Join(testGen, "escaped-version")).ToNot(BeADirectory())
+		})
+
+		It("rejects tile metadata with a colon in the product name, to guard against Windows ADS manipulation", func() {
+			maliciousMetadata := []byte(`
+name: "evil:stream"
+product_version: "1.0"
+`)
+			gen := generator.NewExecutor(maliciousMetadata, tmpPath, false, true, 10, false)
+			err := gen.Generate()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("path traversal"))
+
+			Expect(path.Join(tmpPath, "evil:stream")).ToNot(BeAnExistingFile())
+		})
+
+		It("rejects tile metadata that attempts path traversal via a job-derived resource ops-file name", func() {
+			maliciousMetadata := []byte(`
+name: safe-product
+product_version: "1.0"
+job_types:
+- name: evil/job
+  instance_definition:
+    configurable: true
+`)
+			gen := generator.NewExecutor(maliciousMetadata, tmpPath, false, true, 10, false)
+			err := gen.Generate()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("path traversal"))
+			Expect(err.Error()).To(ContainSubstring("resource ops-file name"))
+
+			resourceDirectory := path.Join(tmpPath, "safe-product", "1.0", "resource")
+			Expect(listFilesInDirectory(resourceDirectory)).To(BeEmpty())
+		})
+
+		It("rejects tile metadata that attempts path traversal via a property-option-derived ops-file name", func() {
+			maliciousMetadata := []byte(`
+name: safe-product
+product_version: "1.0"
+property_blueprints:
+- configurable: true
+  optional: true
+  name: foo
+  type: multi_select_options
+  options:
+  - label: Safe
+    name: safe1
+  - label: Evil
+    name: evil/option
+form_types:
+- name: form
+  property_inputs:
+  - reference: properties.foo
+`)
+			gen := generator.NewExecutor(maliciousMetadata, tmpPath, false, true, 10, false)
+			err := gen.Generate()
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("path traversal"))
+			Expect(err.Error()).To(ContainSubstring("product property ops-file name"))
+
+			featuresDirectory := path.Join(tmpPath, "safe-product", "1.0", "features")
+			Expect(path.Join(featuresDirectory, "propertiesfoo_evil")).ToNot(BeADirectory())
+			for _, f := range listFilesInDirectory(featuresDirectory) {
+				Expect(f).ToNot(ContainSubstring("evil"))
+			}
+		})
+
 		It("Should generate files for pks", func() {
 			By("successfully executing the generator")
 
