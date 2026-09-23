@@ -68,16 +68,16 @@ opsman-configuration:
 					command, runner := createCommand(configStrTemplate)
 					command.Config.PrivateIP = ""
 
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(1, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(2, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
 
 					_, _, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
-					invokes := runner.Invocations()["Execute"]
+					invokes := runner.Invocations()["ExecuteWithEnvVars"]
 					Expect(invokes).ToNot(HaveLen(0))
-					for _, args := range invokes {
-						Expect(args[0]).ToNot(ContainElement(ContainSubstring("fixed-ip")))
+					for _, invoke := range invokes {
+						Expect(invoke[1]).ToNot(ContainElement(ContainSubstring("fixed-ip")))
 					}
 				})
 			})
@@ -87,16 +87,16 @@ opsman-configuration:
 					command, runner := createCommand(configStrTemplate)
 					command.Config.PublicIP = ""
 
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(1, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(2, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
 
 					_, _, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
-					invokes := runner.Invocations()["Execute"]
+					invokes := runner.Invocations()["ExecuteWithEnvVars"]
 					Expect(invokes).ToNot(HaveLen(0))
-					for _, args := range invokes {
-						Expect(args[0]).ToNot(ContainElement(ContainSubstring("floating")))
+					for _, invoke := range invokes {
+						Expect(invoke[1]).ToNot(ContainElement(ContainSubstring("floating")))
 					}
 				})
 			})
@@ -108,18 +108,17 @@ opsman-configuration:
 						IAAS: "openstack",
 						ID:   "vm-name",
 					}
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("ACTIVE\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("ACTIVE\r\n"), nil, nil)
 
 					status, state, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
 					Expect(status).To(Equal(vmmanagers.Exist))
 
-					Expect(runner.ExecuteCallCount()).To(BeEquivalentTo(1))
+					Expect(runner.ExecuteWithEnvVarsCallCount()).To(BeEquivalentTo(1))
 
-					actualArgs := runner.ExecuteArgsForCall(0)
+					actualEnv, actualArgs := runner.ExecuteWithEnvVarsArgsForCall(0)
 					Expect(actualArgs).To(matchers.OrderedConsistOf([]interface{}{
 						"--os-username", gstruct.Ignore(),
-						"--os-password", gstruct.Ignore(),
 						"--os-auth-url", "https://example.com:5000/v2.0",
 						"--os-project-name", "marker",
 						"--insecure",
@@ -130,6 +129,8 @@ opsman-configuration:
 						"--column", "status",
 						"--format", "value",
 					}))
+					Expect(actualEnv).To(ContainElement("OS_PASSWORD=password"))
+					Expect(actualArgs).ToNot(ContainElement("--os-password"))
 
 					Expect(state.IAAS).To(Equal("openstack"))
 					Expect(state.ID).To(Equal("vm-name"))
@@ -140,14 +141,14 @@ opsman-configuration:
 						It("returns an error", func() {
 							command, runner := createCommand(configStrTemplate)
 							command.State.ID = "vm-name"
-							runner.ExecuteReturnsOnCall(0, nil, bytes.NewBufferString(""), errors.New("some error"))
+							runner.ExecuteWithEnvVarsReturnsOnCall(0, nil, bytes.NewBufferString(""), errors.New("some error"))
 
 							status, _, err := command.CreateVM()
 							Expect(err).To(HaveOccurred())
 							Expect(err.Error()).To(MatchRegexp("VM ID in statefile does not exist. Please check your statefile and try again"))
 							Expect(status).To(Equal(vmmanagers.Unknown))
 
-							Expect(runner.ExecuteCallCount()).To(BeEquivalentTo(1))
+							Expect(runner.ExecuteWithEnvVarsCallCount()).To(BeEquivalentTo(1))
 						})
 					})
 				})
@@ -157,14 +158,13 @@ opsman-configuration:
 				It("calls openstack with correct cli arguments", func() {
 					command, runner := createCommand(configStrTemplate)
 
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(1, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(2, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
 
 					commands := [][]interface{}{
 						{ //1
 							"--os-username", gstruct.Ignore(),
-							"--os-password", gstruct.Ignore(),
 							"--os-auth-url", "https://example.com:5000/v2.0",
 							"--os-project-name", "marker",
 							"--insecure",
@@ -178,7 +178,6 @@ opsman-configuration:
 						},
 						{ //2
 							"--os-username", gstruct.Ignore(),
-							"--os-password", gstruct.Ignore(),
 							"--os-auth-url", "https://example.com:5000/v2.0",
 							"--os-project-name", "marker",
 							"--insecure",
@@ -191,7 +190,6 @@ opsman-configuration:
 						},
 						{ //3
 							"--os-username", gstruct.Ignore(),
-							"--os-password", gstruct.Ignore(),
 							"--os-auth-url", "https://example.com:5000/v2.0",
 							"--os-project-name", "marker",
 							"--insecure",
@@ -210,7 +208,6 @@ opsman-configuration:
 						},
 						{ //4
 							"--os-username", gstruct.Ignore(),
-							"--os-password", gstruct.Ignore(),
 							"--os-auth-url", "https://example.com:5000/v2.0",
 							"--os-project-name", "marker",
 							"--insecure",
@@ -227,8 +224,10 @@ opsman-configuration:
 					Expect(stateInfo).To(Equal(vmmanagers.StateInfo{IAAS: "openstack", ID: "custom-server-id"}))
 
 					for i, expectedArgs := range commands {
-						actualArgs := runner.ExecuteArgsForCall(i)
+						actualEnv, actualArgs := runner.ExecuteWithEnvVarsArgsForCall(i)
 						Expect(actualArgs).To(matchers.OrderedConsistOf(expectedArgs))
+						Expect(actualEnv).To(ContainElement("OS_PASSWORD=password"))
+						Expect(actualArgs).ToNot(ContainElement("--os-password"))
 					}
 				})
 
@@ -252,9 +251,9 @@ opsman-configuration:
 						DescribeTable("prints errors from openstack", func(callNumber int, expectedStatus vmmanagers.Status) {
 							command, runner := createCommand(configStrTemplate)
 
-							runner.ExecuteReturns(bytes.NewBufferString("null\r\n"), nil, nil)
+							runner.ExecuteWithEnvVarsReturns(bytes.NewBufferString("null\r\n"), nil, nil)
 
-							runner.ExecuteReturnsOnCall(callNumber, nil, nil, errors.New("some error occurred"))
+							runner.ExecuteWithEnvVarsReturnsOnCall(callNumber, nil, nil, errors.New("some error occurred"))
 							status, _, err := command.CreateVM()
 							Expect(status).To(Equal(expectedStatus))
 							Expect(err).To(HaveOccurred())
@@ -284,17 +283,17 @@ opsman-configuration:
 				It("deletes the image", func() {
 					command, runner := createCommand(configStrTemplate)
 
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("image-id\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(2, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(3, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("image-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(3, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
 
 					status, _, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
 					Expect(status).To(Equal(vmmanagers.Success))
 
-					Expect(runner.ExecuteArgsForCall(1)).To(matchers.OrderedConsistOf(
+					actualEnv, actualArgs := runner.ExecuteWithEnvVarsArgsForCall(1)
+					Expect(actualArgs).To(matchers.OrderedConsistOf(
 						"--os-username", gstruct.Ignore(),
-						"--os-password", gstruct.Ignore(),
 						"--os-auth-url", "https://example.com:5000/v2.0",
 						"--os-project-name", "marker",
 						"--insecure",
@@ -303,14 +302,15 @@ opsman-configuration:
 						"--os-identity-api-version", "3",
 						"image", "delete", "awesome-vm-image",
 					))
+					Expect(actualEnv).To(ContainElement("OS_PASSWORD=password"))
 				})
 
 				It("displays an error the delete fails", func() {
 					command, runner := createCommand(configStrTemplate)
 
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("DOWN\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(1, bytes.NewBufferString("image-id\r\n"), nil, nil)
-					runner.ExecuteReturnsOnCall(2, nil, nil, errors.New("error occurred"))
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("DOWN\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("image-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(2, nil, nil, errors.New("error occurred"))
 
 					status, _, err := command.CreateVM()
 					Expect(err).To(HaveOccurred())
@@ -370,13 +370,13 @@ opsman-configuration:
 
 			command, runner := createCommand(configStr)
 
-			runner.ExecuteReturnsOnCall(0, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
-			runner.ExecuteReturnsOnCall(1, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
+			runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString("custom-image-id\r\n"), nil, nil)
+			runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("custom-server-id\r\n"), bytes.NewBufferString("TestStatus: pending creation"), nil)
 
 			_, _, err := command.CreateVM()
 			Expect(err).ToNot(HaveOccurred())
 
-			args := runner.ExecuteArgsForCall(3)
+			_, args := runner.ExecuteWithEnvVarsArgsForCall(3)
 			Expect(args).To(ContainElement("ops-manager-vm"))
 			Expect(args).To(ContainElement("m1.xlarge"))
 			Expect(args).To(ContainElement("3"))
@@ -399,15 +399,14 @@ opsman-configuration:
 					command, runner := createCommand(configStrTemplate)
 					command.State.ID = "some-random-id"
 
-					runner.ExecuteReturnsOnCall(0, bytes.NewBufferString(`{"image":"testing-opsman-image (7bf1ac30-290f-42ae-bc5e-b240ef051fbf)"}`), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(0, bytes.NewBufferString(`{"image":"testing-opsman-image (7bf1ac30-290f-42ae-bc5e-b240ef051fbf)"}`), nil, nil)
 
 					err := command.DeleteVM()
 					Expect(err).ToNot(HaveOccurred())
 
-					Expect(runner.ExecuteArgsForCall(0)).To(matchers.OrderedConsistOf(
+					env0, args0 := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args0).To(matchers.OrderedConsistOf(
 						"--os-username",
-						gstruct.Ignore(),
-						"--os-password",
 						gstruct.Ignore(),
 						"--os-auth-url",
 						"https://example.com:5000/v2.0",
@@ -421,11 +420,11 @@ opsman-configuration:
 						"--format",
 						"value",
 					))
+					Expect(env0).To(ContainElement("OS_PASSWORD=password"))
 
-					Expect(runner.ExecuteArgsForCall(1)).To(matchers.OrderedConsistOf(
+					env1, args1 := runner.ExecuteWithEnvVarsArgsForCall(1)
+					Expect(args1).To(matchers.OrderedConsistOf(
 						"--os-username",
-						gstruct.Ignore(),
-						"--os-password",
 						gstruct.Ignore(),
 						"--os-auth-url",
 						"https://example.com:5000/v2.0",
@@ -436,11 +435,11 @@ opsman-configuration:
 						"some-random-id",
 						"--wait",
 					))
+					Expect(env1).To(ContainElement("OS_PASSWORD=password"))
 
-					Expect(runner.ExecuteArgsForCall(2)).To(matchers.OrderedConsistOf(
+					env2, args2 := runner.ExecuteWithEnvVarsArgsForCall(2)
+					Expect(args2).To(matchers.OrderedConsistOf(
 						"--os-username",
-						gstruct.Ignore(),
-						"--os-password",
 						gstruct.Ignore(),
 						"--os-auth-url",
 						"https://example.com:5000/v2.0",
@@ -450,6 +449,7 @@ opsman-configuration:
 						"delete",
 						"7bf1ac30-290f-42ae-bc5e-b240ef051fbf",
 					))
+					Expect(env2).To(ContainElement("OS_PASSWORD=password"))
 				})
 
 				Describe("failure cases", func() {
@@ -457,7 +457,7 @@ opsman-configuration:
 						It("prints errors from openstack", func() {
 							command, runner := createCommand(configStrTemplate)
 
-							runner.ExecuteReturns(nil, nil, errors.New("some error occurred"))
+							runner.ExecuteWithEnvVarsReturns(nil, nil, errors.New("some error occurred"))
 							err := command.DeleteVM()
 							Expect(err).To(HaveOccurred())
 							Expect(err.Error()).To(ContainSubstring("openstack error "))
@@ -468,7 +468,7 @@ opsman-configuration:
 						It("returns an error", func() {
 							command, runner := createCommand(configStrTemplate)
 							command.State.ID = "invalid-id"
-							runner.ExecuteReturns(nil, nil, errors.New("vm does not exist"))
+							runner.ExecuteWithEnvVarsReturns(nil, nil, errors.New("vm does not exist"))
 
 							command.State = vmmanagers.StateInfo{
 								IAAS: "openstack",
@@ -507,7 +507,7 @@ opsman-configuration:
 			It("prints error", func() {
 				command, runner := createCommand(configStrTemplate)
 
-				runner.ExecuteReturns(nil, nil, errors.New("some error occurred"))
+				runner.ExecuteWithEnvVarsReturns(nil, nil, errors.New("some error occurred"))
 
 				command.State = state
 				err := command.DeleteVM()
