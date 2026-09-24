@@ -51,30 +51,37 @@ func matchesType(t string) bool {
 	return false
 }
 
+func propertyBlueprintUsesServiceNetwork(propertyMetadata PropertyBlueprint) bool {
+	if matchesType(propertyMetadata.Type) {
+		return true
+	}
+	for _, subPropertyMetadata := range propertyMetadata.PropertyBlueprints {
+		if propertyBlueprintUsesServiceNetwork(subPropertyMetadata) {
+			return true
+		}
+	}
+	for _, optionTemplate := range propertyMetadata.OptionTemplates {
+		for _, subPropertyMetadata := range optionTemplate.PropertyBlueprints {
+			if propertyBlueprintUsesServiceNetwork(subPropertyMetadata) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (m *Metadata) UsesServiceNetwork() bool {
 	for _, job := range m.JobTypes {
 		for _, propertyMetadata := range job.PropertyBlueprint {
-			if matchesType(propertyMetadata.Type) {
+			if propertyBlueprintUsesServiceNetwork(propertyMetadata) {
 				return true
 			}
 		}
 	}
 
 	for _, propertyMetadata := range m.PropertyBlueprints {
-		if matchesType(propertyMetadata.Type) {
+		if propertyBlueprintUsesServiceNetwork(propertyMetadata) {
 			return true
-		}
-		for _, subPropertyMetadata := range propertyMetadata.PropertyBlueprints {
-			if matchesType(subPropertyMetadata.Type) {
-				return true
-			}
-		}
-		for _, optionTemplates := range propertyMetadata.OptionTemplates {
-			for _, subPropertyMetadata := range optionTemplates.PropertyBlueprints {
-				if matchesType(subPropertyMetadata.Type) {
-					return true
-				}
-			}
 		}
 	}
 	return false
