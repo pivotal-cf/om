@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -72,6 +73,46 @@ opsman-configuration:
 					command, _ := createCommand(configStr, opsmanVersionBelow26)
 					_, _, err := command.CreateVM()
 					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("removes the temp options file (which contains the cleartext admin_password) after use", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					var optionsFilename string
+					for _, arg := range args {
+						if s, ok := arg.(string); ok && strings.HasPrefix(s, "-options=") {
+							optionsFilename = strings.TrimPrefix(s, "-options=")
+						}
+					}
+					Expect(optionsFilename).ToNot(BeEmpty())
+
+					_, statErr := os.Stat(optionsFilename)
+					Expect(os.IsNotExist(statErr)).To(BeTrue(), "expected temp options file to be removed after CreateVM")
+				})
+
+				It("writes the temp options file (which contains the cleartext admin_password) with owner-only permissions", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+
+					var optionsFileMode os.FileMode
+					runner.ExecuteWithEnvVarsCalls(func(_ []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+						for _, arg := range args {
+							if s, ok := arg.(string); ok && strings.HasPrefix(s, "-options=") {
+								optionsFilename := strings.TrimPrefix(s, "-options=")
+								info, statErr := os.Stat(optionsFilename)
+								Expect(statErr).ToNot(HaveOccurred())
+								optionsFileMode = info.Mode().Perm()
+							}
+						}
+						return nil, nil, nil
+					})
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(optionsFileMode).To(Equal(os.FileMode(0600)), "expected temp options file to be readable/writable by owner only")
 				})
 
 				It("calls govc with correct cli arguments, and does not duplicate /datacenter/vm path", func() {
@@ -388,6 +429,25 @@ opsman-configuration:
 
 						env, _ := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Eventually(env).Should(ContainElement(MatchRegexp(`GOVC_TLS_CA_CERTS=.*ca.crt.*`)))
+					})
+
+					It("removes the temp ca cert file after use", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+
+						_, _, err := command.CreateVM()
+						Expect(err).ToNot(HaveOccurred())
+
+						env, _ := runner.ExecuteWithEnvVarsArgsForCall(0)
+						var caCertFilename string
+						for _, e := range env {
+							if strings.HasPrefix(e, "GOVC_TLS_CA_CERTS=") {
+								caCertFilename = strings.TrimPrefix(e, "GOVC_TLS_CA_CERTS=")
+							}
+						}
+						Expect(caCertFilename).ToNot(BeEmpty())
+
+						_, statErr := os.Stat(caCertFilename)
+						Expect(os.IsNotExist(statErr)).To(BeTrue(), "expected temp ca cert file to be removed after CreateVM")
 					})
 				})
 

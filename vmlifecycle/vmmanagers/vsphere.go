@@ -105,9 +105,16 @@ func (v *VsphereVMManager) DeleteVM() error {
 		return err
 	}
 
-	env, err := v.addEnvVars()
+	env, caCertFilename, err := v.addEnvVars()
 	if err != nil {
 		return err
+	}
+	if caCertFilename != "" {
+		defer func() {
+			if removeErr := os.Remove(caCertFilename); removeErr != nil {
+				log.Printf("could not remove temp ca cert file %s: %s", caCertFilename, removeErr)
+			}
+		}()
 	}
 
 	if v.State.IAAS != "vsphere" {
@@ -144,9 +151,16 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 
 	v.addDefaultConfigFields()
 
-	env, err := v.addEnvVars()
+	env, caCertFilename, err := v.addEnvVars()
 	if err != nil {
 		return Unknown, StateInfo{}, err
+	}
+	if caCertFilename != "" {
+		defer func() {
+			if removeErr := os.Remove(caCertFilename); removeErr != nil {
+				log.Printf("could not remove temp ca cert file %s: %s", caCertFilename, removeErr)
+			}
+		}()
 	}
 
 	exist, err := v.vmExists(env)
@@ -166,6 +180,11 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 	if err != nil {
 		return Unknown, StateInfo{}, err
 	}
+	defer func() {
+		if removeErr := os.Remove(optionFilename); removeErr != nil {
+			log.Printf("could not remove temp options file %s: %s", optionFilename, removeErr)
+		}
+	}()
 
 	ipath := v.createIpath()
 
@@ -256,21 +275,23 @@ func (v *VsphereVMManager) createOptionsFile() (optionsFileName string, err erro
 	if err != nil {
 		return "", fmt.Errorf("could not create temp option file: %s", err)
 	}
+	optionsFileName = optionsFile.Name()
 
-	err = os.WriteFile(optionsFile.Name(), optionsBytes, 0644)
-	if err != nil {
+	if _, err = optionsFile.Write(optionsBytes); err != nil {
+		_ = optionsFile.Close()
+		_ = os.Remove(optionsFileName)
 		return "", fmt.Errorf("could not write options to file: %s", err)
 	}
 
-	err = optionsFile.Close()
-	if err != nil {
-		return "", fmt.Errorf("could not write options to file: %s", err)
+	if err = optionsFile.Close(); err != nil {
+		_ = os.Remove(optionsFileName)
+		return "", fmt.Errorf("could not close options file: %s", err)
 	}
 
-	return optionsFile.Name(), nil
+	return optionsFileName, nil
 }
 
-func (v *VsphereVMManager) addEnvVars() (envVarsList []string, err error) {
+func (v *VsphereVMManager) addEnvVars() (envVarsList []string, caCertFilename string, err error) {
 	if v.Config.OpsmanConfig.Vsphere.Vcenter.HostDEPRECATED != "" {
 		log.Println("vcenter \"host\" is DEPRECATED. Platform Automation cannot guarantee the location of the VM, given the nature of vSphere")
 	}
@@ -292,16 +313,25 @@ func (v *VsphereVMManager) addEnvVars() (envVarsList []string, err error) {
 	if v.Config.OpsmanConfig.Vsphere.Vcenter.CACert != "" {
 		caCertFile, err := os.CreateTemp("", "ca.crt")
 		if err != nil {
-			return []string{}, fmt.Errorf("could not create temp file for ca cert: %s", err)
+			return []string{}, "", fmt.Errorf("could not create temp file for ca cert: %s", err)
 		}
-		_, err = caCertFile.WriteString(v.Config.OpsmanConfig.Vsphere.Vcenter.CACert)
-		if err != nil {
-			return []string{}, fmt.Errorf("could not write cert to the cert file: %s", err)
+		caCertFilename = caCertFile.Name()
+
+		if _, err = caCertFile.WriteString(v.Config.OpsmanConfig.Vsphere.Vcenter.CACert); err != nil {
+			_ = caCertFile.Close()
+			_ = os.Remove(caCertFilename)
+			return []string{}, "", fmt.Errorf("could not write cert to the cert file: %s", err)
 		}
-		env = append(env, "GOVC_TLS_CA_CERTS="+caCertFile.Name())
+
+		if err = caCertFile.Close(); err != nil {
+			_ = os.Remove(caCertFilename)
+			return []string{}, "", fmt.Errorf("could not close ca cert file: %s", err)
+		}
+
+		env = append(env, "GOVC_TLS_CA_CERTS="+caCertFilename)
 	}
 
-	return env, nil
+	return env, caCertFilename, nil
 }
 
 func (v *VsphereVMManager) validateImage() error {
