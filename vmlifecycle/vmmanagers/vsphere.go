@@ -275,18 +275,20 @@ func (v *VsphereVMManager) createOptionsFile() (optionsFileName string, err erro
 	if err != nil {
 		return "", fmt.Errorf("could not create temp option file: %s", err)
 	}
+	optionsFileName = optionsFile.Name()
 
-	err = os.WriteFile(optionsFile.Name(), optionsBytes, 0600)
-	if err != nil {
+	if _, err = optionsFile.Write(optionsBytes); err != nil {
+		_ = optionsFile.Close()
+		_ = os.Remove(optionsFileName)
 		return "", fmt.Errorf("could not write options to file: %s", err)
 	}
 
-	err = optionsFile.Close()
-	if err != nil {
-		return "", fmt.Errorf("could not write options to file: %s", err)
+	if err = optionsFile.Close(); err != nil {
+		_ = os.Remove(optionsFileName)
+		return "", fmt.Errorf("could not close options file: %s", err)
 	}
 
-	return optionsFile.Name(), nil
+	return optionsFileName, nil
 }
 
 func (v *VsphereVMManager) addEnvVars() (envVarsList []string, caCertFilename string, err error) {
@@ -313,12 +315,20 @@ func (v *VsphereVMManager) addEnvVars() (envVarsList []string, caCertFilename st
 		if err != nil {
 			return []string{}, "", fmt.Errorf("could not create temp file for ca cert: %s", err)
 		}
-		_, err = caCertFile.WriteString(v.Config.OpsmanConfig.Vsphere.Vcenter.CACert)
-		if err != nil {
+		caCertFilename = caCertFile.Name()
+
+		if _, err = caCertFile.WriteString(v.Config.OpsmanConfig.Vsphere.Vcenter.CACert); err != nil {
+			_ = caCertFile.Close()
+			_ = os.Remove(caCertFilename)
 			return []string{}, "", fmt.Errorf("could not write cert to the cert file: %s", err)
 		}
-		env = append(env, "GOVC_TLS_CA_CERTS="+caCertFile.Name())
-		caCertFilename = caCertFile.Name()
+
+		if err = caCertFile.Close(); err != nil {
+			_ = os.Remove(caCertFilename)
+			return []string{}, "", fmt.Errorf("could not close ca cert file: %s", err)
+		}
+
+		env = append(env, "GOVC_TLS_CA_CERTS="+caCertFilename)
 	}
 
 	return env, caCertFilename, nil
