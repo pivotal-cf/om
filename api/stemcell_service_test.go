@@ -59,6 +59,7 @@ var _ = Describe("StemcellService", func() {
 					]
 				}`),
 				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				ghttp.RespondWith(http.StatusOK, `{"stemcell_library": [{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1250", "variant": []}]}`),
 			)
 
 			found, err := service.CheckStemcellAvailability("bosh-stemcell-1.1250-vsphere-esxi-ubuntu-jammy-go_agent.tgz")
@@ -88,6 +89,7 @@ var _ = Describe("StemcellService", func() {
 					]
 				}`),
 				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				ghttp.RespondWith(http.StatusOK, `{"stemcell_library": [{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1250", "variant": []}]}`),
 			)
 
 			found, err := service.CheckStemcellAvailability(invalidPath)
@@ -109,6 +111,7 @@ var _ = Describe("StemcellService", func() {
 					]
 				}`),
 				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+				ghttp.RespondWith(http.StatusOK, `{"stemcell_library": [{"name": "bosh-aws-xen-hvm-ubuntu-bionic-go_agent", "os": "ubuntu-bionic", "version": "1.100", "variant": []}]}`),
 			)
 
 			found, err := service.CheckStemcellAvailability("bosh-stemcell-1.100-aws-ubuntu-bionic-go_agent.tgz")
@@ -420,6 +423,7 @@ cloud_properties:
 						// Ops Manager has the same stemcell under a different filename
 						server.AppendHandlers(
 							ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+							ghttp.RespondWith(http.StatusOK, `{"stemcell_library": [{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}]}`),
 						)
 
 						found, err := service.CheckStemcellAvailability(stemcellPath)
@@ -503,6 +507,7 @@ cloud_properties:
 				server.AppendHandlers(
 					ghttp.RespondWith(http.StatusOK, `{"stemcells": [], "infrastructure_type": "vsphere-esxi", "available_stemcells": [{"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1016.tgz", "os": "ubuntu-jammy", "version": "1.1016"}]}`),
 					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+					ghttp.RespondWith(http.StatusOK, `{"stemcell_library": [{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}]}`),
 				)
 
 				found, err := service.CheckStemcellAvailability(stemcellPath)
@@ -536,6 +541,7 @@ cloud_properties:
 				server.AppendHandlers(
 					ghttp.RespondWith(http.StatusOK, `{"stemcells": [], "infrastructure_type": "docker", "available_stemcells": [{"filename": "bosh-docker-ubuntu-jammy-1.1016.tgz", "os": "ubuntu-jammy", "version": "1.1016"}]}`),
 					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"2.6.3"}}`),
+					ghttp.RespondWith(http.StatusOK, `{"stemcell_library": [{"name": "bosh-warden-boshlite-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}]}`),
 				)
 
 				found, err := service.CheckStemcellAvailability(stemcellPath)
@@ -602,6 +608,195 @@ cloud_properties:
 				)
 				_, err := service.CheckStemcellAvailability("light-bosh-stemcell-621.79-google-kvm-ubuntu-xenial-go_agent.tgz")
 				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("CheckStemcellAvailability with stemcell variants (TNZ-156156)", func() {
+		const diagnosticReport = `{
+			"stemcells": [],
+			"infrastructure_type": "vsphere-esxi",
+			"available_stemcells": [
+				{
+					"filename": "bosh-vsphere-esxi-ubuntu-jammy-go_agent-1.1016.tgz",
+					"os": "ubuntu-jammy",
+					"version": "1.1016"
+				}
+			]
+		}`
+
+		writeStemcell := func(filename, manifestContent string) string {
+			var buf bytes.Buffer
+			gw := gzip.NewWriter(&buf)
+			tw := tar.NewWriter(gw)
+			Expect(tw.WriteHeader(&tar.Header{Name: "stemcell.MF", Size: int64(len(manifestContent))})).To(Succeed())
+			_, err := tw.Write([]byte(manifestContent))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(tw.Close()).To(Succeed())
+			Expect(gw.Close()).To(Succeed())
+
+			stemcellPath := filepath.Join(GinkgoT().TempDir(), filename)
+			Expect(os.WriteFile(stemcellPath, buf.Bytes(), 0600)).To(Succeed())
+			return stemcellPath
+		}
+
+		fipsManifest := `name: bosh-vsphere-esxi-ubuntu-jammy-fips-go_agent
+version: "1.1016"
+operating_system: ubuntu-jammy
+cloud_properties:
+  infrastructure: vsphere-esxi
+`
+		standardManifest := `name: bosh-vsphere-esxi-ubuntu-jammy-go_agent
+version: "1.1016"
+operating_system: ubuntu-jammy
+cloud_properties:
+  infrastructure: vsphere-esxi
+`
+
+		appendHandlers := func(stemcellAssociations string) {
+			server.AppendHandlers(
+				ghttp.RespondWith(http.StatusOK, diagnosticReport),
+				ghttp.RespondWith(http.StatusOK, `{"info":{"version":"3.3.6"}}`),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/v0/stemcell_associations"),
+					ghttp.RespondWith(http.StatusOK, stemcellAssociations),
+				),
+			)
+		}
+
+		When("Ops Manager reports the variant field (3.3.6+)", func() {
+			It("returns false when uploading a FIPS stemcell and only the standard variant exists", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz", fipsManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
+			})
+
+			It("returns true when uploading a FIPS stemcell and the FIPS variant exists", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz", fipsManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []},
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-fips-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": ["fips"]}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+
+			It("returns false when uploading a standard stemcell and only the FIPS variant exists", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-go_agent.tgz", standardManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-fips-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": ["fips"]}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
+			})
+
+			It("prefers the variant field over the name", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz", fipsManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-fips-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
+			})
+
+			It("uses the variant from the stemcell manifest when present", func() {
+				stemcellPath := writeStemcell("custom-name.tgz", `name: bosh-vsphere-esxi-ubuntu-jammy-go_agent
+version: "1.1016"
+operating_system: ubuntu-jammy
+variant: [fips]
+cloud_properties:
+  infrastructure: vsphere-esxi
+`)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
+			})
+		})
+
+		When("Ops Manager does not report the variant field (pre-3.3.6)", func() {
+			It("returns false when uploading a FIPS stemcell and only the standard stemcell exists", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz", fipsManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016"}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
+			})
+
+			It("returns true when uploading a FIPS stemcell and the FIPS stemcell exists", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz", fipsManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-fips-go_agent", "os": "ubuntu-jammy", "version": "1.1016"}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+
+			It("returns true when uploading a standard stemcell and the standard stemcell exists", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-go_agent.tgz", standardManifest)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016"}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+		})
+
+		When("the stemcell manifest cannot be read and the filename is parsed", func() {
+			It("returns false for a FIPS filename when only the standard variant exists", func() {
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": []}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeFalse())
+			})
+
+			It("returns true for a FIPS filename when the FIPS variant exists", func() {
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-fips-go_agent", "os": "ubuntu-jammy", "version": "1.1016", "variant": ["fips"]}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+		})
+
+		When("the stemcell associations request fails", func() {
+			It("returns an error", func() {
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-fips-go_agent.tgz", fipsManifest)
+				server.AppendHandlers(
+					ghttp.RespondWith(http.StatusOK, diagnosticReport),
+					ghttp.RespondWith(http.StatusOK, `{"info":{"version":"3.3.6"}}`),
+					ghttp.RespondWith(http.StatusInternalServerError, nil),
+				)
+
+				_, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not determine stemcell variants"))
 			})
 		})
 	})

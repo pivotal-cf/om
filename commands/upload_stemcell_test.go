@@ -286,6 +286,8 @@ var _ = Describe("UploadStemcell", func() {
 				})
 				Expect(err).ToNot(HaveOccurred())
 
+				Expect(fakeService.CheckStemcellAvailabilityCallCount()).To(Equal(0))
+
 				key, file := multipart.AddFileArgsForCall(0)
 				Expect(key).To(Equal("stemcell[file]"))
 				Expect(file).To(Equal("/path/to/stemcell.tgz"))

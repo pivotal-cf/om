@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -68,8 +69,10 @@ func (a Api) AssignStemcell(input ProductStemcells) error {
 // stemcellManifest represents the structure of stemcell.MF inside a stemcell .tgz.
 // Only relevant fields for duplicate detection are included.
 type stemcellManifest struct {
-	OperatingSystem string `yaml:"operating_system"`
-	Version         string `yaml:"version"`
+	Name            string      `yaml:"name"`
+	OperatingSystem string      `yaml:"operating_system"`
+	Version         string      `yaml:"version"`
+	Variant         interface{} `yaml:"variant"`
 	CloudProperties struct {
 		Infrastructure string `yaml:"infrastructure"`
 	} `yaml:"cloud_properties"`
@@ -111,6 +114,97 @@ func extractStemcellManifest(tgzPath string) (stemcellManifest, error) {
 		}
 	}
 	return stemcellManifest{}, fmt.Errorf("stemcell.MF not found in %s", tgzPath)
+}
+
+// stemcellVariantNamePatterns mirrors how Ops Manager derives a stemcell's
+// variant from its name when the stemcell manifest has no explicit variant.
+var stemcellVariantNamePatterns = map[string]*regexp.Regexp{
+	"fips": regexp.MustCompile(`-fips-`),
+}
+
+func variantsFromName(name string) []string {
+	variants := []string{}
+	for variant, pattern := range stemcellVariantNamePatterns {
+		if pattern.MatchString(name) {
+			variants = append(variants, variant)
+		}
+	}
+	return variants
+}
+
+// variants returns the stemcell variants declared in the manifest, falling back
+// to deriving them from the stemcell name (as Ops Manager does).
+func (mf stemcellManifest) variants() []string {
+	switch v := mf.Variant.(type) {
+	case string:
+		return nonEmptyStrings([]interface{}{v})
+	case []interface{}:
+		return nonEmptyStrings(v)
+	}
+	return variantsFromName(mf.Name)
+}
+
+func nonEmptyStrings(values []interface{}) []string {
+	result := []string{}
+	for _, value := range values {
+		if s := strings.TrimSpace(fmt.Sprint(value)); s != "" {
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
+func sameVariants(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	a = append([]string{}, a...)
+	b = append([]string{}, b...)
+	sort.Strings(a)
+	sort.Strings(b)
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+type stemcellLibraryEntry struct {
+	Name    string `json:"name"`
+	OS      string `json:"os"`
+	Version string `json:"version"`
+	// Variant is only reported by Ops Manager 3.3.6+; nil means it was not reported.
+	Variant *[]string `json:"variant"`
+}
+
+func (s stemcellLibraryEntry) variants() []string {
+	if s.Variant != nil {
+		return *s.Variant
+	}
+	return variantsFromName(s.Name)
+}
+
+func (a Api) listStemcellLibrary() ([]stemcellLibraryEntry, error) {
+	resp, err := a.sendAPIRequest("GET", "/api/v0/stemcell_associations", nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not make api request to list stemcells: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if err = validateStatusOK(resp); err != nil {
+		return nil, err
+	}
+
+	var associations struct {
+		StemcellLibrary []stemcellLibraryEntry `json:"stemcell_library"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&associations)
+	if err != nil {
+		return nil, fmt.Errorf("invalid JSON: %s", err)
+	}
+
+	return associations.StemcellLibrary, nil
 }
 
 // parseStemcellFilename attempts to extract OS, version, and infrastructure from a stemcell filename.
@@ -166,6 +260,15 @@ func infrastructureMatches(manifestInfrastructure, reportInfrastructureType stri
 	return manifestIsVsphere && reportIsVsphere
 }
 
+func availableStemcellMatches(report DiagnosticReport, os, version, infrastructure string) bool {
+	for _, stemcell := range report.AvailableStemcells {
+		if stemcell.OS == os && stemcell.Version == version && infrastructureMatches(infrastructure, report.InfrastructureType) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 	report, err := a.GetDiagnosticReport()
 	if err != nil {
@@ -183,6 +286,27 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 	}
 
 	if validVersion {
+		// The diagnostic report does not distinguish stemcell variants (e.g. FIPS),
+		// so OS/version matches are confirmed against the stemcell library.
+		var library []stemcellLibraryEntry
+		libraryLoaded := false
+		variantUploaded := func(os, version string, variants []string) (bool, error) {
+			if !libraryLoaded {
+				var libraryErr error
+				library, libraryErr = a.listStemcellLibrary()
+				if libraryErr != nil {
+					return false, fmt.Errorf("could not determine stemcell variants on Ops Manager: %w", libraryErr)
+				}
+				libraryLoaded = true
+			}
+			for _, stemcell := range library {
+				if stemcell.OS == os && stemcell.Version == version && sameVariants(stemcell.variants(), variants) {
+					return true, nil
+				}
+			}
+			return false, nil
+		}
+
 		// Try to match by OS, version, and infrastructure from stemcell manifest
 		// so that duplicate uploads are avoided regardless of local filename.
 		manifest, extractErr := extractStemcellManifest(stemcellFilename)
@@ -190,11 +314,11 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 			osField := manifest.OperatingSystem
 			versionField := manifest.Version
 			iaasField := manifest.CloudProperties.Infrastructure
-			if osField != "" && versionField != "" && iaasField != "" {
-				for _, stemcell := range report.AvailableStemcells {
-					if stemcell.OS == osField && stemcell.Version == versionField && infrastructureMatches(iaasField, report.InfrastructureType) {
-						return true, nil
-					}
+			if osField != "" && versionField != "" && iaasField != "" &&
+				availableStemcellMatches(report, osField, versionField, iaasField) {
+				found, err := variantUploaded(osField, versionField, manifest.variants())
+				if err != nil || found {
+					return found, err
 				}
 			}
 		}
@@ -210,9 +334,14 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 		// This handles cases where the requested filename and available filename have different formats.
 		parsedOS, parsedVersion, parsedInfra := parseStemcellFilename(baseFilename)
 		if parsedOS != "" && parsedVersion != "" && parsedInfra != "" {
-			for _, stemcell := range report.AvailableStemcells {
-				if stemcell.OS == parsedOS && stemcell.Version == parsedVersion && infrastructureMatches(parsedInfra, report.InfrastructureType) {
-					return true, nil
+			parsedVariants := variantsFromName(baseFilename)
+			for _, variant := range parsedVariants {
+				parsedOS = strings.TrimSuffix(parsedOS, "-"+variant)
+			}
+			if availableStemcellMatches(report, parsedOS, parsedVersion, parsedInfra) {
+				found, err := variantUploaded(parsedOS, parsedVersion, parsedVariants)
+				if err != nil || found {
+					return found, err
 				}
 			}
 		}
