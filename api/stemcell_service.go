@@ -316,10 +316,9 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 			iaasField := manifest.CloudProperties.Infrastructure
 			if osField != "" && versionField != "" && iaasField != "" &&
 				availableStemcellMatches(report, osField, versionField, iaasField) {
-				found, err := variantUploaded(osField, versionField, manifest.variants())
-				if err != nil || found {
-					return found, err
-				}
+				// The manifest is authoritative for the variant, so don't let the
+				// filename fallbacks below override it.
+				return variantUploaded(osField, versionField, manifest.variants())
 			}
 		}
 		// Fall back to exact filename match when manifest cannot be used (e.g. file not found, invalid tgz)
