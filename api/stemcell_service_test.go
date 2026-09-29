@@ -836,6 +836,25 @@ cloud_properties:
 				Expect(found).To(BeTrue())
 			})
 
+			It("derives the local variant from the manifest name rather than the manifest variant, to match Ops Manager", func() {
+				// ESM stemcells declare their variant in the manifest but not in the name,
+				// so Ops Manager can only derive variants from names when it doesn't report them.
+				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-go_agent.tgz", `name: bosh-vsphere-esxi-ubuntu-jammy-go_agent
+version: "1.1016"
+operating_system: ubuntu-jammy
+variant: [esm]
+cloud_properties:
+  infrastructure: vsphere-esxi
+`)
+				appendHandlers(`{"products": [], "stemcell_library": [
+					{"name": "bosh-vsphere-esxi-ubuntu-jammy-go_agent", "os": "ubuntu-jammy", "version": "1.1016"}
+				]}`)
+
+				found, err := service.CheckStemcellAvailability(stemcellPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(found).To(BeTrue())
+			})
+
 			It("returns true when uploading a standard stemcell and the standard stemcell exists", func() {
 				stemcellPath := writeStemcell("bosh-stemcell-1.1016-vsphere-esxi-ubuntu-jammy-go_agent.tgz", standardManifest)
 				appendHandlers(`{"products": [], "stemcell_library": [

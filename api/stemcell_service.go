@@ -178,11 +178,14 @@ type stemcellLibraryEntry struct {
 	Variant *[]string `json:"variant"`
 }
 
-func (s stemcellLibraryEntry) variants() []string {
+// matchesVariants compares against the declared variants when Ops Manager reports
+// them. Otherwise only name-derived variants can be compared: variants declared
+// only in a stemcell manifest (e.g. esm) are invisible to such Ops Managers.
+func (s stemcellLibraryEntry) matchesVariants(declared, fromName []string) bool {
 	if s.Variant != nil {
-		return *s.Variant
+		return sameVariants(*s.Variant, declared)
 	}
-	return variantsFromName(s.Name)
+	return sameVariants(variantsFromName(s.Name), fromName)
 }
 
 func (a Api) listStemcellLibrary() ([]stemcellLibraryEntry, error) {
@@ -290,7 +293,7 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 		// so OS/version matches are confirmed against the stemcell library.
 		var library []stemcellLibraryEntry
 		libraryLoaded := false
-		variantUploaded := func(os, version string, variants []string) (bool, error) {
+		variantUploaded := func(os, version string, declaredVariants, nameVariants []string) (bool, error) {
 			if !libraryLoaded {
 				var libraryErr error
 				library, libraryErr = a.listStemcellLibrary()
@@ -300,7 +303,7 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 				libraryLoaded = true
 			}
 			for _, stemcell := range library {
-				if stemcell.OS == os && stemcell.Version == version && sameVariants(stemcell.variants(), variants) {
+				if stemcell.OS == os && stemcell.Version == version && stemcell.matchesVariants(declaredVariants, nameVariants) {
 					return true, nil
 				}
 			}
@@ -318,7 +321,7 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 				availableStemcellMatches(report, osField, versionField, iaasField) {
 				// The manifest is authoritative for the variant, so don't let the
 				// filename fallbacks below override it.
-				return variantUploaded(osField, versionField, manifest.variants())
+				return variantUploaded(osField, versionField, manifest.variants(), variantsFromName(manifest.Name))
 			}
 		}
 		// Fall back to exact filename match when manifest cannot be used (e.g. file not found, invalid tgz)
@@ -338,7 +341,7 @@ func (a Api) CheckStemcellAvailability(stemcellFilename string) (bool, error) {
 				parsedOS = strings.TrimSuffix(parsedOS, "-"+variant)
 			}
 			if availableStemcellMatches(report, parsedOS, parsedVersion, parsedInfra) {
-				found, err := variantUploaded(parsedOS, parsedVersion, parsedVariants)
+				found, err := variantUploaded(parsedOS, parsedVersion, parsedVariants, parsedVariants)
 				if err != nil || found {
 					return found, err
 				}
