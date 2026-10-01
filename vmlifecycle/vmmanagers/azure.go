@@ -16,7 +16,7 @@ import (
 
 	"github.com/pivotal-cf/om/vmlifecycle/runner"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type AzureCredential struct {
