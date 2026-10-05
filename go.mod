@@ -3,7 +3,7 @@ module github.com/pivotal-cf/om
 go 1.26.5
 
 require (
-	cloud.google.com/go/storage v1.68.0
+	cloud.google.com/go/storage v1.69.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.30
@@ -136,7 +136,7 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.21 // indirect
-	github.com/googleapis/gax-go/v2 v2.23.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.26.2 // indirect
 	github.com/gopacket/gopacket v1.7.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -206,7 +206,7 @@ require (
 	google.golang.org/genproto v0.0.0-20260810153831-ec0a7760b754 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260810153831-ec0a7760b754 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260810153831-ec0a7760b754 // indirect
-	google.golang.org/grpc v1.83.1 // indirect
+	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
