@@ -5,20 +5,20 @@
 class Om < Formula
   desc ""
   homepage ""
-  version "7.22.0"
+  version "7.22.1"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/pivotal-cf/om/releases/download/7.22.0/om-darwin-amd64-7.22.0.tar.gz"
-      sha256 "2297f7e4f8e0c9b14e90e596d31acbc65cb412184b0f756b976a181c09cd39fb"
+      url "https://github.com/pivotal-cf/om/releases/download/7.22.1/om-darwin-amd64-7.22.1.tar.gz"
+      sha256 "ce3a77a692c1d5eb2f8abc7bb7f5177f2c44c08218505eca3a29f96cfb13fa81"
 
       define_method(:install) do
         bin.install "om"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/pivotal-cf/om/releases/download/7.22.0/om-darwin-arm64-7.22.0.tar.gz"
-      sha256 "1be5ed89abe39e13e97ce382b2e23a74c193b224caa3ce84601423d361c9f610"
+      url "https://github.com/pivotal-cf/om/releases/download/7.22.1/om-darwin-arm64-7.22.1.tar.gz"
+      sha256 "cb9c435b713d8e178292283dbedd1fc40e794a964adc64cfaecf73804bdae681"
 
       define_method(:install) do
         bin.install "om"
@@ -28,15 +28,15 @@ class Om < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.22.0/om-linux-amd64-7.22.0.tar.gz"
-      sha256 "0dcbd8767fdd78a6fc63879f1d414462882ab331248e44bd4de073653dc39200"
+      url "https://github.com/pivotal-cf/om/releases/download/7.22.1/om-linux-amd64-7.22.1.tar.gz"
+      sha256 "e32e564b8dbdd1573bf10d73ed030bf9b18fc1036b762a14fda839f1eb083b12"
       define_method(:install) do
         bin.install "om"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/pivotal-cf/om/releases/download/7.22.0/om-linux-arm64-7.22.0.tar.gz"
-      sha256 "631b46bcd099fe9fab2d9b7e9d8a21b7a5e7cb69adc404f8c079b815b690d945"
+      url "https://github.com/pivotal-cf/om/releases/download/7.22.1/om-linux-arm64-7.22.1.tar.gz"
+      sha256 "d7aa25c46af551292667ae23cf68ae6ccd5130a6352e96b58b56ebc71aca27e4"
       define_method(:install) do
         bin.install "om"
       end
