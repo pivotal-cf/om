@@ -154,8 +154,8 @@ github.com/cheggaaa/pb/v3 v3.2.1/go.mod h1:U9hSVxoKqJrZIE3PkFG1xXXNaK/Ilzg+EF/sc
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/cloudfoundry-community/go-uaa v0.5.0 h1:j+9Czv6b4HUoEYwVZ2/fUzBoNaEFUeai/5r1nq5rku4=
-github.com/cloudfoundry-community/go-uaa v0.5.0/go.mod h1:biXSi4yoWUVnnWxE208bLMoyzuspYxToUZtktasl6dE=
+github.com/cloudfoundry-community/go-uaa v0.5.1 h1:iDPdhaTfk7TnsGmB8WwBULCS+jX2NK9mUaI723K8Ml0=
+github.com/cloudfoundry-community/go-uaa v0.5.1/go.mod h1:cfeumzdXhbsbfZ6atSD+p0z56E5k4Ftrla5SaSvN3n8=
 github.com/cloudfoundry/bosh-agent v2.340.0+incompatible h1:+TbvQBs9zdptoXLVNtCOxVxScDGNb/n2HdjdVknApMU=
 github.com/cloudfoundry/bosh-agent v2.340.0+incompatible/go.mod h1:7UvVn5vc/d6icLrBx6GhBlpSMwe2+x1C2A7x4TbPhiU=
 github.com/cloudfoundry/bosh-agent/v2 v2.880.0 h1:vg6EGFGHjzTWa3mNLKnxm1kVqdGDOWOvT/H9ywHV1kE=
@@ -415,8 +415,8 @@ github.com/onsi/ginkgo v1.5.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+W
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.16.5 h1:8xi0RTUf59SOSfEtZMvwTvXYMzG4gV23XVHOZiXNtnE=
 github.com/onsi/ginkgo v1.16.5/go.mod h1:+E8gABHa3K6zRBolWtd+ROzc/U5bkGt0FwiG042wbpU=
-github.com/onsi/ginkgo/v2 v2.33.0 h1:C8gBA6Uc2ZEubiV+SXiu5tZnMTwEmXHgkJwGozKtZf8=
-github.com/onsi/ginkgo/v2 v2.33.0/go.mod h1:+aXOY+vzZ5mu2iI2HpTZUPmM//oQfsNFX6gU9kNcA44=
+github.com/onsi/ginkgo/v2 v2.33.1 h1:62XfWJbEIjPSCSDYrsCPP/SHcmH7O0M8ne8zfqQ2iz4=
+github.com/onsi/ginkgo/v2 v2.33.1/go.mod h1:+aXOY+vzZ5mu2iI2HpTZUPmM//oQfsNFX6gU9kNcA44=
 github.com/onsi/gomega v1.4.0/go.mod h1:C1qb7wdrVGGVU+Z6iS04AVkA3Q65CEZX59MT0QO5uiA=
 github.com/onsi/gomega v1.4.2/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/onsi/gomega v1.44.0 h1:eAiGl3Pw5jz5GQdDff0BcxYpAX1JxW8xD7mFUuwNfZQ=
