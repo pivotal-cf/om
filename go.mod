@@ -1,6 +1,6 @@
 module github.com/pivotal-cf/om
 
-go 1.26.8
+go 1.27.3
 
 require (
 	cloud.google.com/go/storage v1.70.0
@@ -24,9 +24,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.44.0
-)
-
-require (
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20260902163946-ca4239e79689
 	github.com/pivotal-cf/winfs-injector v0.0.0-20260902164956-e35b85981028
