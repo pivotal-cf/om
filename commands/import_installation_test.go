@@ -372,7 +372,7 @@ var _ = Describe("ImportInstallation", func() {
 		It("returns an error", func() {
 			command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 			err := executeCommand(command, []string{"--installation", invalidInstallation})
-			expectedErrorTemplate := "file: \"%s\" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
+			expectedErrorTemplate := "file: \"%s\" is not a valid installation file (expected root installation.yml, root metadata.json, a root *.postgres file, or a file under metadata/ or deployments/). Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
 			Expect(err).To(MatchError(fmt.Sprintf(expectedErrorTemplate, invalidInstallation)))
 		})
 	})

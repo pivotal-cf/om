@@ -75,9 +75,7 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
 
 ### Bug fixes
 
-- `import-installation` and `vm-lifecycle upgrade-opsman` now accept Ops Manager 11+ installation exports, which
-  contain a root `metadata.json` instead of `installation.yml`. Both commands reject archives with neither file at
-  the archive root; `upgrade-opsman` does so before deleting or creating a VM.
+- `import-installation` and `vm-lifecycle upgrade-opsman` now recognize Ops Manager 11+ installation exports, which contain a root `metadata.json` instead of `installation.yml`. An archive is accepted if it contains any one of: a root `installation.yml`, a root `metadata.json`, a root `*.postgres` file, or a file under `metadata/` or `deployments/`. This recognizes the export format only; it does not verify that the archive can be restored, so use a known-good export before running an unattended `upgrade-opsman`. Archives with none of these are rejected; `upgrade-opsman` rejects them before deleting or creating a VM.
 
 ## 7.10.1
 
