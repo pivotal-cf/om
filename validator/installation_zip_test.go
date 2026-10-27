@@ -2,7 +2,6 @@ package validator_test
 
 import (
 	"archive/zip"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -122,14 +121,11 @@ func createInstallationZipEntries(dir string, entries []installationZipEntry) st
 
 	writer := zip.NewWriter(file)
 	for _, zipEntry := range entries {
-		var entry io.Writer
+		header := &zip.FileHeader{Name: zipEntry.name}
 		if zipEntry.mode != 0 {
-			header := &zip.FileHeader{Name: zipEntry.name}
 			header.SetMode(zipEntry.mode)
-			entry, err = writer.CreateHeader(header)
-		} else {
-			entry, err = writer.Create(zipEntry.name)
 		}
+		entry, err := writer.CreateHeader(header)
 		Expect(err).To(Succeed())
 		_, err = entry.Write([]byte(zipEntry.contents))
 		Expect(err).To(Succeed())
