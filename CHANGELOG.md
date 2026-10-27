@@ -73,6 +73,12 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
   blocked `apply-changes` has a known bypass, the error message now also suggests the matching flag(s), based on
   the `available_overrides` field Ops Manager returns.
 
+### Bug fixes
+
+- `import-installation` and `vm-lifecycle upgrade-opsman` now accept Ops Manager 11+ installation exports, which
+  contain a root `metadata.json` instead of `installation.yml`. Both commands reject archives with neither file at
+  the archive root; `upgrade-opsman` does so before deleting or creating a VM.
+
 ## 7.10.1
 
 ### Bug fixes

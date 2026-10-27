@@ -346,6 +346,44 @@ var _ = Describe("upgradeOpsman", func() {
 				})
 			})
 
+			When("the --recreate flag is passed with a metadata.json installation", func() {
+				It("accepts the installation and proceeds to recreate the VM", func() {
+					info := map[string]interface{}{
+						"info": map[string]interface{}{
+							"version": "2.10.4",
+						},
+					}
+					server.AppendHandlers(ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/v0/info"),
+						ghttp.RespondWithJSONEncoded(200, info),
+					), ensureAvailabilityHandler)
+
+					command, createService, deleteService, _, _ := createUpgradeOpsmanCommand()
+					command.Recreate = true
+					command.ImportInstallation.Installation = createZipFile([]struct{ Name, Body string }{
+						{"metadata.json", `{"version":"11.0.0-build.451"}`},
+					})
+					command.ImportInstallation.EnvFile = writeFile(createJsonString(map[string]interface{}{
+						"target":                server.URL(),
+						"request-timeout":       1,
+						"connect-timeout":       1,
+						"skip-ssl-validation":   true,
+						"decryption-passphrase": "decryption-passphrase",
+					}))
+
+					fh, err := os.CreateTemp("", "OpsManager-2.10.4.yml")
+					Expect(err).ToNot(HaveOccurred())
+					Expect(fh.Close()).To(Succeed())
+					command.CreateVM.ImageFile = fh.Name()
+
+					err = command.Execute([]string{})
+
+					Expect(deleteService.DeleteVMCallCount()).To(Equal(1))
+					Expect(createService.CreateVMCallCount()).To(Equal(1))
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
 			When("the versions are different", func() {
 				When("the version to install is smaller than installed version", func() {
 					for _, fileNameFixture := range []string{"OpsManager%sonGCP.yml", "[ops-manager,2.2.3]ops-manager-vsphere-%s.ova"} {
@@ -973,7 +1011,7 @@ project_name: awesome-project
 			})
 		})
 
-		When("installation file is a not a valid zip file", func() {
+		When("installation zip has no installation marker at the archive root", func() {
 			var notZippedInstallationFile string
 			JustBeforeEach(func() {
 				notZippedInstallationFile = createZipFile([]struct{ Name, Body string }{})
@@ -982,12 +1020,28 @@ project_name: awesome-project
 
 			It("errors saying file is not valid", func() {
 				err := command.Execute(nil)
-				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file", notZippedInstallationFile)
+				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", notZippedInstallationFile)
 				Expect(err).To(MatchError(expectedError))
+			})
+
+			It("rejects the archive before calling the VM services", func() {
+				command, createService, deleteService, _, _ := createUpgradeOpsmanCommand()
+				command.ImportInstallation.Installation = createZipFile([]struct{ Name, Body string }{
+					{"foo.txt", "content"},
+				})
+				command.ImportInstallation.EnvFile = writeFile("{}")
+
+				installation := command.ImportInstallation.Installation
+				err := command.Execute(nil)
+
+				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", installation)
+				Expect(err).To(MatchError(expectedError))
+				Expect(createService.CreateVMCallCount()).To(Equal(0))
+				Expect(deleteService.DeleteVMCallCount()).To(Equal(0))
 			})
 		})
 
-		When("installation zip file does not have required installation.yml", func() {
+		When("installation file is not a valid zip file", func() {
 			var invalidInstallationZipName string
 			JustBeforeEach(func() {
 				invalidInstallationZip, err := os.CreateTemp("", "")

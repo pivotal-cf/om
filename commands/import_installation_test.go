@@ -121,6 +121,37 @@ var _ = Describe("ImportInstallation", func() {
 		Expect(fmt.Sprintf(format, v...)).To(Equal("finished import"))
 	})
 
+	When("the installation zip contains only metadata.json", func() {
+		var metadataInstallation string
+		BeforeEach(func() {
+			metadataInstallation = createZipFile([]struct{ Name, Body string }{
+				{"metadata.json", `{"version":"11.0.0-build.451"}`},
+			})
+		})
+
+		AfterEach(func() {
+			if err := os.Remove(metadataInstallation); err != nil {
+				fmt.Printf("Error during cleanup: %v\n", err)
+			}
+		})
+
+		It("imports the installation", func() {
+			fakeService.EnsureAvailabilityStub = func(_ api.EnsureAvailabilityInput) (api.EnsureAvailabilityOutput, error) {
+				if fakeService.EnsureAvailabilityCallCount() == 1 {
+					return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusUnstarted}, nil
+				}
+				return api.EnsureAvailabilityOutput{Status: api.EnsureAvailabilityStatusComplete}, nil
+			}
+
+			command := commands.NewImportInstallation(multipart, fakeService, "some-passphrase", logger)
+			err := executeCommand(command, []string{"--polling-interval", "0", "--installation", metadataInstallation})
+			Expect(err).ToNot(HaveOccurred())
+
+			_, file := multipart.AddFileArgsForCall(0)
+			Expect(file).To(Equal(metadataInstallation))
+		})
+	})
+
 	When("the Ops Manager is already configured", func() {
 		It("prints a helpful message", func() {
 			fakeService.EnsureAvailabilityReturns(api.EnsureAvailabilityOutput{
@@ -326,14 +357,14 @@ var _ = Describe("ImportInstallation", func() {
 		})
 	})
 
-	When("the --installation provided does not have required installation.yml", func() {
+	When("the --installation provided does not have an installation marker at the archive root", func() {
 		var invalidInstallation string
 		BeforeEach(func() {
 			invalidInstallation = createZipFile([]struct{ Name, Body string }{})
 		})
 
 		AfterEach(func() {
-			if err := os.Remove(installationFile); err != nil {
+			if err := os.Remove(invalidInstallation); err != nil {
 				fmt.Printf("Error during cleanup: %v\n", err)
 			}
 		})
@@ -341,7 +372,7 @@ var _ = Describe("ImportInstallation", func() {
 		It("returns an error", func() {
 			command := commands.NewImportInstallation(multipart, fakeService, "passphrase", logger)
 			err := executeCommand(command, []string{"--installation", invalidInstallation})
-			expectedErrorTemplate := "file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
+			expectedErrorTemplate := "file: \"%s\" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run \"om export-installation\" and try again."
 			Expect(err).To(MatchError(fmt.Sprintf(expectedErrorTemplate, invalidInstallation)))
 		})
 	})

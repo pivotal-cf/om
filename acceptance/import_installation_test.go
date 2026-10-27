@@ -57,7 +57,9 @@ var _ = Describe("import-installation command", func() {
 		server.Close()
 	})
 
-	It("successfully uploads an installation to the Ops Manager", func() {
+	DescribeTable("successfully uploads an installation to the Ops Manager", func(installationFile struct{ Name, Body string }) {
+		content = createZipFile([]struct{ Name, Body string }{installationFile})
+
 		server.AppendHandlers(
 			ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/login/ensure_availability"),
@@ -101,7 +103,10 @@ var _ = Describe("import-installation command", func() {
 
 		Expect(installation).To(Equal(filepath.Base(content.Name())))
 		Expect(passphrase).To(Equal("fake-passphrase"))
-	})
+	},
+		Entry("installation.yml", struct{ Name, Body string }{"installation.yml", ""}),
+		Entry("metadata.json", struct{ Name, Body string }{"metadata.json", `{"version":"11.0.0-build.451"}`}),
+	)
 
 	When("the ops manager is already configured", func() {
 		It("returns an error", func() {

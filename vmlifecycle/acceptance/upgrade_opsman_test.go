@@ -36,7 +36,7 @@ var _ = Describe("UpgradeOpsman", func() {
 		return tmpFile.Name()
 	}
 
-	It("creates a VM on the targeted IAAS", func() {
+	DescribeTable("creates a VM on the targeted IAAS", func(installationFile struct{ Name, Body string }) {
 		server := ghttp.NewTLSServer()
 		server.RouteToHandler("POST", "/uaa/oauth/token",
 			ghttp.CombineHandlers(
@@ -92,8 +92,7 @@ opsman-configuration:
     private_ip: 10.0.0.2`)
 		stateFile := writeFile(`{"iaas": "gcp", "vm_id": "opsman-vm"}`)
 
-		installation := createZipFile([]struct{ Name, Body string }{
-			{"installation.yml", ""}})
+		installation := createZipFile([]struct{ Name, Body string }{installationFile})
 
 		fh, err := os.CreateTemp("", "Ops1.1-build.123.yml")
 		Expect(err).ToNot(HaveOccurred())
@@ -124,5 +123,8 @@ decryption-passphrase: password
 		contents, err := os.ReadFile(stateFile)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(contents).To(MatchYAML(`{"iaas": "gcp", "vm_id": "opsman-vm"}`))
-	})
+	},
+		Entry("installation.yml", struct{ Name, Body string }{"installation.yml", ""}),
+		Entry("metadata.json", struct{ Name, Body string }{"metadata.json", `{"version":"11.0.0-build.451"}`}),
+	)
 })
