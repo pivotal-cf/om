@@ -2,6 +2,8 @@ package validator_test
 
 import (
 	"archive/zip"
+	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -28,6 +30,43 @@ var _ = Describe("ValidateInstallationZip", func() {
 		path := createInstallationZip(tempDir, map[string]string{"metadata.json": `{"version":"11.0.0-build.451"}`})
 
 		Expect(validator.ValidateInstallationZip(path)).To(Succeed())
+	})
+
+	DescribeTable("accepts installation export data", func(name string, mode fs.FileMode) {
+		path := createInstallationZipEntries(tempDir, []installationZipEntry{{name: name, mode: mode}})
+
+		Expect(validator.ValidateInstallationZip(path)).To(Succeed())
+	},
+		Entry("a root postgres dump", "rails_database_dump.postgres", fs.FileMode(0)),
+		Entry("a file under metadata", "metadata/p.yml", fs.FileMode(0)),
+		Entry("a nested file under metadata", "metadata/sub/p.yml", fs.FileMode(0)),
+		Entry("a file under deployments", "deployments/bosh-state.json", fs.FileMode(0)),
+		Entry("a zero-byte file under metadata", "metadata/empty", fs.FileMode(0)),
+	)
+
+	DescribeTable("rejects entries that are not installation markers", func(name string, mode fs.FileMode) {
+		path := createInstallationZipEntries(tempDir, []installationZipEntry{{name: name, mode: mode}})
+
+		Expect(validator.ValidateInstallationZip(path)).To(MatchError(invalidInstallationMessage(path)))
+	},
+		Entry("an uppercase postgres suffix", "DB.POSTGRES", fs.FileMode(0)),
+		Entry("a dot slash postgres path", "./db.postgres", fs.FileMode(0)),
+		Entry("a dot slash metadata path", "./metadata/p.yml", fs.FileMode(0)),
+		Entry("an uppercase metadata path", "METADATA/p.yml", fs.FileMode(0)),
+		Entry("a nested postgres file", "x/db.postgres", fs.FileMode(0)),
+		Entry("a postgres directory", "db.postgres/", fs.ModeDir|0755),
+		Entry("a metadata directory", "metadata/", fs.ModeDir|0755),
+		Entry("a mode-marked metadata directory without a slash", "metadata/sub", fs.ModeDir|0755),
+		Entry("a mode-marked deployments directory without a slash", "deployments/sub", fs.ModeDir|0755),
+	)
+
+	It("rejects a zip containing only metadata and deployments directory entries", func() {
+		path := createInstallationZipEntries(tempDir, []installationZipEntry{
+			{name: "metadata/", mode: fs.ModeDir | 0755},
+			{name: "deployments/", mode: fs.ModeDir | 0755},
+		})
+
+		Expect(validator.ValidateInstallationZip(path)).To(MatchError(invalidInstallationMessage(path)))
 	})
 
 	It("rejects a nested metadata.json", func() {
@@ -63,15 +102,36 @@ var _ = Describe("ValidateInstallationZip", func() {
 })
 
 func createInstallationZip(dir string, entries map[string]string) string {
+	zipEntries := make([]installationZipEntry, 0, len(entries))
+	for name, contents := range entries {
+		zipEntries = append(zipEntries, installationZipEntry{name: name, contents: contents})
+	}
+	return createInstallationZipEntries(dir, zipEntries)
+}
+
+type installationZipEntry struct {
+	name     string
+	contents string
+	mode     fs.FileMode
+}
+
+func createInstallationZipEntries(dir string, entries []installationZipEntry) string {
 	path := filepath.Join(dir, "installation.zip")
 	file, err := os.Create(path)
 	Expect(err).To(Succeed())
 
 	writer := zip.NewWriter(file)
-	for name, contents := range entries {
-		entry, err := writer.Create(name)
+	for _, zipEntry := range entries {
+		var entry io.Writer
+		if zipEntry.mode != 0 {
+			header := &zip.FileHeader{Name: zipEntry.name}
+			header.SetMode(zipEntry.mode)
+			entry, err = writer.CreateHeader(header)
+		} else {
+			entry, err = writer.Create(zipEntry.name)
+		}
 		Expect(err).To(Succeed())
-		_, err = entry.Write([]byte(contents))
+		_, err = entry.Write([]byte(zipEntry.contents))
 		Expect(err).To(Succeed())
 	}
 	Expect(writer.Close()).To(Succeed())
@@ -85,5 +145,5 @@ func invalidZipMessage(path string) string {
 }
 
 func invalidInstallationMessage(path string) string {
-	return `file: "` + path + `" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run "om export-installation" and try again.`
+	return `file: "` + path + `" is not a valid installation file (expected root installation.yml, root metadata.json, a root *.postgres file, or a file under metadata/ or deployments/). Validate that the provided installation file is correct, or run "om export-installation" and try again.`
 }

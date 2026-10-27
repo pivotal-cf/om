@@ -1020,7 +1020,7 @@ project_name: awesome-project
 
 			It("errors saying file is not valid", func() {
 				err := command.Execute(nil)
-				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", notZippedInstallationFile)
+				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file (expected root installation.yml, root metadata.json, a root *.postgres file, or a file under metadata/ or deployments/). Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", notZippedInstallationFile)
 				Expect(err).To(MatchError(expectedError))
 			})
 
@@ -1034,7 +1034,7 @@ project_name: awesome-project
 				installation := command.ImportInstallation.Installation
 				err := command.Execute(nil)
 
-				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file (expected installation.yml or metadata.json at the archive root). Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", installation)
+				expectedError := fmt.Sprintf("file: \"%s\" is not a valid installation file (expected root installation.yml, root metadata.json, a root *.postgres file, or a file under metadata/ or deployments/). Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", installation)
 				Expect(err).To(MatchError(expectedError))
 				Expect(createService.CreateVMCallCount()).To(Equal(0))
 				Expect(deleteService.DeleteVMCallCount()).To(Equal(0))
