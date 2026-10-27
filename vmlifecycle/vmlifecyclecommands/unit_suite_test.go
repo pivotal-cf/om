@@ -7,12 +7,27 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 )
+
+var originalPath string
 
 func TestCreateVM(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "VM Lifecycle Suite")
 }
+
+var _ = BeforeSuite(func() {
+	originalPath = os.Getenv("PATH")
+	omPath, err := gexec.Build("github.com/pivotal-cf/om")
+	Expect(err).ToNot(HaveOccurred())
+	Expect(os.Setenv("PATH", filepath.Dir(omPath)+string(os.PathListSeparator)+originalPath)).To(Succeed())
+})
+
+var _ = AfterSuite(func() {
+	gexec.CleanupBuildArtifacts()
+	Expect(os.Setenv("PATH", originalPath)).To(Succeed())
+})
 
 func writeSpecifiedFile(filename string, contents string) {
 	dir := filepath.Dir(filename)

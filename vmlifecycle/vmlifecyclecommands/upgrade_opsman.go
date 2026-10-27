@@ -1,7 +1,6 @@
 package vmlifecyclecommands
 
 import (
-	"archive/zip"
 	"bytes"
 	"errors"
 	"fmt"
@@ -15,6 +14,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/pivotal-cf/om/interpolate"
+	"github.com/pivotal-cf/om/validator"
 	"github.com/pivotal-cf/om/vmlifecycle/extractopsmansemver"
 	"github.com/pivotal-cf/om/vmlifecycle/runner"
 	"github.com/pivotal-cf/om/vmlifecycle/vmmanagers"
@@ -235,21 +235,8 @@ func (n *UpgradeOpsman) validate() error {
 		}
 	}
 
-	if zipper, err := zip.OpenReader(n.ImportInstallation.Installation); err != nil {
-		return fmt.Errorf("file: \"%s\" is not a valid zip file", n.ImportInstallation.Installation)
-	} else {
-		defer zipper.Close()
-		found := false
-		for _, f := range zipper.File {
-			if f.Name == "installation.yml" {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return fmt.Errorf("file: \"%s\" is not a valid installation file", n.ImportInstallation.Installation)
-		}
+	if err := validator.ValidateInstallationZip(n.ImportInstallation.Installation); err != nil {
+		return err
 	}
 
 	// validate opsman config & vars

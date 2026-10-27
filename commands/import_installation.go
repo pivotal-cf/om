@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"archive/zip"
 	"errors"
 	"fmt"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pivotal-cf/om/api"
+	"github.com/pivotal-cf/om/validator"
 )
 
 const maxRetries = 3
@@ -127,21 +127,8 @@ func (ii *ImportInstallation) validate(args []string) error {
 		return fmt.Errorf("file: \"%s\" does not exist. Please check the name and try again.", ii.Options.Installation)
 	}
 
-	if zipper, err := zip.OpenReader(ii.Options.Installation); err != nil {
-		return fmt.Errorf("file: \"%s\" is not a valid zip file", ii.Options.Installation)
-	} else {
-		defer zipper.Close()
-		found := false
-		for _, f := range zipper.File {
-			if f.Name == "installation.yml" {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return fmt.Errorf("file: \"%s\" is not a valid installation file. Validate that the provided installation file is correct, or run \"om export-installation\" and try again.", ii.Options.Installation)
-		}
+	if err := validator.ValidateInstallationZip(ii.Options.Installation); err != nil {
+		return err
 	}
 
 	return nil
