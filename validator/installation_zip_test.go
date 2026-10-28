@@ -31,6 +31,15 @@ var _ = Describe("ValidateInstallationZip", func() {
 		Expect(validator.ValidateInstallationZip(path)).To(Succeed())
 	})
 
+	It("accepts a marker that follows an unrelated entry", func() {
+		path := createInstallationZipEntries(tempDir, []installationZipEntry{
+			{name: "foo.txt", contents: "content"},
+			{name: "metadata.json", contents: "{}"},
+		})
+
+		Expect(validator.ValidateInstallationZip(path)).To(Succeed())
+	})
+
 	DescribeTable("accepts installation export data", func(name string, mode fs.FileMode) {
 		path := createInstallationZipEntries(tempDir, []installationZipEntry{{name: name, mode: mode}})
 
@@ -54,6 +63,7 @@ var _ = Describe("ValidateInstallationZip", func() {
 		Entry("an uppercase metadata path", "METADATA/p.yml", fs.FileMode(0)),
 		Entry("a nested postgres file", "x/db.postgres", fs.FileMode(0)),
 		Entry("a postgres directory", "db.postgres/", fs.ModeDir|0755),
+		Entry("a mode-marked postgres directory without a slash", "db.postgres", fs.ModeDir|0755),
 		Entry("a metadata directory", "metadata/", fs.ModeDir|0755),
 		Entry("a mode-marked metadata directory without a slash", "metadata/sub", fs.ModeDir|0755),
 		Entry("a mode-marked deployments directory without a slash", "deployments/sub", fs.ModeDir|0755),
