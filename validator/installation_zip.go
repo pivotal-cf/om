@@ -3,6 +3,7 @@ package validator
 import (
 	"archive/zip"
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -19,7 +20,7 @@ func ValidateInstallationZip(path string) error {
 	for _, f := range zipper.File {
 		if f.Name == "installation.yml" ||
 			f.Name == "metadata.json" ||
-			(!strings.Contains(f.Name, "/") && strings.HasSuffix(f.Name, ".postgres") && !f.FileInfo().IsDir()) ||
+			(!strings.Contains(f.Name, "/") && filepath.Ext(f.Name) == ".postgres" && !f.FileInfo().IsDir()) ||
 			((strings.HasPrefix(f.Name, "metadata/") || strings.HasPrefix(f.Name, "deployments/")) && !strings.HasSuffix(f.Name, "/") && !f.FileInfo().IsDir()) {
 			return nil
 		}
