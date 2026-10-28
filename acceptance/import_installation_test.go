@@ -20,29 +20,26 @@ var _ = Describe("import-installation command", func() {
 	var (
 		installation string
 		passphrase   string
-		content      *os.File
+		content      string
 		server       *ghttp.Server
 	)
 
-	createZipFile := func(files []struct{ Name, Body string }) *os.File {
-		tmpFile, err := os.CreateTemp("", "")
+	createZipFile := func(files []struct{ Name, Body string }) string {
+		tmpFile, err := os.CreateTemp(GinkgoT().TempDir(), "")
+		Expect(err).ToNot(HaveOccurred())
+		defer tmpFile.Close() // fallback if an Expect below aborts; the second Close's os.ErrClosed is ignored
 		w := zip.NewWriter(tmpFile)
 
-		Expect(err).ToNot(HaveOccurred())
 		for _, file := range files {
 			f, err := w.Create(file.Name)
-			if err != nil {
-				Expect(err).ToNot(HaveOccurred())
-			}
+			Expect(err).ToNot(HaveOccurred())
 			_, err = f.Write([]byte(file.Body))
-			if err != nil {
-				Expect(err).ToNot(HaveOccurred())
-			}
+			Expect(err).ToNot(HaveOccurred())
 		}
-		err = w.Close()
-		Expect(err).ToNot(HaveOccurred())
+		Expect(w.Close()).To(Succeed())
+		Expect(tmpFile.Close()).To(Succeed())
 
-		return tmpFile
+		return tmpFile.Name()
 	}
 
 	BeforeEach(func() {
@@ -90,7 +87,7 @@ var _ = Describe("import-installation command", func() {
 			"--skip-ssl-validation",
 			"import-installation",
 			"--polling-interval", "0",
-			"--installation", content.Name(),
+			"--installation", content,
 		)
 
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -101,7 +98,7 @@ var _ = Describe("import-installation command", func() {
 		Eventually(session.Out, 5).Should(gbytes.Say("beginning installation import to Ops Manager"))
 		Eventually(session.Out, 5).Should(gbytes.Say("finished import"))
 
-		Expect(installation).To(Equal(filepath.Base(content.Name())))
+		Expect(installation).To(Equal(filepath.Base(content)))
 		Expect(passphrase).To(Equal("fake-passphrase"))
 	},
 		Entry("installation.yml", struct{ Name, Body string }{"installation.yml", ""}),
@@ -122,7 +119,7 @@ var _ = Describe("import-installation command", func() {
 				"--decryption-passphrase", "fake-passphrase",
 				"--skip-ssl-validation",
 				"import-installation",
-				"--installation", content.Name(),
+				"--installation", content,
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -135,7 +132,7 @@ var _ = Describe("import-installation command", func() {
 
 	When("the content cannot be read", func() {
 		BeforeEach(func() {
-			err := os.Remove(content.Name())
+			err := os.Remove(content)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -145,7 +142,7 @@ var _ = Describe("import-installation command", func() {
 				"--decryption-passphrase", "fake-passphrase",
 				"--skip-ssl-validation",
 				"import-installation",
-				"--installation", content.Name(),
+				"--installation", content,
 			)
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
