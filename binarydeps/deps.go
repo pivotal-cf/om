@@ -11,7 +11,7 @@
 package binarydeps
 
 import _ "code.cloudfoundry.org/credhub-cli"
-import _ "github.com/cloudfoundry/bosh-cli"
+import _ "github.com/cloudfoundry/bosh-cli/v7"
 import _ "github.com/vmware/govmomi/govc"
 import _ "github.com/pivotal-cf/winfs-injector"
 import _ "github.com/pivotal-cf/replicator"
