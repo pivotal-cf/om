@@ -14,7 +14,7 @@ require (
 	github.com/cheggaaa/pb/v3 v3.2.1
 	github.com/cloudfoundry-community/go-uaa v0.5.1
 	github.com/cloudfoundry/bosh-cli v6.4.1+incompatible
-	github.com/cloudfoundry/bosh-cli/v7 v7.11.1
+	github.com/cloudfoundry/bosh-cli/v7 v7.11.2
 	github.com/cppforlife/go-patch v0.2.0
 	github.com/fatih/color v1.19.0
 	github.com/ghodss/yaml v1.0.0
@@ -90,7 +90,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/cloudfoundry/bosh-agent/v2 v2.908.0 // indirect
+	github.com/cloudfoundry/bosh-agent/v2 v2.910.0 // indirect
 	github.com/cloudfoundry/bosh-davcli v0.0.519 // indirect
 	github.com/cloudfoundry/bosh-gcscli v0.0.428 // indirect
 	github.com/cloudfoundry/bosh-s3cli v0.0.449 // indirect
