@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	cloud.google.com/go/storage v1.70.0
-	code.cloudfoundry.org/credhub-cli v0.0.0-20260831130243-80d74494de95
+	code.cloudfoundry.org/credhub-cli v0.0.0-20261026130105-f79293e36002
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
@@ -94,10 +94,10 @@ require (
 	github.com/cloudfoundry/bosh-davcli v0.0.519 // indirect
 	github.com/cloudfoundry/bosh-gcscli v0.0.428 // indirect
 	github.com/cloudfoundry/bosh-s3cli v0.0.449 // indirect
-	github.com/cloudfoundry/bosh-utils v0.0.665 // indirect
+	github.com/cloudfoundry/bosh-utils v0.0.667 // indirect
 	github.com/cloudfoundry/config-server v0.1.287 // indirect
 	github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851 // indirect
-	github.com/cloudfoundry/socks5-proxy v0.2.192 // indirect
+	github.com/cloudfoundry/socks5-proxy v0.2.193 // indirect
 	github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
