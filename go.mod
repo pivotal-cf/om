@@ -26,7 +26,7 @@ require (
 	github.com/onsi/gomega v1.44.0
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20261021200237-5454120994b8
-	github.com/pivotal-cf/winfs-injector v0.0.0-20260902164956-e35b85981028
+	github.com/pivotal-cf/winfs-injector v0.0.0-20261021195307-089092f0229e
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/vmware/govmomi v0.56.2
 	github.com/vmware/govmomi/govc v0.0.0-20261022045541-465fded7cf3a
