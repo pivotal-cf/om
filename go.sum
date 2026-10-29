@@ -499,10 +499,10 @@ github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 h1:gga7acRE695AP
 github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 github.com/vito/go-interact v1.0.2 h1:viJuANio3WH9utUG4rKbJC9V3JR5JgYNS+i0efeA+GU=
 github.com/vito/go-interact v1.0.2/go.mod h1:s+y0jK9Z2etBYt5ZM6+DhpOsE5C7NNGC3jrJvW0BBpc=
-github.com/vmware/govmomi v0.56.2 h1:cCgoNrsi35Yka91004gmDYHTbsDtxs8RC4IkV+Wg81I=
-github.com/vmware/govmomi v0.56.2/go.mod h1:XI+N/NkdbIz5rOAVzfg4wbNJVj2CXUAZmzEEA7RCMh4=
-github.com/vmware/govmomi/govc v0.0.0-20261022045541-465fded7cf3a h1:FJq1H3+rMddhaPs41wCMUuWPc7vKWpMrfOxuf/nWtwI=
-github.com/vmware/govmomi/govc v0.0.0-20261022045541-465fded7cf3a/go.mod h1:OhqdEt4coIA4fJ0eHCJEzndu3i1dfkZwV1ueACFNyZU=
+github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421 h1:BZZXJzGin+DrE+7eHH4QKUmAVmJdNVMOX/XYBYL+HlU=
+github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421/go.mod h1:XI+N/NkdbIz5rOAVzfg4wbNJVj2CXUAZmzEEA7RCMh4=
+github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421 h1:2gJiHhbxtCKpek2Hntd7U897f1U0cqlGjMZ6ela2OXM=
+github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421/go.mod h1:OhqdEt4coIA4fJ0eHCJEzndu3i1dfkZwV1ueACFNyZU=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
