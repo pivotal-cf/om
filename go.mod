@@ -32,7 +32,7 @@ require (
 	github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421
 	github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421
 	golang.org/x/oauth2 v0.37.0
-	google.golang.org/api v0.309.0
+	google.golang.org/api v0.310.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -130,7 +130,7 @@ require (
 	github.com/google/pprof v0.0.0-20261016150608-1facf8f91b50 // indirect
 	github.com/google/s2a-go v0.1.11 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.23 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.24 // indirect
 	github.com/googleapis/gax-go/v2 v2.27.0 // indirect
 	github.com/gopacket/gopacket v1.7.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
