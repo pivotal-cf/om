@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/pivotal-cf/om/api"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type StagedDirectorConfig struct {

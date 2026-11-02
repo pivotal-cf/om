@@ -5,7 +5,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/pivotal-cf/om/interpolate"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Load the config file, (optionally) load the vars file, vars env as well
