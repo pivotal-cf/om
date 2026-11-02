@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/onsi/gomega/ghttp"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/pivotal-cf/om/api"
 

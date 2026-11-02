@@ -7,7 +7,7 @@ import (
 	"github.com/pivotal-cf/om/configtemplate/generator"
 	"github.com/pivotal-cf/om/configtemplate/generator/fakes"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var withServiceNetwork = `network:
