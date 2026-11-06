@@ -14,6 +14,7 @@ func NewPivnetProvider(host, token, slug, version, glob string, skipSSL bool, pr
 	downloadClient, err := download_clients.NewPivnetClient(
 		stdout,
 		stderr,
+		false,
 		download_clients.DefaultPivnetFactory,
 		token,
 		skipSSL,
