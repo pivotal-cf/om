@@ -30,7 +30,7 @@ require (
 	github.com/pivotal-cf/winfs-injector v0.0.0-20261021195307-089092f0229e
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421
-	github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421
+	github.com/vmware/govmomi/govc v0.0.0-20261106073413-a869da58185e
 	golang.org/x/oauth2 v0.37.0
 	google.golang.org/api v0.310.0
 	gopkg.in/go-playground/validator.v9 v9.31.0
