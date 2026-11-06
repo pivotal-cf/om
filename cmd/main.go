@@ -30,20 +30,20 @@ type httpClient interface {
 
 type options struct {
 	CACert               string `yaml:"ca-cert" long:"ca-cert" env:"OM_CA_CERT" description:"OpsManager CA certificate path or value"`
-	ClientID             string `yaml:"client-id"             short:"c"  long:"client-id"             env:"OM_CLIENT_ID"                           description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
-	ClientSecret         string `yaml:"client-secret"         short:"s"  long:"client-secret"         env:"OM_CLIENT_SECRET"                       description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
-	ConnectTimeout       int    `yaml:"connect-timeout"       short:"o"  long:"connect-timeout"       env:"OM_CONNECT_TIMEOUT"     default:"10"    description:"timeout in seconds to make TCP connections"`
-	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d"  long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE"               description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
-	Env                  string `                             short:"e"  long:"env"                                                                description:"env file with login credentials"`
-	Password             string `yaml:"password"              short:"p"  long:"password"              env:"OM_PASSWORD"                            description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
-	RequestTimeout       int    `yaml:"request-timeout"       short:"r"  long:"request-timeout"       env:"OM_REQUEST_TIMEOUT"     default:"1800"  description:"timeout in seconds for HTTP requests to Ops Manager"`
-	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"   short:"k"  long:"skip-ssl-validation"   env:"OM_SKIP_SSL_VALIDATION"                 description:"skip ssl certificate validation during http requests"`
-	Target               string `yaml:"target"                short:"t"  long:"target"                env:"OM_TARGET"                              description:"location of the Ops Manager VM"`
-	UAATarget            string `yaml:"uaa-target"                       long:"uaa-target"            env:"OM_UAA_TARGET"                          description:"optional location of the Ops Manager UAA"`
-	Trace                bool   `yaml:"trace"                            long:"trace"                 env:"OM_TRACE"                               description:"prints HTTP requests and response payloads"`
-	Username             string `yaml:"username"              short:"u"  long:"username"              env:"OM_USERNAME"                            description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
-	VarsEnv              string `                                        long:"vars-env"              env:"OM_VARS_ENV"                            description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
-	Version              bool   `                             short:"v"  long:"version"                                                            description:"prints the om release version"`
+	ClientID             string `yaml:"client-id"             short:"c"  long:"client-id"             env:"OM_CLIENT_ID"                              description:"Client ID for the Ops Manager VM (not required for unauthenticated commands)"`
+	ClientSecret         string `yaml:"client-secret"         short:"s"  long:"client-secret"         env:"OM_CLIENT_SECRET"         default-mask:"-" description:"Client Secret for the Ops Manager VM (not required for unauthenticated commands)"`
+	ConnectTimeout       int    `yaml:"connect-timeout"       short:"o"  long:"connect-timeout"       env:"OM_CONNECT_TIMEOUT"       default:"10"     description:"timeout in seconds to make TCP connections"`
+	DecryptionPassphrase string `yaml:"decryption-passphrase" short:"d"  long:"decryption-passphrase" env:"OM_DECRYPTION_PASSPHRASE" default-mask:"-" description:"Passphrase to decrypt the installation if the Ops Manager VM has been rebooted (optional for most commands)"`
+	Env                  string `                             short:"e"  long:"env"                                                                   description:"env file with login credentials"`
+	Password             string `yaml:"password"              short:"p"  long:"password"              env:"OM_PASSWORD"              default-mask:"-" description:"admin password for the Ops Manager VM (not required for unauthenticated commands)"`
+	RequestTimeout       int    `yaml:"request-timeout"       short:"r"  long:"request-timeout"       env:"OM_REQUEST_TIMEOUT"       default:"1800"   description:"timeout in seconds for HTTP requests to Ops Manager"`
+	SkipSSLValidation    bool   `yaml:"skip-ssl-validation"   short:"k"  long:"skip-ssl-validation"   env:"OM_SKIP_SSL_VALIDATION"                    description:"skip ssl certificate validation during http requests"`
+	Target               string `yaml:"target"                short:"t"  long:"target"                env:"OM_TARGET"                                 description:"location of the Ops Manager VM"`
+	UAATarget            string `yaml:"uaa-target"                       long:"uaa-target"            env:"OM_UAA_TARGET"                             description:"optional location of the Ops Manager UAA"`
+	Trace                bool   `yaml:"trace"                            long:"trace"                 env:"OM_TRACE"                                  description:"prints HTTP requests and response payloads"`
+	Username             string `yaml:"username"              short:"u"  long:"username"              env:"OM_USERNAME"                               description:"admin username for the Ops Manager VM (not required for unauthenticated commands)"`
+	VarsEnv              string `                                        long:"vars-env"              env:"OM_VARS_ENV"                               description:"load vars from environment variables by specifying a prefix (e.g.: 'MY' to load MY_var=value)"`
+	Version              bool   `                             short:"v"  long:"version"                                                               description:"prints the om release version"`
 }
 
 func Main(sout io.Writer, serr io.Writer, version string, applySleepDurationString string, args []string) error {
