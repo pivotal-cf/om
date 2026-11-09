@@ -84,6 +84,8 @@ type VsphereVMManager struct {
 	State    StateInfo
 	Config   *OpsmanConfigFilePayload
 	runner   govcRunner
+
+	bootTimeout time.Duration
 }
 
 const DefaultMemory = "8"
@@ -96,6 +98,9 @@ func NewVsphereVMManager(config *OpsmanConfigFilePayload, imageFileName string, 
 		State:    state,
 		Config:   config,
 		runner:   govcRunner,
+
+		// 80 seconds is adequate time for Ops Manager to get an IP; typically it's 43 seconds.
+		bootTimeout: 80 * time.Second,
 	}
 }
 
@@ -168,7 +173,7 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 		return Unknown, StateInfo{}, err
 	}
 	if exist {
-		return Exist, v.State, nil
+		return v.finishIfPoweredOff(env, v.State)
 	}
 
 	err = v.validateImage()
@@ -194,20 +199,29 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 	if err != nil {
 		errBufStr := errBufWriter.String()
 		if strings.Contains(errBufStr, "already exists") {
-			return Exist, fullState, nil
+			return v.finishIfPoweredOff(env, fullState)
 		}
 
 		return Unknown, StateInfo{}, fmt.Errorf("govc error: %s", err)
 	}
 
-	// The VM is imported powered off so that hardware changes never interrupt its first boot.
-	// Ops Manager does one-time setup on first boot, and cutting power partway through it can
-	// leave the VM without working services.
+	err = v.configureAndBootVM(env, ipath)
+	if err != nil {
+		return Incomplete, fullState, err
+	}
+
+	return Success, fullState, nil
+}
+
+// The VM is imported powered off so that hardware changes never interrupt its first boot.
+// Ops Manager does one-time setup on first boot, and cutting power partway through it can
+// leave the VM without working services.
+func (v *VsphereVMManager) configureAndBootVM(env []string, ipath string) error {
 	if v.Config.OpsmanConfig.Vsphere.Memory != DefaultMemory || v.Config.OpsmanConfig.Vsphere.CPU != DefaultCPU {
 		log.Println("Setting Memory and CPU for the VM...")
 		err := v.setVMProperties(env, ipath)
 		if err != nil {
-			return Incomplete, fullState, errors.New("govc error: could not reassign memory and CPU")
+			return fmt.Errorf("govc error: could not reassign memory and CPU: %w", err)
 		}
 		log.Println("Memory and CPU set")
 	}
@@ -216,17 +230,33 @@ func (v *VsphereVMManager) CreateVM() (Status, StateInfo, error) {
 		log.Println("Setting Disk Size for the VM...")
 		err := v.setVMDiskProperties(env, ipath)
 		if err != nil {
-			return Incomplete, fullState, fmt.Errorf("govc error: could not reassign disk size")
+			return fmt.Errorf("govc error: could not reassign disk size: %w", err)
 		}
 		log.Println("Disk Size set")
 	}
 
-	err = v.bootVM(env, ipath)
+	return v.bootVM(env, ipath)
+}
+
+// A VM that already exists but is powered off was most likely left behind by an earlier
+// create-vm that failed or was interrupted after the import, so finish configuring and booting it
+// rather than reporting success for a VM that will never start.
+func (v *VsphereVMManager) finishIfPoweredOff(env []string, state StateInfo) (Status, StateInfo, error) {
+	powerState, err := v.powerState(env, state.ID)
 	if err != nil {
-		return Incomplete, fullState, err
+		return Incomplete, state, fmt.Errorf("govc error: could not get the power state of the existing VM: %w", err)
+	}
+	if powerState != "poweredOff" {
+		return Exist, state, nil
 	}
 
-	return Success, fullState, nil
+	log.Println("VM already exists but is powered off; finishing its configuration and powering it on...")
+	err = v.configureAndBootVM(env, state.ID)
+	if err != nil {
+		return Incomplete, state, err
+	}
+
+	return Success, state, nil
 }
 
 func (v *VsphereVMManager) createOptionsFile() (optionsFileName string, err error) {
@@ -379,12 +409,11 @@ func (v *VsphereVMManager) importVM(env []string, optionFilename string) (errBuf
 func (v *VsphereVMManager) bootVM(env []string, ipath string) error {
 	err := v.powerOnVM(env, ipath)
 	if err != nil {
-		return errors.New("govc error: could not turn on VM")
+		return fmt.Errorf("govc error: could not turn on VM: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 80*time.Second) // 80 seconds is adequate time for OM to get IP; typically it's 43 seconds
+	ctx, cancel := context.WithTimeout(context.Background(), v.bootTimeout)
 	defer cancel()
-	// Wait 80 seconds for VM to boot and acquire its IP
 	_, _, err = v.runner.ExecuteWithEnvVarsCtx(ctx, env, []interface{}{
 		"vm.info",
 		fmt.Sprintf(`-vm.ipath=%s`, ipath),
@@ -399,6 +428,22 @@ func (v *VsphereVMManager) bootVM(env []string, ipath string) error {
 		return nil
 	}
 	return checkFormatedError("govc error: %s", err)
+}
+
+func (v *VsphereVMManager) powerState(env []string, ipath string) (string, error) {
+	stdout, _, err := v.runner.ExecuteWithEnvVars(env, []interface{}{
+		"object.collect",
+		"-s",
+		ipath,
+		"runtime.powerState",
+	})
+	if err != nil {
+		return "", err
+	}
+	if stdout == nil {
+		return "", nil
+	}
+	return strings.TrimSpace(stdout.String()), nil
 }
 
 func (v *VsphereVMManager) resetVM(env []string, ipath string) (errBufWriter *bytes.Buffer, err error) {
