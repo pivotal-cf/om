@@ -3,11 +3,14 @@ package vmmanagers_test
 import (
 	"archive/tar"
 	"bytes"
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -132,16 +135,16 @@ opsman-configuration:
 
 					_, args = runner.ExecuteWithEnvVarsArgsForCall(1)
 					Expect(args).To(matchers.OrderedConsistOf(
-						"vm.power",
-						"-off=true",
-						"-vm.ipath=/datacenter/vm/folder/vm_name",
-					))
-					_, args = runner.ExecuteWithEnvVarsArgsForCall(2)
-					Expect(args).To(matchers.OrderedConsistOf(
 						"vm.change",
 						"-vm.ipath=/datacenter/vm/folder/vm_name",
 						"-m=25600",
 						"-c=10",
+					))
+					_, args = runner.ExecuteWithEnvVarsArgsForCall(2)
+					Expect(args).To(matchers.OrderedConsistOf(
+						"vm.disk.change",
+						"-vm.ipath=/datacenter/vm/folder/vm_name",
+						"-size=200G",
 					))
 					_, args = runner.ExecuteWithEnvVarsArgsForCall(3)
 					Expect(args).To(matchers.OrderedConsistOf(
@@ -149,6 +152,7 @@ opsman-configuration:
 						"-on=true",
 						"-vm.ipath=/datacenter/vm/folder/vm_name",
 					))
+					Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
 
 					_, _, args = runner.ExecuteWithEnvVarsCtxArgsForCall(0)
 					Expect(args).To(matchers.OrderedConsistOf(
@@ -157,6 +161,104 @@ opsman-configuration:
 						"-waitip",
 					))
 					Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(1))
+				})
+
+				It("imports the VM powered off so that it boots once, after the hardware changes", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+
+					var options map[string]interface{}
+					runner.ExecuteWithEnvVarsCalls(func(_ []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+						for _, arg := range args {
+							if s, ok := arg.(string); ok && strings.HasPrefix(s, "-options=") {
+								contents, readErr := os.ReadFile(strings.TrimPrefix(s, "-options="))
+								Expect(readErr).ToNot(HaveOccurred())
+								Expect(json.Unmarshal(contents, &options)).To(Succeed())
+							}
+						}
+						return nil, nil, nil
+					})
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(options).To(HaveKeyWithValue("PowerOn", false))
+					for i := 0; i < runner.ExecuteWithEnvVarsCallCount(); i++ {
+						_, args := runner.ExecuteWithEnvVarsArgsForCall(i)
+						Expect(args).ToNot(ContainElement("-off=true"))
+					}
+				})
+
+				It("returns an incomplete status when the VM fails to power on", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+					runner.ExecuteWithEnvVarsReturnsOnCall(3, nil, nil, errors.New("some error occurred"))
+
+					status, stateInfo, err := command.CreateVM()
+					Expect(err).To(MatchError("govc error: could not turn on VM: some error occurred"))
+					Expect(status).To(Equal(vmmanagers.Incomplete))
+					Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
+					Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(0))
+				})
+
+				When("waiting for the VM's IP", func() {
+					resetCallCount := func(runner *fakes.GovcRunner) int {
+						count := 0
+						for i := 0; i < runner.ExecuteWithEnvVarsCallCount(); i++ {
+							_, args := runner.ExecuteWithEnvVarsArgsForCall(i)
+							if len(args) > 0 && args[0] == "vm.power" && args[len(args)-1] == "-reset" {
+								Expect(args).To(Equal([]interface{}{"vm.power", "-vm.ipath=/datacenter/vm/folder/vm_name", "-reset"}))
+								count++
+							}
+						}
+						return count
+					}
+
+					timeOut := func(runner *fakes.GovcRunner) {
+						runner.ExecuteWithEnvVarsCtxCalls(func(ctx context.Context, _ []string, _ []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+							<-ctx.Done()
+							return nil, nil, ctx.Err()
+						})
+					}
+
+					It("returns an incomplete status when -waitip fails", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						runner.ExecuteWithEnvVarsCtxReturns(nil, nil, errors.New("some waitip error"))
+
+						status, stateInfo, err := command.CreateVM()
+						Expect(err).To(MatchError(ContainSubstring("some waitip error")))
+						Expect(status).To(Equal(vmmanagers.Incomplete))
+						Expect(stateInfo).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
+						Expect(resetCallCount(runner)).To(Equal(0))
+					})
+
+					It("resets the VM once when -waitip times out", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						command.SetBootTimeout(10 * time.Millisecond)
+						timeOut(runner)
+
+						status, stateInfo, err := command.CreateVM()
+						Expect(err).ToNot(HaveOccurred())
+						Expect(status).To(Equal(vmmanagers.Success))
+						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
+						Expect(resetCallCount(runner)).To(Equal(1))
+					})
+
+					It("returns an error when -waitip times out and the reset fails", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						command.SetBootTimeout(10 * time.Millisecond)
+						timeOut(runner)
+						runner.ExecuteWithEnvVarsCalls(func(_ []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+							if args[len(args)-1] == "-reset" {
+								return nil, nil, errors.New("some reset error")
+							}
+							return nil, nil, nil
+						})
+
+						status, stateInfo, err := command.CreateVM()
+						Expect(err).To(MatchError("govc error: could not power-reset: some reset error"))
+						Expect(status).To(Equal(vmmanagers.Incomplete))
+						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
+						Expect(resetCallCount(runner)).To(Equal(1))
+					})
 				})
 
 				When("setting custom cpu and memory", func() {
@@ -191,12 +293,12 @@ opsman-configuration:
 						memDefault := fmt.Sprintf(configTemplate, vmmanagers.DefaultMemory, "12")
 						command, runner := createCommand(memDefault, opsmanVersionBelow26)
 						_, _, _ = command.CreateVM()
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(3))
 
 						cpuDefault := fmt.Sprintf(configTemplate, "25", vmmanagers.DefaultCPU)
 						command, runner = createCommand(cpuDefault, opsmanVersionBelow26)
 						_, _, _ = command.CreateVM()
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(3))
 					})
 
 					It("does not make extra calls if memory and cpu are default", func() {
@@ -232,12 +334,18 @@ opsman-configuration:
 						Expect(status).To(Equal(vmmanagers.Success))
 						Expect(state).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
 
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(1))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(2))
 						_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Expect(args).To(matchers.OrderedConsistOf(
 							"import.ova",
 							MatchRegexp("-options=.*options.json.*"),
 							MatchRegexp(".*ova"),
+						))
+						_, args = runner.ExecuteWithEnvVarsArgsForCall(1)
+						Expect(args).To(matchers.OrderedConsistOf(
+							"vm.power",
+							"-on=true",
+							"-vm.ipath=/datacenter/vm/folder/vm_name",
 						))
 					})
 
@@ -247,7 +355,7 @@ opsman-configuration:
 						runner.ExecuteWithEnvVarsReturnsOnCall(1, nil, nil, errors.New("some error occurred"))
 						status, stateInfo, err := command.CreateVM()
 
-						Expect(err).To(HaveOccurred())
+						Expect(err).To(MatchError("govc error: could not reassign memory and CPU: some error occurred"))
 						Expect(status).To(Equal(vmmanagers.Incomplete))
 						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
 					})
@@ -284,7 +392,7 @@ opsman-configuration:
 						diskSizeDefault := fmt.Sprintf(configTemplate, "200")
 						command, runner := createCommand(diskSizeDefault, opsmanVersionBelow26)
 						_, _, _ = command.CreateVM()
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(3))
 					})
 
 					It("does not make extra calls if disk_size is default", func() {
@@ -320,12 +428,18 @@ opsman-configuration:
 						Expect(status).To(Equal(vmmanagers.Success))
 						Expect(state).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
 
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(1))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(2))
 						_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Expect(args).To(matchers.OrderedConsistOf(
 							"import.ova",
 							MatchRegexp("-options=.*options.json.*"),
 							MatchRegexp(".*ova"),
+						))
+						_, args = runner.ExecuteWithEnvVarsArgsForCall(1)
+						Expect(args).To(matchers.OrderedConsistOf(
+							"vm.power",
+							"-on=true",
+							"-vm.ipath=/datacenter/vm/folder/vm_name",
 						))
 					})
 
@@ -335,7 +449,7 @@ opsman-configuration:
 						runner.ExecuteWithEnvVarsReturnsOnCall(1, nil, nil, errors.New("some error occurred"))
 						status, stateInfo, err := command.CreateVM()
 
-						Expect(err).To(HaveOccurred())
+						Expect(err).To(MatchError("govc error: could not reassign disk size: some error occurred"))
 						Expect(status).To(Equal(vmmanagers.Incomplete))
 						Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
 					})
@@ -365,18 +479,43 @@ opsman-configuration:
 					It("returns that it exists", func() {
 						command, runner := createCommand(configStr, opsmanVersionBelow26)
 						runner.ExecuteWithEnvVarsReturnsOnCall(0, nil, bytes.NewBufferString("already exists"), errors.New(""))
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("poweredOn\n"), nil, nil)
 						status, stateInfo, err := command.CreateVM()
 						Expect(err).ToNot(HaveOccurred())
 
 						Expect(status).To(Equal(vmmanagers.Exist))
 						Expect(stateInfo).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
+
+						_, args := runner.ExecuteWithEnvVarsArgsForCall(1)
+						Expect(args).To(Equal([]interface{}{"object.collect", "-s", "/datacenter/vm/folder/vm_name", "runtime.powerState"}))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(2))
+					})
+
+					It("finishes configuring and boots the VM when it is powered off", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						runner.ExecuteWithEnvVarsReturnsOnCall(0, nil, bytes.NewBufferString("already exists"), errors.New(""))
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("poweredOff\n"), nil, nil)
+						status, stateInfo, err := command.CreateVM()
+						Expect(err).ToNot(HaveOccurred())
+
+						Expect(status).To(Equal(vmmanagers.Success))
+						Expect(stateInfo).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
+
+						var commands []interface{}
+						for i := 2; i < runner.ExecuteWithEnvVarsCallCount(); i++ {
+							_, args := runner.ExecuteWithEnvVarsArgsForCall(i)
+							commands = append(commands, args[0])
+						}
+						Expect(commands).To(Equal([]interface{}{"vm.change", "vm.disk.change", "vm.power"}))
+						Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(1))
 					})
 				})
 
 				When("the vm specified in the state file already exists", func() {
-					It("returns exist status, doesn't make additional CLI calls, and exits 0", func() {
+					It("returns exist status when the VM is powered on, and only checks its power state", func() {
 						command, runner := createCommand(configStr, opsmanVersionBelow26)
 						runner.ExecuteWithEnvVarsReturnsOnCall(0, nil, nil, nil)
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("poweredOn\n"), nil, nil)
 
 						command.State = vmmanagers.StateInfo{
 							IAAS: "vsphere",
@@ -387,15 +526,58 @@ opsman-configuration:
 						Expect(err).ToNot(HaveOccurred())
 						Expect(status).To(Equal(vmmanagers.Exist))
 
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(BeEquivalentTo(1))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(BeEquivalentTo(2))
 
 						_, actualArgs := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Expect(actualArgs).To(Equal([]interface{}{
 							`vm.info`, "-vm.ipath=some-ipath",
 						}))
+						_, actualArgs = runner.ExecuteWithEnvVarsArgsForCall(1)
+						Expect(actualArgs).To(Equal([]interface{}{
+							"object.collect", "-s", "some-ipath", "runtime.powerState",
+						}))
 
 						Expect(state.IAAS).To(Equal("vsphere"))
 						Expect(state.ID).To(Equal("some-ipath"))
+					})
+
+					It("finishes configuring and boots the VM when it is powered off", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("poweredOff\n"), nil, nil)
+						command.State = vmmanagers.StateInfo{IAAS: "vsphere", ID: "some-ipath"}
+
+						status, state, err := command.CreateVM()
+						Expect(err).ToNot(HaveOccurred())
+						Expect(status).To(Equal(vmmanagers.Success))
+						Expect(state).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "some-ipath"}))
+
+						_, actualArgs := runner.ExecuteWithEnvVarsArgsForCall(runner.ExecuteWithEnvVarsCallCount() - 1)
+						Expect(actualArgs).To(Equal([]interface{}{"vm.power", "-on=true", "-vm.ipath=some-ipath"}))
+						Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(1))
+					})
+
+					It("returns an incomplete status when the powered-off VM fails to power on", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, bytes.NewBufferString("poweredOff\n"), nil, nil)
+						runner.ExecuteWithEnvVarsReturnsOnCall(4, nil, nil, errors.New("some error occurred"))
+						command.State = vmmanagers.StateInfo{IAAS: "vsphere", ID: "some-ipath"}
+
+						status, state, err := command.CreateVM()
+						Expect(err).To(MatchError("govc error: could not turn on VM: some error occurred"))
+						Expect(status).To(Equal(vmmanagers.Incomplete))
+						Expect(state.ID).To(Equal("some-ipath"))
+					})
+
+					It("returns an incomplete status when the power state can't be read", func() {
+						command, runner := createCommand(configStr, opsmanVersionBelow26)
+						runner.ExecuteWithEnvVarsReturnsOnCall(1, nil, nil, errors.New("some error occurred"))
+						command.State = vmmanagers.StateInfo{IAAS: "vsphere", ID: "some-ipath"}
+
+						status, state, err := command.CreateVM()
+						Expect(err).To(MatchError("govc error: could not get the power state of the existing VM: some error occurred"))
+						Expect(status).To(Equal(vmmanagers.Incomplete))
+						Expect(state.ID).To(Equal("some-ipath"))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(2))
 					})
 
 					Describe("failure cases", func() {
