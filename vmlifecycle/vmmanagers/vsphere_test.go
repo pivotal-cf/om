@@ -3,6 +3,7 @@ package vmmanagers_test
 import (
 	"archive/tar"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -132,16 +133,16 @@ opsman-configuration:
 
 					_, args = runner.ExecuteWithEnvVarsArgsForCall(1)
 					Expect(args).To(matchers.OrderedConsistOf(
-						"vm.power",
-						"-off=true",
-						"-vm.ipath=/datacenter/vm/folder/vm_name",
-					))
-					_, args = runner.ExecuteWithEnvVarsArgsForCall(2)
-					Expect(args).To(matchers.OrderedConsistOf(
 						"vm.change",
 						"-vm.ipath=/datacenter/vm/folder/vm_name",
 						"-m=25600",
 						"-c=10",
+					))
+					_, args = runner.ExecuteWithEnvVarsArgsForCall(2)
+					Expect(args).To(matchers.OrderedConsistOf(
+						"vm.disk.change",
+						"-vm.ipath=/datacenter/vm/folder/vm_name",
+						"-size=200G",
 					))
 					_, args = runner.ExecuteWithEnvVarsArgsForCall(3)
 					Expect(args).To(matchers.OrderedConsistOf(
@@ -149,6 +150,7 @@ opsman-configuration:
 						"-on=true",
 						"-vm.ipath=/datacenter/vm/folder/vm_name",
 					))
+					Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
 
 					_, _, args = runner.ExecuteWithEnvVarsCtxArgsForCall(0)
 					Expect(args).To(matchers.OrderedConsistOf(
@@ -157,6 +159,42 @@ opsman-configuration:
 						"-waitip",
 					))
 					Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(1))
+				})
+
+				It("imports the VM powered off so that it boots once, after the hardware changes", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+
+					var options map[string]interface{}
+					runner.ExecuteWithEnvVarsCalls(func(_ []string, args []interface{}) (*bytes.Buffer, *bytes.Buffer, error) {
+						for _, arg := range args {
+							if s, ok := arg.(string); ok && strings.HasPrefix(s, "-options=") {
+								contents, readErr := os.ReadFile(strings.TrimPrefix(s, "-options="))
+								Expect(readErr).ToNot(HaveOccurred())
+								Expect(json.Unmarshal(contents, &options)).To(Succeed())
+							}
+						}
+						return nil, nil, nil
+					})
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(options).To(HaveKeyWithValue("PowerOn", false))
+					for i := 0; i < runner.ExecuteWithEnvVarsCallCount(); i++ {
+						_, args := runner.ExecuteWithEnvVarsArgsForCall(i)
+						Expect(args).ToNot(ContainElement("-off=true"))
+					}
+				})
+
+				It("returns an incomplete status when the VM fails to power on", func() {
+					command, runner := createCommand(configStr, opsmanVersionBelow26)
+					runner.ExecuteWithEnvVarsReturnsOnCall(3, nil, nil, errors.New("some error occurred"))
+
+					status, stateInfo, err := command.CreateVM()
+					Expect(err).To(MatchError("govc error: could not turn on VM"))
+					Expect(status).To(Equal(vmmanagers.Incomplete))
+					Expect(stateInfo.ID).To(Equal("/datacenter/vm/folder/vm_name"))
+					Expect(runner.ExecuteWithEnvVarsCtxCallCount()).To(Equal(0))
 				})
 
 				When("setting custom cpu and memory", func() {
@@ -191,12 +229,12 @@ opsman-configuration:
 						memDefault := fmt.Sprintf(configTemplate, vmmanagers.DefaultMemory, "12")
 						command, runner := createCommand(memDefault, opsmanVersionBelow26)
 						_, _, _ = command.CreateVM()
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(3))
 
 						cpuDefault := fmt.Sprintf(configTemplate, "25", vmmanagers.DefaultCPU)
 						command, runner = createCommand(cpuDefault, opsmanVersionBelow26)
 						_, _, _ = command.CreateVM()
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(3))
 					})
 
 					It("does not make extra calls if memory and cpu are default", func() {
@@ -232,12 +270,18 @@ opsman-configuration:
 						Expect(status).To(Equal(vmmanagers.Success))
 						Expect(state).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
 
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(1))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(2))
 						_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Expect(args).To(matchers.OrderedConsistOf(
 							"import.ova",
 							MatchRegexp("-options=.*options.json.*"),
 							MatchRegexp(".*ova"),
+						))
+						_, args = runner.ExecuteWithEnvVarsArgsForCall(1)
+						Expect(args).To(matchers.OrderedConsistOf(
+							"vm.power",
+							"-on=true",
+							"-vm.ipath=/datacenter/vm/folder/vm_name",
 						))
 					})
 
@@ -284,7 +328,7 @@ opsman-configuration:
 						diskSizeDefault := fmt.Sprintf(configTemplate, "200")
 						command, runner := createCommand(diskSizeDefault, opsmanVersionBelow26)
 						_, _, _ = command.CreateVM()
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(4))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(3))
 					})
 
 					It("does not make extra calls if disk_size is default", func() {
@@ -320,12 +364,18 @@ opsman-configuration:
 						Expect(status).To(Equal(vmmanagers.Success))
 						Expect(state).To(Equal(vmmanagers.StateInfo{IAAS: "vsphere", ID: "/datacenter/vm/folder/vm_name"}))
 
-						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(1))
+						Expect(runner.ExecuteWithEnvVarsCallCount()).To(Equal(2))
 						_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
 						Expect(args).To(matchers.OrderedConsistOf(
 							"import.ova",
 							MatchRegexp("-options=.*options.json.*"),
 							MatchRegexp(".*ova"),
+						))
+						_, args = runner.ExecuteWithEnvVarsArgsForCall(1)
+						Expect(args).To(matchers.OrderedConsistOf(
+							"vm.power",
+							"-on=true",
+							"-vm.ipath=/datacenter/vm/folder/vm_name",
 						))
 					})
 
