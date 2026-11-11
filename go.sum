@@ -505,8 +505,8 @@ github.com/vito/go-interact v1.0.2 h1:viJuANio3WH9utUG4rKbJC9V3JR5JgYNS+i0efeA+G
 github.com/vito/go-interact v1.0.2/go.mod h1:s+y0jK9Z2etBYt5ZM6+DhpOsE5C7NNGC3jrJvW0BBpc=
 github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421 h1:BZZXJzGin+DrE+7eHH4QKUmAVmJdNVMOX/XYBYL+HlU=
 github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421/go.mod h1:XI+N/NkdbIz5rOAVzfg4wbNJVj2CXUAZmzEEA7RCMh4=
-github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421 h1:2gJiHhbxtCKpek2Hntd7U897f1U0cqlGjMZ6ela2OXM=
-github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421/go.mod h1:OhqdEt4coIA4fJ0eHCJEzndu3i1dfkZwV1ueACFNyZU=
+github.com/vmware/govmomi/govc v0.0.0-20261111144833-a8cabc2247c0 h1:omWsBZG4x5gb3nfBq2/lfEF9bnj6sk7V/Y9Ttt5Zs18=
+github.com/vmware/govmomi/govc v0.0.0-20261111144833-a8cabc2247c0/go.mod h1:OhqdEt4coIA4fJ0eHCJEzndu3i1dfkZwV1ueACFNyZU=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
