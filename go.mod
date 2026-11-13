@@ -1,6 +1,6 @@
 module github.com/pivotal-cf/om
 
-go 1.27.3
+go 1.27.4
 
 require (
 	cloud.google.com/go/storage v1.70.0
@@ -27,7 +27,7 @@ require (
 	github.com/onsi/gomega v1.44.0
 	github.com/pivotal-cf/go-pivnet/v9 v9.1.0
 	github.com/pivotal-cf/replicator v0.0.0-20261021200237-5454120994b8
-	github.com/pivotal-cf/winfs-injector v0.0.0-20261021195307-089092f0229e
+	github.com/pivotal-cf/winfs-injector v0.0.0-20261112190241-5f877dd9d6b6
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/vmware/govmomi v0.57.0-alpha.0.0.20261027065429-10b3c7352421
 	github.com/vmware/govmomi/govc v0.0.0-20261027065429-10b3c7352421
@@ -194,13 +194,13 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.47.0 // indirect
 	go.opentelemetry.io/otel/trace v1.47.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/crypto v0.59.0 // indirect
 	golang.org/x/mod v0.42.0 // indirect
-	golang.org/x/net v0.61.0 // indirect
-	golang.org/x/sync v0.24.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
-	golang.org/x/term v0.47.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
+	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/sync v0.25.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
+	golang.org/x/term v0.48.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
 	golang.org/x/tools v0.52.0 // indirect
 	google.golang.org/genproto v0.0.0-20261019180522-ce908d29299b // indirect
