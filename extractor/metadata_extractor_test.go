@@ -218,6 +218,38 @@ var _ = Describe("MetadataExtractor", func() {
 	})
 
 	Describe("ExtractFromFile", func() {
+		When("the metadata entry decompresses to more than the maximum allowed size", func() {
+			var bombFile *os.File
+
+			BeforeEach(func() {
+				var err error
+				bombFile, err = os.CreateTemp("", "")
+				Expect(err).ToNot(HaveOccurred())
+
+				zipper := zip.NewWriter(bombFile)
+				w, err := zipper.Create("metadata/bomb.yml")
+				Expect(err).ToNot(HaveOccurred())
+
+				// highly compressible: ~129 MiB of zeros deflates to ~130 KiB
+				chunk := make([]byte, 1<<20)
+				for i := 0; i < 129; i++ {
+					_, err = w.Write(chunk)
+					Expect(err).ToNot(HaveOccurred())
+				}
+				Expect(zipper.Close()).To(Succeed())
+				Expect(bombFile.Close()).To(Succeed())
+			})
+
+			AfterEach(func() {
+				os.Remove(bombFile.Name())
+			})
+
+			It("returns an error instead of reading it all into memory", func() {
+				_, err := metadataExtractor.ExtractFromFile(bombFile.Name())
+				Expect(err).To(MatchError(ContainSubstring("exceeds maximum allowed size")))
+			})
+		})
+
 		It("Extracts the product name and version from the given pivotal file", func() {
 			metadata, err := metadataExtractor.ExtractFromFile(productFile.Name())
 			Expect(err).ToNot(HaveOccurred())
