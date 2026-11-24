@@ -30,6 +30,7 @@ jobs:
         name: Set Go to latest
         uses: actions/setup-go@v7
         with:
+          go-version: stable
           check-latest: true
 
       - id: upgrade-golang
