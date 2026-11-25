@@ -75,6 +75,12 @@ can be found in [Pivotal Documentation](https://docs.pivotal.io/platform-automat
 
 ### Bug fixes
 
+- `vm-lifecycle create-vm` on vSphere no longer hard powers off the new Ops Manager VM during its first boot to apply
+  `cpu`, `memory` or `disk_size`. The VM is now imported powered off, resized, and then powered on once. Cutting power
+  during first boot could interrupt Ops Manager's one-time setup and leave the VM without SSH or HTTPS. If a previous
+  `create-vm` left the VM powered off, rerunning `create-vm` now resizes and powers it on instead of reporting that it
+  already exists.
+
 - `import-installation` and `vm-lifecycle upgrade-opsman` now recognize Ops Manager 11+ installation exports, which
   contain a root `metadata.json` instead of `installation.yml`. An archive is accepted if it contains any one of: a
   root `installation.yml`, a root `metadata.json`, a root `*.postgres` file, or a file under `metadata/` or
