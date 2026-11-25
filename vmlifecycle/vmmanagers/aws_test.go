@@ -657,6 +657,246 @@ opsman-configuration:
 			Expect(args).To(ContainElement(MatchRegexp("gp2")))
 
 		})
+
+		When("enables placement options", func() {
+			Context("tenancy options", func() {
+				It("set tenancy param to host", func() {
+					command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: host
+`)
+					runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+					runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+					Expect(args).To(ContainElement(MatchRegexp("Tenancy=host")))
+				})
+
+				It("set tenancy param to dedicated", func() {
+					command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: dedicated
+`)
+					runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+					runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+					Expect(args).To(ContainElement(MatchRegexp("Tenancy=dedicated")))
+				})
+
+				It("set tenancy param to default", func() {
+					command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: default
+`)
+					runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+					runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+					runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+					_, _, err := command.CreateVM()
+					Expect(err).ToNot(HaveOccurred())
+
+					_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+					Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+					Expect(args).To(ContainElement(MatchRegexp("Tenancy=default")))
+				})
+
+				It("set tenancy param to bad value", func() {
+					command, _ := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: random
+`)
+					_, _, err := command.CreateVM()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`tenancy option 'random' is not valid. Valid options are 'default', 'dedicated', 'host', or omitted.`))
+				})
+			})
+
+			It("combine multiple placement option properties", func() {
+				command, runner := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      tenancy: host
+      group_name: my_group
+      availability_zone: zone_1
+`)
+				runner.ExecuteWithEnvVarsReturnsOnCall(4, bytes.NewBufferString("some-id\r\n"), nil, nil)
+				runner.ExecuteWithEnvVarsReturnsOnCall(5, bytes.NewBufferString("\"running\"\r\n"), nil, nil) // waitUntilVMRunning()
+				runner.ExecuteWithEnvVarsReturnsOnCall(11, bytes.NewBufferString("stopped\r\n"), nil, nil)
+
+				_, _, err := command.CreateVM()
+				Expect(err).ToNot(HaveOccurred())
+
+				_, args := runner.ExecuteWithEnvVarsArgsForCall(0)
+				Expect(args).To(ContainElement(MatchRegexp("ops-manager-vm")))
+				Expect(args).To(ContainElement(MatchRegexp("Tenancy=host")))
+				Expect(args).To(ContainElement(MatchRegexp("GroupName=my_group")))
+				Expect(args).To(ContainElement(MatchRegexp("AvailabilityZone=zone_1")))
+			})
+
+			Context("conflicting properties", func() {
+				It("can't specify avalability zone and availability zone id", func() {
+					command, _ := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      availability_zone: zone_1
+      availability_zone_id: zone_1_id
+`)
+					_, _, err := command.CreateVM()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`Cannot use "availability_zone" and "availability_zone_id" together.`))
+				})
+
+				It("can't specify group name and group id", func() {
+					command, _ := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      group_name: zone_1
+      group_id: zone_1_id
+`)
+					_, _, err := command.CreateVM()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`Cannot use "group_name" and "group_id" together.`))
+				})
+
+				It("can't specify host resource group arn and host id", func() {
+					command, _ := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      host_resource_group_arn: zone_1
+      host_id: default
+`)
+					_, _, err := command.CreateVM()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`Cannot use "host_resource_group_arn" with Host ID or Affinity.`))
+				})
+
+				It("can't specify host resource group arn and affinity", func() {
+					command, _ := createCommand(`
+opsman-configuration:
+  aws:
+    version: 1.2.3-build.4
+    access_key_id: some-key-id
+    secret_access_key: some-key-secret
+    region: us-west-1
+    vpc_subnet_id: awesome-subnet
+    security_group_id: sg-awesome
+    key_pair_name: superuser
+    iam_instance_profile_name: awesome-profile
+    public_ip: 1.2.3.4
+    private_ip: 1.2.3.4
+    placement_options:
+      host_resource_group_arn: zone_1
+      affinity: default
+`)
+					_, _, err := command.CreateVM()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring(`Cannot use "host_resource_group_arn" with Host ID or Affinity.`))
+				})
+			})
+		})
 	})
 
 	Context("delete vm", func() {
